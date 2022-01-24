@@ -34,7 +34,7 @@ static void glfw_errorCallback(int error, const char *description) {
 
 static void glfw_keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_F3 && action == GLFW_PRESS)
-		s_showStats = !s_showStats; // Cool trick to toggle
+		s_showStats = !s_showStats; // Cool trick to toggle a boolean
 }
 
 int main() {
@@ -96,7 +96,17 @@ int main() {
 		ImGui_Implbgfx_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
-		ImGui::ShowDemoWindow();
+
+		//ImGui::ShowDemoWindow();
+
+		ImGui::Begin("IMGUI WINDOW");
+		ImGui::Text("HELLO FROM SHADOW ENGINE");
+		ImGui::SmallButton("Test Button");
+		ImGui::End();
+
+		//ImGui::BeginMenuBar();
+		//ImGui::EndMenuBar();
+
 		ImGui::Render();
 		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
 
@@ -107,15 +117,15 @@ int main() {
 		bgfx::touch(kClearView);
 		// Use debug font to print information about this example.
 		bgfx::dbgTextClear();
-		bgfx::dbgTextPrintf(0, 0, 0x0f, "Press F3 to toggle stats");
+		bgfx::dbgTextPrintf(3, 4, 0x0f, "Press F3 to toggle stats");
+
+		bgfx::dbgTextPrintf(3, 2, 0x01, "WARNING: DEBUG BUILD OF SHADOW ENGINE");
+		bgfx::dbgTextPrintf(3, 3, 0x01, "NOT READY FOR PRODUCTION");
 
 #ifdef SHADOW_DEBUG_BUILD
-		bgfx::dbgTextPrintf(0, 1, 0x0f, "WARNING: DEBUG BUILD OF SHADOW ENGINE");
-		bgfx::dbgTextPrintf(0, 2, 0x0f, "NOT READY FOR PRODUCTION");
-#endif
-
 		const bgfx::Stats *stats = bgfx::getStats();
 		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
+#endif
 
 		bgfx::frame();
 	}
