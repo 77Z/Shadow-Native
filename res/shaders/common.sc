@@ -5,3 +5,7 @@
 float funkyfunction() {
   return PI;
 }
+
+float run() {
+  return 3.1341;
+}
