@@ -1,7 +1,10 @@
+#include "main.h"
+#include "DebugUI.h"
+
 #include <bgfx/bgfx.h>
-#include <GLFW/glfw3.h>
-#include <stdio.h>
 #include <bx/bx.h>
+#include <GLFW/glfw3.h>
+#include <cstdio>
 
 #if BX_PLATFORM_LINUX
 #	define GLFW_EXPOSE_NATIVE_X11
@@ -23,155 +26,169 @@
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif*/
 
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
-
 static bool s_showStats = false;
 static bool s_showDebugger = false;
+static bool s_showKbShortcuts = false;
 
 static void glfw_errorCallback(int error, const char *description) {
-	fprintf(stderr, "GLFW error %d: %s\n", error, description);
+    fprintf(stderr, "GLFW error %d: %s\n", error, description);
 }
 
 static void glfw_keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-	if (key == GLFW_KEY_F3 && action == GLFW_PRESS)
-		s_showStats = !s_showStats; // Cool trick to toggle a boolean
+    if (key == GLFW_KEY_SLASH && action == GLFW_PRESS)
+        s_showKbShortcuts = !s_showKbShortcuts;
 
-	if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
-		s_showDebugger = !s_showDebugger;
+    if (key == GLFW_KEY_F3 && action == GLFW_PRESS)
+        s_showStats = !s_showStats; // Cool trick to toggle a boolean
+
+    if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
+        s_showDebugger = !s_showDebugger;
 }
 
 static void toggleStats() {
-	s_showStats = !s_showStats;
+    s_showStats = !s_showStats;
 }
 
 static void toggleDebugger() {
-	s_showDebugger = !s_showDebugger;
+    s_showDebugger = !s_showDebugger;
 }
 
 int main() {
-	glfwSetErrorCallback(glfw_errorCallback);
-	if (!glfwInit())
-		return 1;
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	GLFWwindow *window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Shadow Engine", nullptr, nullptr);
 
-	IMGUI_CHECKVERSION();
+    int width = 1280;
+    int height = 720;
 
-	if (!window)
-		return 1;
+    glfwSetErrorCallback(glfw_errorCallback);
+    if (!glfwInit())
+        return 1;
+    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    GLFWwindow *window = glfwCreateWindow(width, height, "Shadow Engine", nullptr, nullptr);
 
-	glfwSetKeyCallback(window, glfw_keyCallback);
+    IMGUI_CHECKVERSION();
 
-	bgfx::renderFrame();
+    if (!window)
+        return 1;
 
-	bgfx::Init init;
+    glfwSetKeyCallback(window, glfw_keyCallback);
 
-	init.platformData.ndt = glfwGetX11Display();
-	init.platformData.nwh = (void*)(uintptr_t)glfwGetX11Window(window);
+    bgfx::renderFrame();
 
-	int width, height; // This can probably be eliminated by WINDOW_WIDTH and WINDOW_HEIGHT
+    bgfx::Init init;
 
-	glfwGetWindowSize(window, &width, &height);
-	init.resolution.width = (uint32_t)width;
-	init.resolution.height = (uint32_t)height;
-	init.resolution.reset = BGFX_RESET_VSYNC;
-	if (!bgfx::init(init))
-		return 1;
+    init.platformData.ndt = glfwGetX11Display();
+    init.platformData.nwh = (void*)(uintptr_t) glfwGetX11Window(window);
 
-	// set view 0 to the same dimensions as the window and to clear the color buffer
-	const bgfx::ViewId kClearView = 0;
-	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR);
-	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+    glfwGetWindowSize(window, &width, &height);
+    init.resolution.width = (uint32_t) width;
+    init.resolution.height = (uint32_t) height;
+    init.resolution.reset = BGFX_RESET_VSYNC;
+    if (!bgfx::init(init))
+        return 1;
 
+    // Set view 0 to be the same dimensions as the window and to clear the color buffer
+    const bgfx::ViewId kClearView = 0;
+    bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR);
+    bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
+    // ImGui init
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+//    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
-	ImGui_Implbgfx_Init(255);
+    // Load DebugUI fonts
+//    io.Fonts->AddFontDefault();
+    io.Fonts->AddFontFromFileTTF("caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 
-	ImGui_ImplGlfw_InitForVulkan(window, true);
+    ImGui_Implbgfx_Init(255);
+    ImGui_ImplGlfw_InitForVulkan(window, true);
 
-	//bool showDemoWindow = true;
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
 
-	while (!glfwWindowShouldClose(window)) {
-		glfwPollEvents();
-		// Handle window resize
-		int oldWidth = width, oldHeight = height;
-		glfwGetWindowSize(window, &width, &height);
-		if (width != oldWidth || height != oldHeight) {
-			bgfx::reset((uint32_t)width, (uint32_t)height, BGFX_RESET_VSYNC);
-			bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
-		}
+        // Handle Window Resize
+        int oldWidth = width;
+        int oldHeight = height;
+        glfwGetWindowSize(window, &width, &height);
+        if (width != oldWidth || height != oldHeight) {
+            bgfx::reset((uint32_t) width, (uint32_t) height, BGFX_RESET_VSYNC);
+            bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+        }
 
-		//IMGUI
-		ImGui_Implbgfx_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
+        // ImGui
+        ImGui_Implbgfx_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
 
-		//ImGui::ShowDemoWindow();
+        ImGui::ShowDemoWindow();
 
-		ImGui::Begin("Shadow Engine");
-		//ImGui::Text("HELLO FROM SHADOW ENGINE");
-		//ImGui::SmallButton("Test Button");
+        ImGui::Begin("Shadow Engine");
+        //ImGui::Text("HELLO FROM SHADOW ENGINE");
+        //ImGui::SmallButton("Test Button");
 
-		if (ImGui::Button("Toggle Stats")) {
-			toggleStats();
-		}
+        if (ImGui::Button("Toggle Stats")) {
+            toggleStats();
+        }
 
-		if (ImGui::Button("Toggle Debugger")) {
-			toggleDebugger();
-		}
+        if (ImGui::Button("Toggle Debugger")) {
+            toggleDebugger();
+        }
 
-		ImGui::End();
+        ImGui::End();
 
-		if (s_showDebugger) {
-			ImGui::Begin("Shadow Engine Debugger");
-			
-			ImGui::Text("Debugging woo");
+        if (s_showDebugger) {
+            ImGui::Begin("Shadow Engine Debugger");
 
-			if (ImGui::SmallButton("Close")) {
-				//glfwDestroyWindow(window);
-				break; // Better Way
-			}
+            ImGui::Text("Debugging woo");
 
-			ImGui::End();
-		}
+            if (ImGui::SmallButton("Close")) {
+                //glfwDestroyWindow(window);
+                break; // Better Way
+            }
 
-		ImGui::Render();
-		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
+            ImGui::End();
+        }
 
-		//if (showDemoWindow)
-		//	ImGui::ShowDemoWindow(&showDemoWindow);
+        if (s_showKbShortcuts) {
+            ImGui::Begin("Keyboard Shortcuts");
 
-		// This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0
-		bgfx::touch(kClearView);
-		// Use debug font to print information about this example.
-		bgfx::dbgTextClear();
-		
+            ImGui::Text("F1: Open Debugger");
+            ImGui::Text("F3: Open Stats");
 
-		if (s_showDebugger) {
-			bgfx::dbgTextPrintf(0, 0, 0x8f, "Debugger (Press F1 to close): ");
-		} else {
-			bgfx::dbgTextPrintf(3, 2, 0x01, "WARNING: DEBUG BUILD OF SHADOW ENGINE");
-			bgfx::dbgTextPrintf(3, 3, 0x01, "NOT READY FOR PRODUCTION");
-			bgfx::dbgTextPrintf(3, 4, 0x0f, "Press F3 to toggle stats");
-			bgfx::dbgTextPrintf(3, 5, 0x0f, "Press F1 to toggle debugger");
-		}
+            ImGui::End();
+        }
+
+        ImGui::Render();
+
+        ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
+
+        // This dummy draw call is here to make sure that view 0 is cleared if no other draw calls are submitted to view 0
+        bgfx::touch(kClearView);
+        // Use debug font to print information about this example.
+        bgfx::dbgTextClear();
+
+        if (s_showDebugger) {
+            bgfx::dbgTextPrintf(0, 0, 0x8f, "Debugger (Press F1 to close): ");
+        } else {
+            bgfx::dbgTextPrintf(3, 2, 0x01, "WARNING: DEBUG BUILD OF SHADOW ENGINE");
+            bgfx::dbgTextPrintf(3, 3, 0x01, "NOT READY FOR PRODUCTION");
+            bgfx::dbgTextPrintf(3, 4, 0x0f, "Press ? for help");
+        }
 
 #ifdef SHADOW_DEBUG_BUILD
-		const bgfx::Stats *stats = bgfx::getStats();
-		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
+        const bgfx::Stats *stats = bgfx::getStats();
+        bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
 #endif
 
-		bgfx::frame();
-	}
-	bgfx::shutdown();
-	ImGui_ImplGlfw_Shutdown();
-	ImGui::DestroyContext();
-	glfwTerminate();
-	
-	printf("Goodbye!\n");
+        bgfx::frame();
+    }
+    bgfx::shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+    glfwTerminate();
 
-	return 0;
+    printf("Goodbye from Shadow Engine\n");
+    return 0;
 }

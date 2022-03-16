@@ -62,18 +62,21 @@ SHADERS		= $(shell find $(SHADERS_PATH)/* -maxdepth 1 | grep -E ".*/(vs|fs).*.sc
 SHADERS_OUT	= $(SHADERS:.sc=.$(SHADER_TARGET).bin)
 SHADERC		= lib/bgfx/.build/$(BGFX_DEPS_TARGET)/bin/shaderc$(BGFX_CONFIG)
 
-.PHONY: all clean
+.PHONY: all clean runtimeres
 
 all: dirs libs shaders build
 
+#	cd lib/bx && make -j$(PROCESSER_COUNT) $(BGFX_TARGET)
 libs:
-	cd lib/bx && make -j$(PROCESSER_COUNT) $(BGFX_TARGET)
 	cd lib/bimg && make -j$(PROCESSER_COUNT) $(BGFX_TARGET)
 	cd lib/bgfx && make -j$(PROCESSER_COUNT) $(BGFX_TARGET)
 	cd lib/glfw && cmake . && make -j $(PROCESSER_COUNT)
 
 dirs:
 	mkdir -p ./$(BIN)
+
+runtimeres:
+	cp runtimeres/* bin
 
 # Shader -> bin
 %.$(SHADER_TARGET).bin: %.sc
@@ -90,7 +93,7 @@ shaders: $(SHADERS_OUT)
 run: build
 	$(BIN)/game
 
-build: dirs shaders $(OBJ)
+build: runtimeres dirs shaders $(OBJ)
 	$(CC) -o $(BIN)/game $(filter %.o,$^) $(LDFLAGS)
 
 %.o: %.cpp

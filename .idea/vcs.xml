@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/bgfx" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/bimg" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/bx" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/glfw" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/imgui" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/openvr" vcs="Git" />
+  </component>
+</project>
