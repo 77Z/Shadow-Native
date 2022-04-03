@@ -7,6 +7,7 @@ BIN = bin
 PROCESSER_COUNT = 8
 
 IMGUI_DIR = lib/imgui
+IMGUI_NODE_EDITOR_DIR = lib/imgui-node-editor
 
 INCFLAGS  = -Iinclude
 INCFLAGS += -Ilib/bgfx/include
@@ -15,6 +16,7 @@ INCFLAGS += -Ilib/bimg/include
 INCFLAGS += -Ilib/glfw/include
 INCFLAGS += -I$(IMGUI_DIR)
 INCFLAGS += -I$(IMGUI_DIR)/backends
+INCFLAGS += -I$(IMGUI_NODE_EDITOR_DIR)
 
 CCFLAGS  = -std=c++20 -O2
 CCFLAGS += $(INCFLAGS)
@@ -35,11 +37,13 @@ endif
 
 CPP_SOURCES	 = $(wildcard src/*.cpp)
 IMGUI_SOURCES	 = $(wildcard $(IMGUI_DIR)/*.cpp)
+IMGUI_NODE_EDITOR_SOURCES = $(wildcard $(IMGUI_NODE_EDITOR_DIR)/*.cpp)
 # Has to use wildcard otherwise errors
 IMGUI_BACKEND_SOURCES = $(wildcard $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_vulkan.cpp)
 OBJ		 = $(CPP_SOURCES:.cpp=.o)
 OBJ		+= $(IMGUI_SOURCES:.cpp=.o)
 OBJ		+= $(IMGUI_BACKEND_SOURCES:.cpp=.o)
+OBJ		+= $(IMGUI_NODE_EDITOR_SOURCES:.cpp=.o)
 
 BGFX_BIN = lib/bgfx/.build/$(BGFX_DEPS_TARGET)/bin
 BGFX_CONFIG = Debug
@@ -89,7 +93,8 @@ runtimeres:
 shaders: $(SHADERS_OUT)
 
 run: build
-	$(BIN)/game
+	cd $(BIN)
+	$(shell ./game)
 
 build: runtimeres dirs shaders $(OBJ)
 	$(CC) -o $(BIN)/game $(filter %.o,$^) $(LDFLAGS)

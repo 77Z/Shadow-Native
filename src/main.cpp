@@ -5,6 +5,8 @@
 #include <bx/bx.h>
 #include <GLFW/glfw3.h>
 #include <cstdio>
+#include <imgui_node_editor.h>
+#include <imgui_internal.h>
 
 #if BX_PLATFORM_LINUX
 #	define GLFW_EXPOSE_NATIVE_X11
@@ -25,6 +27,10 @@
 /*#ifdef SHADOW_DEBUG_BUILD
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif*/
+
+namespace ed = ax::NodeEditor;
+
+static ed::EditorContext* g_Context = nullptr;
 
 static bool s_showStats = false;
 static bool s_showDebugger = false;
@@ -100,10 +106,12 @@ int main() {
 
     // Load DebugUI fonts
 //    io.Fonts->AddFontDefault();
-    io.Fonts->AddFontFromFileTTF("caskaydia-cove-nerd-font-mono.ttf", 16.0f);
+    io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 
     ImGui_Implbgfx_Init(255);
     ImGui_ImplGlfw_InitForVulkan(window, true);
+
+    g_Context = ed::CreateEditor();
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -124,6 +132,10 @@ int main() {
 
         ImGui::ShowDemoWindow();
 
+        if (ImGui::GetIO().MouseClicked[1]) {
+            ImGui::OpenPopup("test");
+        }
+
         ImGui::Begin("Shadow Engine");
         //ImGui::Text("HELLO FROM SHADOW ENGINE");
         //ImGui::SmallButton("Test Button");
@@ -137,6 +149,25 @@ int main() {
         }
 
         ImGui::End();
+
+        ed::SetCurrentEditor(g_Context);
+
+        ed::Begin("My Editor");
+
+        int uniqueId = 1;
+
+        ed::BeginNode(uniqueId++);
+            ImGui::Text("This is node %i", uniqueId);
+            ed::BeginPin(uniqueId++, ed::PinKind::Input);
+                ImGui::Text("In");
+            ed::EndPin();
+            ImGui::SameLine();
+            ed::BeginPin(uniqueId++, ed::PinKind::Output);
+                ImGui::Text("Out");
+            ed::EndPin();
+        ed::EndNode();
+
+        ed::End();
 
         if (s_showDebugger) {
             ImGui::Begin("Shadow Engine Debugger");
@@ -185,6 +216,7 @@ int main() {
         bgfx::frame();
     }
     bgfx::shutdown();
+    ed::DestroyEditor(g_Context);
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
     glfwTerminate();
