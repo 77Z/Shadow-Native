@@ -83,8 +83,6 @@ runtimeres:
 	$(SHADERC)	--type $(shell echo $(notdir $@) | cut -c 1) \
 			-i lib/bgfx/src \
 			--platform $(SHADER_PLATFORM) \
-			-p $(SHADER_TARGET) \
-			--varyingdef $(dir $@)varyingdef.def.sc \
 			-f $< \
 			-o $@
 
