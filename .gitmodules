@@ -1,18 +1,18 @@
 [submodule "lib/bx"]
 	path = lib/bx
-	url = git://github.com/bkaradzic/bx.git
+	url = https://github.com/bkaradzic/bx.git
 [submodule "lib/bimg"]
 	path = lib/bimg
-	url = git://github.com/bkaradzic/bimg.git
+	url = https://github.com/bkaradzic/bimg.git
 [submodule "lib/bgfx"]
 	path = lib/bgfx
-	url = git://github.com/bkaradzic/bgfx.git
+	url = https://github.com/bkaradzic/bgfx.git
 [submodule "lib/glfw"]
 	path = lib/glfw
-	url = git://github.com/glfw/glfw.git
+	url = https://github.com/glfw/glfw.git
 [submodule "lib/imgui"]
 	path = lib/imgui
-	url = git://github.com/ocornut/imgui
+	url = https://github.com/ocornut/imgui
 [submodule "lib/openvr"]
 	path = lib/openvr
 	url = https://github.com/ValveSoftware/openvr
