@@ -5,9 +5,7 @@
 #include "DebugUI.h"
 #include "main.h"
 
-#include <imgui_impl_bgfx.h>
-#include <imgui_impl_glfw.h>
-#include <imgui.h>
+// Handles BGFX Debug Draw
 
 void DrawUI() {
 
