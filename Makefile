@@ -14,6 +14,7 @@ INCFLAGS += -Ilib/bgfx/include
 INCFLAGS += -Ilib/bx/include
 INCFLAGS += -Ilib/bimg/include
 INCFLAGS += -Ilib/glfw/include
+INCFLAGS += -Ilib/modernjson
 INCFLAGS += -I$(IMGUI_DIR)
 INCFLAGS += -I$(IMGUI_DIR)/backends
 INCFLAGS += -I$(IMGUI_NODE_EDITOR_DIR)
@@ -87,14 +88,14 @@ runtimeres:
 	$(SHADERC)	--type $(shell echo $(notdir $@) | cut -c 1) \
 			-i lib/bgfx/src \
 			--platform $(SHADER_PLATFORM) \
+			--varyingdef $(dir $@)varying.def.sc \
 			-f $< \
 			-o $@
 
 shaders: $(SHADERS_OUT)
 
 run: build
-	cd $(BIN)
-	$(shell ./game)
+	$(shell cd $(BIN); ./game)
 
 build: runtimeres dirs shaders $(OBJ)
 	$(CC) -o $(BIN)/game $(filter %.o,$^) $(LDFLAGS)
