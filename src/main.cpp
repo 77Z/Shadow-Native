@@ -150,8 +150,9 @@ int main() {
 
         ImGui::End();
 
-        ed::SetCurrentEditor(g_Context);
+        ImGui::Begin("Shader Editor");
 
+        ed::SetCurrentEditor(g_Context);
         ed::Begin("My Editor");
 
         int uniqueId = 1;
@@ -168,6 +169,7 @@ int main() {
         ed::EndNode();
 
         ed::End();
+        ImGui::End();
 
         if (s_showDebugger) {
             ImGui::Begin("Shadow Engine Debugger");

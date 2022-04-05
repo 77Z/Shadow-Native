@@ -36,7 +36,7 @@ ifeq ($(UNAME_S), Linux)
 	BGFX_TARGET = linux
 endif
 
-CPP_SOURCES	 = $(wildcard src/*.cpp)
+CPP_SOURCES	 = $(wildcard src/*.cpp src/**/*.cpp)
 IMGUI_SOURCES	 = $(wildcard $(IMGUI_DIR)/*.cpp)
 IMGUI_NODE_EDITOR_SOURCES = $(wildcard $(IMGUI_NODE_EDITOR_DIR)/*.cpp)
 # Has to use wildcard otherwise errors
