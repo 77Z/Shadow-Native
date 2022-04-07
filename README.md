@@ -1,6 +1,9 @@
 # Shadow-Native
 C++ Shadow Engine
 
+# TODO
+  - Recreate common folder from BGFX to use in Shadow
+  - Fork a version of imgui-node-editor that compiles without modification
 
 # Attributions
   - BGFX - bkaradzic

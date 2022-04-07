@@ -97,7 +97,7 @@ shaders: $(SHADERS_OUT)
 run: build
 	$(shell cd $(BIN); ./game)
 
-build: runtimeres dirs shaders $(OBJ)
+build: dirs runtimeres shaders $(OBJ)
 	$(CC) -o $(BIN)/game $(filter %.o,$^) $(LDFLAGS)
 
 %.o: %.cpp
