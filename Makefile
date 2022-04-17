@@ -36,7 +36,7 @@ ifeq ($(UNAME_S), Linux)
 	BGFX_TARGET = linux
 endif
 
-CPP_SOURCES	 = $(wildcard src/*.cpp)
+CPP_SOURCES	 = $(wildcard src/*.cpp src/**/*.cpp)
 IMGUI_SOURCES	 = $(wildcard $(IMGUI_DIR)/*.cpp)
 IMGUI_NODE_EDITOR_SOURCES = $(wildcard $(IMGUI_NODE_EDITOR_DIR)/*.cpp)
 # Has to use wildcard otherwise errors
@@ -97,7 +97,7 @@ shaders: $(SHADERS_OUT)
 run: build
 	$(shell cd $(BIN); ./game)
 
-build: runtimeres dirs shaders $(OBJ)
+build: dirs runtimeres shaders $(OBJ)
 	$(CC) -o $(BIN)/game $(filter %.o,$^) $(LDFLAGS)
 
 %.o: %.cpp
