@@ -3,3 +3,4 @@ bin
 .cache
 compile_commands.json
 imgui.ini
+*.bin
