@@ -15,6 +15,7 @@ INCFLAGS += -Ilib/bx/include
 INCFLAGS += -Ilib/bimg/include
 INCFLAGS += -Ilib/glfw/include
 INCFLAGS += -Ilib/modernjson
+INCFLAGS += -Ilib/miniaudio
 INCFLAGS += -I$(IMGUI_DIR)
 INCFLAGS += -I$(IMGUI_DIR)/backends
 INCFLAGS += -I$(IMGUI_NODE_EDITOR_DIR)
@@ -54,7 +55,7 @@ ifeq ($(BGFX_CONFIG), Debug)
 	CCFLAGS += -DBX_CONFIG_DEBUG
 endif
 
-LDFLAGS += -lstdc++
+LDFLAGS += -lstdc++ -lpthread -lm -ldl
 LDFLAGS += $(BGFX_BIN)/libbgfx$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbimg$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbx$(BGFX_CONFIG).a
