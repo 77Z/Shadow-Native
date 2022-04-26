@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <iostream>
 #include <openvr.h>
 #include <stdlib.h>
 
@@ -8,7 +9,9 @@ int main() {
 		fprintf(stderr, "NO HMD CONNECTED!\n");
 	}
 
-	//vr::IVRSystem *vr::VR_Init();
+    vr::EVRInitError err = vr::VRInitError_None;
+	vr::IVRSystem* hmd = vr::VR_Init(&err, vr::VRApplication_Scene);
+
 
 	printf("Hello, World!\n");
 

@@ -19,3 +19,6 @@
 [submodule "lib/imgui-node-editor"]
 	path = lib/imgui-node-editor
 	url = https://github.com/thedmd/imgui-node-editor
+[submodule "lib/miniaudio"]
+	path = lib/miniaudio
+	url = https://github.com/mackron/miniaudio
