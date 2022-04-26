@@ -1,6 +1,7 @@
 #include "main.h"
 #include "DebugUI.h"
 #include "types.h"
+#include "shadow/audio.h"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -109,6 +110,8 @@ int main() {
     GLFWwindow *window = glfwCreateWindow(width, height, "Shadow Engine", nullptr, nullptr);
 
     IMGUI_CHECKVERSION();
+
+    ShadowAudio::initAudioEngine();
 
     if (!window)
         return 1;
@@ -255,6 +258,7 @@ int main() {
 
         bgfx::frame();
     }
+    ShadowAudio::shutdownAudioEngine();
     bgfx::shutdown();
     ed::DestroyEditor(g_Context);
     ImGui_ImplGlfw_Shutdown();

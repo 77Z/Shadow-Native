@@ -11,6 +11,8 @@
 #include "shadow/audio.h"
 #include <iostream>
 
+ma_engine audioEngine;
+
 namespace ShadowAudio {
     int initAudioEngine() {
         ma_result result;
@@ -21,6 +23,8 @@ namespace ShadowAudio {
             return -1;
         }
 
+        std::cout << "AUDIO ENGINE READY" << std::endl;
+
         //ma_engine_play_sound(&engine, "path", NULL);
 
         return 0;
@@ -28,5 +32,6 @@ namespace ShadowAudio {
 
     void shutdownAudioEngine() {
         ma_engine_uninit(&audioEngine);
+        std::cout << "AUDIO ENGINE SHUTDOWN" << std::endl;
     }
 }
