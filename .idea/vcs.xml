@@ -8,6 +8,7 @@
     <mapping directory="$PROJECT_DIR$/lib/glfw" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/imgui" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/imgui-node-editor" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/miniaudio" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/lib/openvr" vcs="Git" />
   </component>
 </project>

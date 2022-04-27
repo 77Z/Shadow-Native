@@ -11,9 +11,8 @@
 #include "shadow/audio.h"
 #include <iostream>
 
-ma_engine audioEngine;
-
 namespace ShadowAudio {
+    ma_engine audioEngine;
     int initAudioEngine() {
         ma_result result;
 
@@ -25,8 +24,39 @@ namespace ShadowAudio {
 
         std::cout << "AUDIO ENGINE READY" << std::endl;
 
-        //ma_engine_play_sound(&engine, "path", NULL);
+        ma_engine_play_sound(&audioEngine, "./sound.wav", nullptr);
 
+        return 0;
+    }
+
+    int simplePlayAudio(const char* filePath, bool looping) {
+        ma_sound sound;
+        ma_result result;
+
+        //TODO: Compile audio files into .h maybe then load them through here, allowing audio files to compile into the binary.
+
+        result = ma_sound_init_from_file(&audioEngine, filePath, 0, nullptr, nullptr, &sound);
+        if (result != MA_SUCCESS) {
+            std::cerr << "SHADOW FAILED TO LOAD SOUND FILE" << std::endl;
+            return -1;
+        }
+
+        ma_sound_start(&sound);
+
+        return 0;
+    }
+
+    ma_sound prefetchAudio(const char* filepath) {
+        // Allows fetching the audio beforehand so that it's ready
+        // to go in memory and plays fast, this is the good way to do it
+
+        //TODO: see https://miniaud.io/docs/examples/engine_advanced.html
+        ma_sound returnaudio;
+        return returnaudio;
+    }
+
+    int playFetchedAudio(ma_sound sound) {
+        //TODO: see https://miniaud.io/docs/examples/engine_advanced.html
         return 0;
     }
 
