@@ -1,4 +1,5 @@
 #include "main.h"
+#include "Components/Camera.h"
 #include "DebugUI.h"
 #include "types.h"
 #include "shadow/audio.h"
@@ -153,6 +154,17 @@ int main() {
     ImGui_ImplGlfw_InitForVulkan(window, true);
 
     g_Context = ed::CreateEditor();
+
+    // Init stuffs
+
+    Shadow::Camera camera;
+
+    Mesh* m_mesh = meshLoad("desk.bin");
+
+    int64_t m_timeOffset;
+    bgfx::ProgramHandle m_program;
+    bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
+
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();

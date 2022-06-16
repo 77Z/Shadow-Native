@@ -55,11 +55,19 @@ ifeq ($(BGFX_CONFIG), Debug)
 	CCFLAGS += -DBX_CONFIG_DEBUG
 endif
 
+# Binary embedding
+# Good resources:
+# https://stackoverflow.com/a/4158997
+# https://stackoverflow.com/a/11622727
+EMBEDDED_FILES = $(wildcard embeddedResources/*)
+#OBJ		 = $(EMBEDDED_FILES:*=.o)
+
 LDFLAGS += -lstdc++ -lpthread -lm -ldl
 LDFLAGS += $(BGFX_BIN)/libbgfx$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbimg$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbx$(BGFX_CONFIG).a
 LDFLAGS += lib/glfw/src/libglfw3.a
+#LDFLAGS += $(EMBEDDED_FILES)
 
 SHADER_TARGET	= vulkan
 SHADER_PLATFORM	= linux
@@ -84,6 +92,9 @@ dirs:
 runtimeres:
 	cp runtimeres/* bin
 
+embeddedResources: $(EMBEDDED_FILES)
+	ld -r -b binary -o $<.o $<
+
 # Shader -> bin
 %.$(SHADER_TARGET).bin: %.sc
 	$(SHADERC)	--type $(shell echo $(notdir $@) | cut -c 1) \
@@ -98,7 +109,7 @@ shaders: $(SHADERS_OUT)
 run: build
 	$(shell cd $(BIN); ./game)
 
-build: dirs runtimeres shaders $(OBJ)
+build: dirs runtimeres embeddedResources shaders $(OBJ)
 	$(CC) -o $(BIN)/game $(filter %.o,$^) $(LDFLAGS)
 
 %.o: %.cpp
