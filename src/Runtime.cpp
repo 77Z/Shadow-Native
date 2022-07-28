@@ -3,6 +3,7 @@
 #include "DebugUI.h"
 #include "types.h"
 #include "shadow/audio.h"
+#include "Runtime.h"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -99,7 +100,7 @@ static const u16 cube_indices[] = {
         6, 3, 7,
 };
 
-int main() {
+int Shadow::StartRuntime() {
 
     int width = 1280;
     int height = 720;
@@ -159,7 +160,7 @@ int main() {
 
     Shadow::Camera camera;
 
-    Mesh* m_mesh = meshLoad("desk.bin");
+    //Mesh* m_mesh = meshLoad("desk.bin");
 
     int64_t m_timeOffset;
     bgfx::ProgramHandle m_program;
@@ -270,6 +271,13 @@ int main() {
 
         bgfx::frame();
     }
+    
+    Shadow::ShutdownRuntime();
+
+    return 0;
+}
+
+void Shadow::ShutdownRuntime() {
     ShadowAudio::shutdownAudioEngine();
     bgfx::shutdown();
     ed::DestroyEditor(g_Context);
@@ -278,5 +286,4 @@ int main() {
     glfwTerminate();
 
     printf("Goodbye from Shadow Engine\n");
-    return 0;
 }
