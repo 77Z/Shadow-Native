@@ -10,6 +10,7 @@
 #include "miniaudio.h"
 #include "shadow/audio.h"
 #include <iostream>
+#include "Logger.h"
 
 namespace ShadowAudio {
     ma_engine audioEngine;
@@ -22,7 +23,7 @@ namespace ShadowAudio {
             return -1;
         }
 
-        std::cout << "AUDIO ENGINE READY" << std::endl;
+	print("AUDIO ENGINE READY");
 
         ma_engine_play_sound(&audioEngine, "./sound.wav", nullptr);
 
@@ -62,6 +63,6 @@ namespace ShadowAudio {
 
     void shutdownAudioEngine() {
         ma_engine_uninit(&audioEngine);
-        std::cout << "AUDIO ENGINE SHUTDOWN" << std::endl;
+	print("AUDIO ENGINE SHUTDOWN");
     }
 }

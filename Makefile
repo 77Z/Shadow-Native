@@ -48,8 +48,8 @@ OBJ		+= $(IMGUI_BACKEND_SOURCES:.cpp=.o)
 OBJ		+= $(IMGUI_NODE_EDITOR_SOURCES:.cpp=.o)
 
 BGFX_BIN = lib/bgfx/.build/$(BGFX_DEPS_TARGET)/bin
-#BGFX_CONFIG = Debug
-BGFX_CONFIG = Release
+BGFX_CONFIG = Debug
+#BGFX_CONFIG = Release
 
 # For some reason this has to be defined even in Release builds??
 # Probably something I don't yet understand.

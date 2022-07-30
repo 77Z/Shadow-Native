@@ -179,6 +179,9 @@ int Shadow::StartRuntime() {
             bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
         }
 
+	//TODO: ImGui should probably be disabled for production use
+	//#ifndef SHADOW_DEBUG_BUILD
+
         // ImGui
         ImGui_Implbgfx_NewFrame();
         ImGui_ImplGlfw_NewFrame();
