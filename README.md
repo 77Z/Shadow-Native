@@ -19,3 +19,4 @@ Add to vscode settings for syntax highlighting on shaders
 - Dear ImGui - ocornut
 - Lohmann, N. (2022). JSON for Modern C++ (Version 3.10.5) [Computer software]. https://github.com/nlohmann
 - ImGui Node Editor - thedmd
+- Miniaudio - mackron
