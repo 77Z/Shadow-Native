@@ -4,7 +4,7 @@ UNAME_S = $(shell uname -s)
 BIN = bin
 
 # Amount of cores to use when building
-PROCESSER_COUNT = 8
+PROCESSER_COUNT = $(shell nproc)
 
 IMGUI_DIR = lib/imgui
 IMGUI_NODE_EDITOR_DIR = lib/imgui-node-editor
@@ -48,11 +48,15 @@ OBJ		+= $(IMGUI_BACKEND_SOURCES:.cpp=.o)
 OBJ		+= $(IMGUI_NODE_EDITOR_SOURCES:.cpp=.o)
 
 BGFX_BIN = lib/bgfx/.build/$(BGFX_DEPS_TARGET)/bin
-BGFX_CONFIG = Debug
+#BGFX_CONFIG = Debug
+BGFX_CONFIG = Release
+
+# For some reason this has to be defined even in Release builds??
+# Probably something I don't yet understand.
+CCFLAGS += -DBX_CONFIG_DEBUG
 
 ifeq ($(BGFX_CONFIG), Debug)
 	CCFLAGS += -DSHADOW_DEBUG_BUILD
-	CCFLAGS += -DBX_CONFIG_DEBUG
 endif
 
 # Binary embedding
@@ -68,6 +72,11 @@ LDFLAGS += $(BGFX_BIN)/libbimg$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbx$(BGFX_CONFIG).a
 LDFLAGS += lib/glfw/src/libglfw3.a
 #LDFLAGS += $(EMBEDDED_FILES)
+
+ifeq ($(BGFX_CONFIG), Release)
+	# Strip symbols at link time
+	LDFLAGS += -s
+endif
 
 SHADER_TARGET	= vulkan
 SHADER_PLATFORM	= linux
