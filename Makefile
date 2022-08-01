@@ -11,8 +11,9 @@ IMGUI_NODE_EDITOR_DIR = lib/imgui-node-editor
 
 INCFLAGS  = -Iinclude
 INCFLAGS += -Ilib/bgfx/include
-INCFLAGS += -Ilib/bgfx/examples/common
-INCFLAGS += -Ilib/bgfx/3rdparty
+#INCFLAGS += -Ilib/bgfx/examples/common
+#INCFLAGS += -Ilib/bgfx/3rdparty
+#INCFLAGS += -Ilib/bgfx/3rdparty/webgpu/include
 INCFLAGS += -Ilib/bx/include
 INCFLAGS += -Ilib/bimg/include
 INCFLAGS += -Ilib/glfw/include
@@ -33,21 +34,27 @@ LDFLAGS += $(INCFLAGS)
 BGFX_TARGET =
 BGFX_DEPS_TARGET =
 
-# TODO: Support Windows in the future??
-ifeq ($(UNAME_S), Linux)
-	BGFX_DEPS_TARGET = linux64_gcc
-	BGFX_TARGET = linux
+# Only mingw is supported
+ifeq ($(OS), Windows_NT)
+	BGFX_DEPS_TARGET = mingw-gcc-debug64
+	BGFX_TARGET = windows
+else
+	ifeq ($(UNAME_S), Linux)
+		BGFX_DEPS_TARGET = linux64_gcc
+		BGFX_TARGET = linux
+	endif
 endif
 
 CPP_SOURCES	 = $(wildcard src/*.cpp src/**/*.cpp)
-COMMON_SOURCES	 = $(wildcard lib/bgfx/examples/common/*.cpp lib/bgfx/examples/common/**/*.cpp)
-BGFX_3RD_PARTY	 = $(wildcard lib/bgfx/3rdparty/**/*.cpp lib/bgfx/3rdparty/**/**/*.cpp)
+#COMMON_SOURCES	 = $(wildcard lib/bgfx/examples/common/*.cpp lib/bgfx/examples/common/**/*.cpp)
+#BGFX_3RD_PARTY	 = $(wildcard lib/bgfx/3rdparty/**/*.cpp lib/bgfx/3rdparty/**/**/*.cpp)
 IMGUI_SOURCES	 = $(wildcard $(IMGUI_DIR)/*.cpp)
 IMGUI_NODE_EDITOR_SOURCES = $(wildcard $(IMGUI_NODE_EDITOR_DIR)/*.cpp)
 # Has to use wildcard otherwise errors
 IMGUI_BACKEND_SOURCES = $(wildcard $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_vulkan.cpp)
 OBJ		 = $(CPP_SOURCES:.cpp=.o)
-OBJ		+= $(COMMON_SOURCES:.cpp=.o)
+#OBJ		+= $(COMMON_SOURCES:.cpp=.o)
+#OBJ		+= $(BGFX_3RD_PARTY:.cpp=.o)
 OBJ		+= $(IMGUI_SOURCES:.cpp=.o)
 OBJ		+= $(IMGUI_BACKEND_SOURCES:.cpp=.o)
 OBJ		+= $(IMGUI_NODE_EDITOR_SOURCES:.cpp=.o)
