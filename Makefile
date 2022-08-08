@@ -19,6 +19,7 @@ INCFLAGS += -Ilib/bimg/include
 INCFLAGS += -Ilib/glfw/include
 INCFLAGS += -Ilib/modernjson
 INCFLAGS += -Ilib/miniaudio
+INCFLAGS += -Ilib/termcolor
 INCFLAGS += -I$(IMGUI_DIR)
 INCFLAGS += -I$(IMGUI_DIR)/backends
 INCFLAGS += -I$(IMGUI_NODE_EDITOR_DIR)

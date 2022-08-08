@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <string>
+#include <termcolor.hpp>
 
 #define print(msg) Shadow::Logger::internalPrint(__FILE__, msg)
 
@@ -19,6 +20,15 @@ namespace Shadow {
 #ifdef SHADOW_DEBUG_BUILD
 			std::cout << "[" << caller << "] " << message << std::endl;
 #endif
+		}
+
+		inline void internalPrintError(std::string caller, std::string errmsg) {
+			std::cerr <<
+				termcolor::red			<<
+				"ERROR: {" << caller << "} "	<<
+				termcolor::reset		<<
+				errmsg				<<
+				std::endl;
 		}
 	}
 }
