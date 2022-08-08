@@ -10,7 +10,7 @@
 #include <termcolor.hpp>
 
 #define print(msg) Shadow::Logger::internalPrint(__FILE__, msg)
-
+#define warn(msg) Shadow::Logger::internalWarn(__FILE__, msg)
 #define errout(msg) Shadow::Logger::internalPrintError(__FILE__, msg)
 
 //TODO: add string formatting like stdio.h printf
@@ -21,6 +21,17 @@ namespace Shadow {
 		inline void internalPrint(std::string caller, std::string message) {
 #ifdef SHADOW_DEBUG_BUILD
 			std::cout << "[" << caller << "] " << message << std::endl;
+#endif
+		}
+
+		inline void internalWarn(std::string caller, std::string message) {
+#ifdef SHADOW_DEBUG_BUILD
+			std::cout <<
+				termcolor::yellow		<<
+				"WARN: {" << caller << "} "	<<
+				termcolor::reset		<<
+				message				<<
+				std::endl;
 #endif
 		}
 
