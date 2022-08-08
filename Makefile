@@ -24,7 +24,7 @@ INCFLAGS += -I$(IMGUI_DIR)
 INCFLAGS += -I$(IMGUI_DIR)/backends
 INCFLAGS += -I$(IMGUI_NODE_EDITOR_DIR)
 
-CCFLAGS  = -std=c++20 -O2
+CCFLAGS  = -std=c++20
 CCFLAGS += $(INCFLAGS)
 
 # -lm = libm = math lib
@@ -89,6 +89,7 @@ LDFLAGS += lib/glfw/src/libglfw3.a
 ifeq ($(BGFX_CONFIG), Release)
 	# Strip symbols at link time
 	LDFLAGS += -s
+	CCFLAGS += -O3
 endif
 
 SHADER_TARGET	= vulkan
