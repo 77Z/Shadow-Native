@@ -4,6 +4,7 @@
 #include "types.h"
 #include "shadow/audio.h"
 #include "Runtime.h"
+#include "UserCode.h"
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -161,6 +162,8 @@ int Shadow::StartRuntime() {
     Shadow::Camera camera;
 
     //Mesh* m_mesh = meshLoad("desk.bin");
+
+    Shadow::UserCode::loadUserCode("./libusercode.so");
 
     int64_t m_timeOffset;
     bgfx::ProgramHandle m_program;

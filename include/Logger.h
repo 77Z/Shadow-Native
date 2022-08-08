@@ -11,6 +11,8 @@
 
 #define print(msg) Shadow::Logger::internalPrint(__FILE__, msg)
 
+#define errout(msg) Shadow::Logger::internalPrintError(__FILE__, msg)
+
 //TODO: add string formatting like stdio.h printf
 //EX: (std::string caller, std::string fmt, ...)
 //internalPrint("caller", "Cool number: %i", number);
@@ -23,12 +25,14 @@ namespace Shadow {
 		}
 
 		inline void internalPrintError(std::string caller, std::string errmsg) {
+#ifdef SHADOW_DEBUG_BUILD
 			std::cerr <<
 				termcolor::red			<<
 				"ERROR: {" << caller << "} "	<<
 				termcolor::reset		<<
 				errmsg				<<
 				std::endl;
+#endif
 		}
 	}
 }
