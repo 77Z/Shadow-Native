@@ -10,6 +10,8 @@ Add to vscode settings for syntax highlighting on shaders
 - Recreate common folder from BGFX to use in Shadow
 - Fork a version of imgui-node-editor that compiles without modification
 - EVERYTHING
+- Meson + Ninja Build System??
+- Hot Reloading with jet-live
 
 # Attributions
 
