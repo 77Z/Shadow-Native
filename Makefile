@@ -70,6 +70,7 @@ CCFLAGS += -DBX_CONFIG_DEBUG
 
 ifeq ($(BGFX_CONFIG), Debug)
 	CCFLAGS += -DSHADOW_DEBUG_BUILD
+	LDFLAGS += -Wl,--export-dynamic
 endif
 
 # Binary embedding

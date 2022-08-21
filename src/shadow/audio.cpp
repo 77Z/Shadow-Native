@@ -13,56 +13,56 @@
 #include "Logger.h"
 
 namespace ShadowAudio {
-    ma_engine audioEngine;
-    int initAudioEngine() {
-        ma_result result;
+	ma_engine audioEngine;
+	int initAudioEngine() {
+		ma_result result;
 
-        result = ma_engine_init(nullptr, &audioEngine);
-        if (result != MA_SUCCESS) {
-            std::cerr << "SHADOW FAILED TO INIT AUDIO ENGINE" << std::endl;
-            return -1;
-        }
+		result = ma_engine_init(nullptr, &audioEngine);
+		if (result != MA_SUCCESS) {
+			std::cerr << "SHADOW FAILED TO INIT AUDIO ENGINE" << std::endl;
+			return -1;
+		}
 
 	print("AUDIO ENGINE READY");
 
-        ma_engine_play_sound(&audioEngine, "./sound.wav", nullptr);
+		ma_engine_play_sound(&audioEngine, "./sound.wav", nullptr);
 
-        return 0;
-    }
+		return 0;
+	}
 
-    int simplePlayAudio(const char* filePath, bool looping) {
-        ma_sound sound;
-        ma_result result;
+	int simplePlayAudio(const char* filePath, bool looping) {
+		ma_sound sound;
+		ma_result result;
 
-        //TODO: Compile audio files into .h maybe then load them through here, allowing audio files to compile into the binary.
+		//TODO: Compile audio files into .h maybe then load them through here, allowing audio files to compile into the binary.
 
-        result = ma_sound_init_from_file(&audioEngine, filePath, 0, nullptr, nullptr, &sound);
-        if (result != MA_SUCCESS) {
-            std::cerr << "SHADOW FAILED TO LOAD SOUND FILE" << std::endl;
-            return -1;
-        }
+		result = ma_sound_init_from_file(&audioEngine, filePath, 0, nullptr, nullptr, &sound);
+		if (result != MA_SUCCESS) {
+			std::cerr << "SHADOW FAILED TO LOAD SOUND FILE" << std::endl;
+			return -1;
+		}
 
-        ma_sound_start(&sound);
+		ma_sound_start(&sound);
 
-        return 0;
-    }
+		return 0;
+	}
 
-    ma_sound prefetchAudio(const char* filepath) {
-        // Allows fetching the audio beforehand so that it's ready
-        // to go in memory and plays fast, this is the good way to do it
+	ma_sound prefetchAudio(const char* filepath) {
+		// Allows fetching the audio beforehand so that it's ready
+		// to go in memory and plays fast, this is the good way to do it
 
-        //TODO: see https://miniaud.io/docs/examples/engine_advanced.html
-        ma_sound returnaudio;
-        return returnaudio;
-    }
+		//TODO: see https://miniaud.io/docs/examples/engine_advanced.html
+		ma_sound returnaudio;
+		return returnaudio;
+	}
 
-    int playFetchedAudio(ma_sound sound) {
-        //TODO: see https://miniaud.io/docs/examples/engine_advanced.html
-        return 0;
-    }
+	int playFetchedAudio(ma_sound sound) {
+		//TODO: see https://miniaud.io/docs/examples/engine_advanced.html
+		return 0;
+	}
 
-    void shutdownAudioEngine() {
-        ma_engine_uninit(&audioEngine);
+	void shutdownAudioEngine() {
+		ma_engine_uninit(&audioEngine);
 	print("AUDIO ENGINE SHUTDOWN");
-    }
+	}
 }

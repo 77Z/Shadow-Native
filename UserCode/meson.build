@@ -1,9 +1,10 @@
 project('WIS 77Z UserCode', 'cpp',
 
   version: '0.1.0',
-  license: 'Closed IDK'
+  license: 'Closed IDK',
+  default_options: ['default_library=both']
 )
 
-inc = include_directories('include')
+inc = include_directories(['include', '../include'])
 
-shared_library('usercode', ['code.cpp'], include_directories : inc)
+library('usercode', ['code.cpp'], include_directories : inc)

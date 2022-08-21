@@ -6,16 +6,16 @@
 #include <vector>
 
 enum anchorPos {
-    TopLeft,
-    TopRight,
-    BottomLeft,
-    BottomRight
+	TopLeft,
+	TopRight,
+	BottomLeft,
+	BottomRight
 };
 
 namespace ShadowUI {
-    class FlowCoordinator {
-    public:
-        std::vector<int> pos = {0, 0};
-        anchorPos anchor = TopLeft;
-    };
+	class FlowCoordinator {
+	public:
+		std::vector<int> pos = {0, 0};
+		anchorPos anchor = TopLeft;
+	};
 }

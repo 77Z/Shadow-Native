@@ -6,7 +6,7 @@
 #define SHADOW_NATIVE_DEBUGUI_H
 
 namespace DebugUI {
-    void DrawUI();
+	void DrawUI();
 }
 
 #endif //SHADOW_NATIVE_DEBUGUI_H
