@@ -57,30 +57,18 @@ namespace ed = ax::NodeEditor;
 static ed::EditorContext* g_Context = nullptr;
 
 static bool s_showStats = false;
-static bool s_showDebugger = false;
-static bool s_showKbShortcuts = false;
+static bool s_showWarningText = true;
 
 static void glfw_errorCallback(int error, const char *description) {
 	fprintf(stderr, "GLFW error %d: %s\n", error, description);
 }
 
 static void glfw_keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-	if (key == GLFW_KEY_SLASH && action == GLFW_PRESS)
-		s_showKbShortcuts = !s_showKbShortcuts;
+	if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
+		s_showWarningText = !s_showWarningText;
 
 	if (key == GLFW_KEY_F3 && action == GLFW_PRESS)
-		s_showStats = !s_showStats; // Cool trick to toggle a boolean
-
-	if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
-		s_showDebugger = !s_showDebugger;
-}
-
-static void toggleStats() {
-	s_showStats = !s_showStats;
-}
-
-static void toggleDebugger() {
-	s_showDebugger = !s_showDebugger;
+		s_showStats = !s_showStats;
 }
 
 static const glm::vec2 SIZE = glm::vec2(1280, 720);
@@ -258,30 +246,29 @@ int Shadow::StartRuntime() {
 			bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 		}
 
-	//TODO: ImGui should probably be disabled for production use
-	//#ifndef SHADOW_DEBUG_BUILD
+		//TODO: ImGui should probably be disabled for production use
+		//#ifndef SHADOW_DEBUG_BUILD
 
 		// ImGui
 		ImGui_Implbgfx_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 
 		if (ImGui::GetIO().MouseClicked[1]) {
 			ImGui::OpenPopup("test");
 		}
 
 		ImGui::Begin("Shadow Engine");
-		//ImGui::Text("HELLO FROM SHADOW ENGINE");
-		//ImGui::SmallButton("Test Button");
 
-		if (ImGui::Button("Toggle Stats")) {
-			toggleStats();
-		}
+		ImGui::Checkbox("Show Stats (F3)", &s_showStats);
+		ImGui::Checkbox("Show warning text (F1)", &s_showWarningText);
 
-		if (ImGui::Button("Toggle Debugger")) {
-			toggleDebugger();
+		ImGui::Separator();
+		ImGui::Text("Audio");
+		if (ImGui::Button("Play Demo Audio")) {
+			ShadowAudio::playTestAudio();
 		}
 
 		ImGui::End();
@@ -307,28 +294,6 @@ int Shadow::StartRuntime() {
 		ed::End();
 		ImGui::End();
 
-		if (s_showDebugger) {
-			ImGui::Begin("Shadow Engine Debugger");
-
-			ImGui::Text("Debugging woo");
-
-			if (ImGui::SmallButton("Close")) {
-				//glfwDestroyWindow(window);
-				break; // Better Way
-			}
-
-			ImGui::End();
-		}
-
-		if (s_showKbShortcuts) {
-			ImGui::Begin("Keyboard Shortcuts");
-
-			ImGui::Text("F1: Open Debugger");
-			ImGui::Text("F3: Open Stats");
-
-			ImGui::End();
-		}
-
 		ImGui::Render();
 
 		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
@@ -338,12 +303,9 @@ int Shadow::StartRuntime() {
 		// Use debug font to print information about this example.
 		bgfx::dbgTextClear();
 
-		if (s_showDebugger) {
-			bgfx::dbgTextPrintf(0, 0, 0x8f, "Debugger (Press F1 to close): ");
-		} else {
+		if (s_showWarningText) {
 			bgfx::dbgTextPrintf(3, 2, 0x01, "WARNING: DEBUG BUILD OF SHADOW ENGINE");
 			bgfx::dbgTextPrintf(3, 3, 0x01, "NOT READY FOR PRODUCTION");
-			bgfx::dbgTextPrintf(3, 4, 0x0f, "Press ? for help");
 		}
 
 #ifdef SHADOW_DEBUG_BUILD
@@ -358,7 +320,7 @@ int Shadow::StartRuntime() {
 		float proj[16];
 		bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
 		bgfx::setViewTransform(0, view, proj);
-		
+
 		float mtx[16];
 		bx::mtxRotateXY(mtx, counter * 0.01f, counter * 0.01f);
 		bgfx::setTransform(mtx);

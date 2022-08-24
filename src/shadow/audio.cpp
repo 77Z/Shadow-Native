@@ -23,11 +23,15 @@ namespace ShadowAudio {
 			return -1;
 		}
 
-	print("AUDIO ENGINE READY");
+		print("AUDIO ENGINE READY");
 
 		ma_engine_play_sound(&audioEngine, "./sound.wav", nullptr);
 
 		return 0;
+	}
+
+	ma_result playTestAudio() {
+		return ma_engine_play_sound(&audioEngine, "./sound.wav", nullptr);
 	}
 
 	int simplePlayAudio(const char* filePath, bool looping) {
@@ -63,6 +67,6 @@ namespace ShadowAudio {
 
 	void shutdownAudioEngine() {
 		ma_engine_uninit(&audioEngine);
-	print("AUDIO ENGINE SHUTDOWN");
+		print("AUDIO ENGINE SHUTDOWN");
 	}
 }
