@@ -125,6 +125,7 @@ embeddedResources: $(EMBEDDED_FILES)
 			-i lib/bgfx/src \
 			--platform $(SHADER_PLATFORM) \
 			--varyingdef $(dir $@)varying.def.sc \
+			-p spirv \
 			-f $< \
 			-o $@
 

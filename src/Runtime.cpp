@@ -133,7 +133,7 @@ static const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath
 static bgfx::ShaderHandle loadShader(bx::FileReaderI* reader, const char* name) {
 	char filePath[512];
 
-	const char* shaderPath = "../lib/bgfx/examples/runtime/shaders/spirv/";
+	const char* shaderPath = "../res/shaders/test/";
 
 	bx::strCopy(filePath, BX_COUNTOF(filePath), shaderPath);
 	bx::strCat(filePath, BX_COUNTOF(filePath), name);
@@ -228,8 +228,8 @@ int Shadow::StartRuntime() {
 	bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), pcvDecl);
 	bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
 
-	bgfx::ShaderHandle vsh = loadShader("vs_cubes");
-	bgfx::ShaderHandle fsh = loadShader("fs_cubes");
+	bgfx::ShaderHandle vsh = loadShader("vs_test.vulkan");
+	bgfx::ShaderHandle fsh = loadShader("fs_test.vulkan");
 	bgfx::ProgramHandle program = bgfx::createProgram(vsh, fsh, true);
 
 	unsigned int counter = 0;
