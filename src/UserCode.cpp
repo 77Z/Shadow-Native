@@ -10,6 +10,10 @@
 #	include <dlfcn.h>
 #endif
 
+void callmeplz() {
+	warn("I HAVE BEEN CALLED");
+}
+
 int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 
 	print("Starting to load UserCode");
@@ -29,6 +33,9 @@ int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 		return USER_CODE_FAILURE;
 	}
 	libFile.close();
+
+	// function registration from within UserCode Lib
+	void (*register_function)(void(*)());
 
 	void* handle = dlopen(libraryFile.c_str(), RTLD_LAZY);
 
@@ -50,6 +57,10 @@ int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 		dlclose(handle);
 		return USER_CODE_FAILURE;
 	}
+
+
+	*(void**)(&register_function) = dlsym(handle, "register_function");
+	register_function(callmeplz); // Allow usage of this function
 
 	usrcodefunc_start();
 

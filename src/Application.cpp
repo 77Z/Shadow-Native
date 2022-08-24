@@ -6,6 +6,7 @@ namespace Shadow {
 	}
 }
 
+// This is seperate so we can support Windows' wacky main function if we want to
 int main(int argc, char** argv) {
 	return Shadow::Main(argc, argv);
 }

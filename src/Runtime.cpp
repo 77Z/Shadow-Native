@@ -177,12 +177,12 @@ int Shadow::StartRuntime() {
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	GLFWwindow *window = glfwCreateWindow(width, height, "Shadow Engine", nullptr, nullptr);
 
+	if (!window)
+		return 1;
+
 	IMGUI_CHECKVERSION();
 
 	ShadowAudio::initAudioEngine();
-
-	if (!window)
-		return 1;
 
 	glfwSetKeyCallback(window, glfw_keyCallback);
 
@@ -244,7 +244,7 @@ int Shadow::StartRuntime() {
 	//bgfx::ShaderHandle vsh = loadShader("vs_test.vulkan");
 	//bgfx::ShaderHandle fsh = loadShader("fs_test.vulkan");
 
-	bgfx::ProgramHandle program = loadProgram("vs_dbg", "fs_dbg");
+	bgfx::ProgramHandle program = loadProgram("vs_test.vulkan", "fs_test.vulkan");
 
 	unsigned int counter = 0;
 

@@ -4,9 +4,14 @@
 
 SHADOW_CODE
 
+void (*callback)() = NULL;
+extern "C" void register_function(void (*callmeplz)()) {
+	callback = callmeplz;
+}
+
 void Start() {
 	std::cout << "Hello from USER LAND" << std::endl;
-//	Shadow::ShutdownRuntime();
+	callback();
 }
 
 void Update() {}
