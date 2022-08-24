@@ -5,6 +5,10 @@
 #include "shadow/audio.h"
 #include "Runtime.h"
 #include "UserCode.h"
+#include "Logger.h"
+#include <bx/math.h>
+#include <bx/string.h>
+#include <bx/file.h>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -36,6 +40,17 @@
 /*#ifdef SHADOW_DEBUG_BUILD
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif*/
+
+bx::AllocatorI* getDefaultAllocator() {
+	static bx::DefaultAllocator s_allocator;
+	return &s_allocator;
+}
+
+extern bx::AllocatorI* getDefaultAllocator();
+bx::AllocatorI* g_allocator = getDefaultAllocator();
+
+static bx::FileReaderI* s_fileReader = nullptr;
+bx::FileReaderI* getFileReader() { return s_fileReader; }
 
 namespace ed = ax::NodeEditor;
 
@@ -75,33 +90,81 @@ struct Vertex {
 	u32 color;
 };
 
-static Vertex cube_vertices[] = {
-		{ glm::vec3(-1.0f,  1.0f,  1.0f), 0xff000000 },
-		{ glm::vec3( 1.0f,  1.0f,  1.0f), 0xff0000ff },
-		{ glm::vec3(-1.0f, -1.0f,  1.0f), 0xff00ff00 },
-		{ glm::vec3( 1.0f, -1.0f,  1.0f), 0xff00ffff },
-		{ glm::vec3(-1.0f,  1.0f, -1.0f), 0xffff0000 },
-		{ glm::vec3( 1.0f, 1.0f, -1.0f), 0xffff00ff },
-		{ glm::vec3(-1.0f, -1.0f, -1.0f), 0xffffff00 },
-		{ glm::vec3( 1.0f, -1.0f, -1.0f), 0xffffffff },
+struct PosColorVertex
+{
+    float x;
+    float y;
+    float z;
+    uint32_t abgr;
 };
 
-static const u16 cube_indices[] = {
-		0, 1, 2,
-		1, 3, 2,
-		4, 6, 5,
-		5, 6, 7,
-		0, 2, 4,
-		4, 2, 6,
-		1, 5, 3,
-		5, 7, 3,
-		0, 4, 1,
-		4, 5, 1,
-		2, 3, 6,
-		6, 3, 7,
+static PosColorVertex cubeVertices[] =
+{
+    {-1.0f,  1.0f,  1.0f, 0xff000000 },
+    { 1.0f,  1.0f,  1.0f, 0xff0000ff },
+    {-1.0f, -1.0f,  1.0f, 0xff00ff00 },
+    { 1.0f, -1.0f,  1.0f, 0xff00ffff },
+    {-1.0f,  1.0f, -1.0f, 0xffff0000 },
+    { 1.0f,  1.0f, -1.0f, 0xffff00ff },
+    {-1.0f, -1.0f, -1.0f, 0xffffff00 },
+    { 1.0f, -1.0f, -1.0f, 0xffffffff },
 };
+
+static const uint16_t cubeTriList[] =
+{
+    0, 1, 2,
+    1, 3, 2,
+    4, 6, 5,
+    5, 6, 7,
+    0, 2, 4,
+    4, 2, 6,
+    1, 5, 3,
+    5, 7, 3,
+    0, 4, 1,
+    4, 5, 1,
+    2, 3, 6,
+    6, 3, 7,
+};
+
+static const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath) {
+	if (bx::open(reader, filePath) )
+	{
+		uint32_t size = (uint32_t)bx::getSize(reader);
+		const bgfx::Memory* mem = bgfx::alloc(size+1);
+		bx::read(reader, mem->data, size, bx::ErrorAssert{});
+		bx::close(reader);
+		mem->data[mem->size-1] = '\0';
+		return mem;
+	}
+
+	errout("Failed to load");
+	errout(filePath);
+	return NULL;
+}
+
+static bgfx::ShaderHandle loadShader(bx::FileReaderI* reader, const char* name) {
+	char filePath[512];
+
+	const char* shaderPath = "../lib/bgfx/examples/runtime/shaders/spirv/";
+
+	bx::strCopy(filePath, BX_COUNTOF(filePath), shaderPath);
+	bx::strCat(filePath, BX_COUNTOF(filePath), name);
+	bx::strCat(filePath, BX_COUNTOF(filePath), ".bin");
+
+	bgfx::ShaderHandle handle = bgfx::createShader(loadMem(reader, filePath) );
+	bgfx::setName(handle, name);
+
+	return handle;
+}
+
+static bgfx::ShaderHandle loadShader(const char* name) {
+	return loadShader(getFileReader(), name);
+}
+
 
 int Shadow::StartRuntime() {
+
+	s_fileReader = BX_NEW(g_allocator, bx::FileReader);
 
 	int width = 1280;
 	int height = 720;
@@ -137,7 +200,7 @@ int Shadow::StartRuntime() {
 
 	// Set view 0 to be the same dimensions as the window and to clear the color buffer
 	const bgfx::ViewId kClearView = 0;
-	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR);
+	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
 	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	// ImGui init
@@ -169,6 +232,19 @@ int Shadow::StartRuntime() {
 	bgfx::ProgramHandle m_program;
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 
+	bgfx::VertexLayout pcvDecl;
+	pcvDecl.begin()
+		.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
+		.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
+		.end();
+	bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), pcvDecl);
+	bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
+
+	bgfx::ShaderHandle vsh = loadShader("vs_cubes");
+	bgfx::ShaderHandle fsh = loadShader("fs_cubes");
+	bgfx::ProgramHandle program = bgfx::createProgram(vsh, fsh, true);
+
+	unsigned int counter = 0;
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -275,9 +351,34 @@ int Shadow::StartRuntime() {
 		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
 #endif
 
+		const bx::Vec3 at = {0.0f, 0.0f,  0.0f};
+		const bx::Vec3 eye = {0.0f, 0.0f, -5.0f};
+		float view[16];
+		bx::mtxLookAt(view, eye, at);
+		float proj[16];
+		bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+		bgfx::setViewTransform(0, view, proj);
+		
+		float mtx[16];
+		bx::mtxRotateXY(mtx, counter * 0.01f, counter * 0.01f);
+		bgfx::setTransform(mtx);
+
+		bgfx::setVertexBuffer(0, vbh);
+		bgfx::setIndexBuffer(ibh);
+
+		bgfx::submit(0, program);
+
 		bgfx::frame();
+
+		counter++;
 	}
-	
+
+	bgfx::destroy(ibh);
+	bgfx::destroy(vbh);
+
+	BX_DELETE(g_allocator, s_fileReader);
+	s_fileReader = NULL;
+
 	Shadow::ShutdownRuntime();
 
 	return 0;
