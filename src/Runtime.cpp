@@ -93,7 +93,7 @@ static PosColorVertex cubeVertices[] =
     {-1.0f, -1.0f,  1.0f, 0xff00ff00 },
     { 1.0f, -1.0f,  1.0f, 0xff00ffff },
     {-1.0f,  1.0f, -1.0f, 0xffff0000 },
-    { 1.0f,  1.0f, -1.0f, 0xffff00ff },
+    { 1.0f,  1.0f, -1.0f, 0xff0000ff },
     {-1.0f, -1.0f, -1.0f, 0xffffff00 },
     { 1.0f, -1.0f, -1.0f, 0xffffffff },
 };
@@ -147,6 +147,20 @@ static bgfx::ShaderHandle loadShader(bx::FileReaderI* reader, const char* name) 
 
 static bgfx::ShaderHandle loadShader(const char* name) {
 	return loadShader(getFileReader(), name);
+}
+
+// Nice function to load both shaders and retrun a program automatically
+bgfx::ProgramHandle loadProgram(bx::FileReaderI* reader, const char* vsName, const char* fsName) {
+	bgfx::ShaderHandle vsh = loadShader(reader, vsName);
+	bgfx::ShaderHandle fsh = BGFX_INVALID_HANDLE;
+	if (nullptr != fsName)
+		fsh = loadShader(reader, fsName);
+
+	return bgfx::createProgram(vsh, fsh, true);
+}
+
+bgfx::ProgramHandle loadProgram(const char* vsName, const char* fsName) {
+	return loadProgram(getFileReader(), vsName, fsName);
 }
 
 
@@ -217,7 +231,6 @@ int Shadow::StartRuntime() {
 	Shadow::UserCode::loadUserCode("./libusercode.so");
 
 	int64_t m_timeOffset;
-	bgfx::ProgramHandle m_program;
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 
 	bgfx::VertexLayout pcvDecl;
@@ -228,9 +241,10 @@ int Shadow::StartRuntime() {
 	bgfx::VertexBufferHandle vbh = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), pcvDecl);
 	bgfx::IndexBufferHandle ibh = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
 
-	bgfx::ShaderHandle vsh = loadShader("vs_test.vulkan");
-	bgfx::ShaderHandle fsh = loadShader("fs_test.vulkan");
-	bgfx::ProgramHandle program = bgfx::createProgram(vsh, fsh, true);
+	//bgfx::ShaderHandle vsh = loadShader("vs_test.vulkan");
+	//bgfx::ShaderHandle fsh = loadShader("fs_test.vulkan");
+
+	bgfx::ProgramHandle program = loadProgram("vs_dbg", "fs_dbg");
 
 	unsigned int counter = 0;
 
@@ -337,6 +351,8 @@ int Shadow::StartRuntime() {
 
 	bgfx::destroy(ibh);
 	bgfx::destroy(vbh);
+	bgfx::destroy(program);
+	bgfx::destroy(u_time);
 
 	BX_DELETE(g_allocator, s_fileReader);
 	s_fileReader = NULL;
