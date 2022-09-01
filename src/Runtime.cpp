@@ -9,6 +9,9 @@
 #include <bx/math.h>
 #include <bx/string.h>
 #include <bx/file.h>
+#include <cassert>
+
+#include <leveldb/db.h>
 
 #define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
@@ -230,6 +233,12 @@ int Shadow::StartRuntime() {
 
 	Shadow::UserCode::loadUserCode("./libusercode.so");
 
+	leveldb::DB* userSettingsDB;
+	leveldb::Options options;
+	options.create_if_missing = true;
+	// This should have a leveldb Status
+	leveldb::DB::Open(options, "./usersettings", &userSettingsDB);
+
 	int64_t m_timeOffset;
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 
@@ -362,6 +371,8 @@ int Shadow::StartRuntime() {
 	bgfx::destroy(vbh);
 	bgfx::destroy(program);
 	bgfx::destroy(u_time);
+
+	delete userSettingsDB;
 
 	BX_DELETE(g_allocator, s_fileReader);
 	s_fileReader = NULL;

@@ -20,6 +20,8 @@ INCFLAGS += -Ilib/glfw/include
 INCFLAGS += -Ilib/modernjson
 INCFLAGS += -Ilib/miniaudio
 INCFLAGS += -Ilib/termcolor
+INCFLAGS += -Ilib/snappy/include
+INCFLAGS += -Ilib/leveldb/include
 INCFLAGS += -I$(IMGUI_DIR)
 INCFLAGS += -I$(IMGUI_DIR)/backends
 INCFLAGS += -I$(IMGUI_NODE_EDITOR_DIR)
@@ -85,6 +87,8 @@ LDFLAGS += $(BGFX_BIN)/libbgfx$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbimg$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbx$(BGFX_CONFIG).a
 LDFLAGS += lib/glfw/src/libglfw3.a
+LDFLAGS += lib/leveldb/libleveldb.a
+LDFLAGS += lib/snappy/libsnappy.a
 #LDFLAGS += $(EMBEDDED_FILES)
 
 ifeq ($(BGFX_CONFIG), Release)
