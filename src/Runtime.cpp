@@ -268,7 +268,7 @@ int Shadow::StartRuntime() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		//ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 
 		if (ImGui::GetIO().MouseClicked[1]) {
 			ImGui::OpenPopup("test");
@@ -284,6 +284,11 @@ int Shadow::StartRuntime() {
 		if (ImGui::Button("Play Demo Audio")) {
 			ShadowAudio::playTestAudio();
 		}
+
+		ImGui::Separator();
+		ImGui::Text("UserCode");
+		if (ImGui::Button("Reload UserCode Library"))
+			Shadow::UserCode::loadUserCode("./libusercode.so");
 
 		ImGui::End();
 
@@ -303,6 +308,10 @@ int Shadow::StartRuntime() {
 			ed::BeginPin(uniqueId++, ed::PinKind::Output);
 				ImGui::Text("Out");
 			ed::EndPin();
+		ed::EndNode();
+
+		ed::BeginNode(uniqueId++);
+			ImGui::Text("Blah %i", uniqueId);
 		ed::EndNode();
 
 		ed::End();
@@ -328,7 +337,7 @@ int Shadow::StartRuntime() {
 #endif
 
 		const bx::Vec3 at = {0.0f, 0.0f,  0.0f};
-		const bx::Vec3 eye = {0.0f, 0.0f, -5.0f};
+		const bx::Vec3 eye = {0.0f, 0.0f, -10.0f};
 		float view[16];
 		bx::mtxLookAt(view, eye, at);
 		float proj[16];

@@ -10,7 +10,7 @@
 #	include <dlfcn.h>
 #endif
 
-void callmeplz() {
+void callme() {
 	warn("I HAVE BEEN CALLED");
 }
 
@@ -60,7 +60,7 @@ int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 
 
 	*(void**)(&register_function) = dlsym(handle, "register_function");
-	register_function(callmeplz); // Allow usage of this function
+	register_function(callme); // Allow usage of this function
 
 	usrcodefunc_start();
 

@@ -1,5 +1,5 @@
 $input a_position, a_color0
-$output v_color0
+$output v_pos, v_color0
 
 #include "../common.sh"
 
