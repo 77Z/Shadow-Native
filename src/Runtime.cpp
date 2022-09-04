@@ -1,6 +1,5 @@
 #include "main.h"
 #include "Components/Camera.h"
-#include "DebugUI.h"
 #include "types.h"
 #include "shadow/audio.h"
 #include "Runtime.h"
@@ -9,8 +8,8 @@
 #include <bx/math.h>
 #include <bx/string.h>
 #include <bx/file.h>
-#include <cassert>
 
+#include "shadow_fs.h"
 #include <leveldb/db.h>
 
 #define GLM_FORCE_RADIANS
@@ -233,11 +232,12 @@ int Shadow::StartRuntime() {
 
 	Shadow::UserCode::loadUserCode("./libusercode.so");
 
-	leveldb::DB* userSettingsDB;
-	leveldb::Options options;
-	options.create_if_missing = true;
-	// This should have a leveldb Status
-	leveldb::DB::Open(options, "./usersettings", &userSettingsDB);
+	// User Settings
+	leveldb::DB* userSettingsDB = Shadow::fs::openDB("./us");
+
+	userSettingsDB->Put(leveldb::WriteOptions(), "mykey", "Hello!");
+
+	fs::writeDB(userSettingsDB, "myotherkey", "Hello again");
 
 	int64_t m_timeOffset;
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
@@ -290,9 +290,8 @@ int Shadow::StartRuntime() {
 
 		ImGui::Separator();
 		ImGui::Text("Audio");
-		if (ImGui::Button("Play Demo Audio")) {
+		if (ImGui::Button("Play Demo Audio"))
 			ShadowAudio::playTestAudio();
-		}
 
 		ImGui::Separator();
 		ImGui::Text("UserCode");
@@ -336,7 +335,7 @@ int Shadow::StartRuntime() {
 		bgfx::dbgTextClear();
 
 		if (s_showWarningText) {
-			bgfx::dbgTextPrintf(3, 2, 0x01, "WARNING: DEBUG BUILD OF SHADOW ENGINE");
+			bgfx::dbgTextPrintf(3, 2, 0x01, "DEBUG BUILD OF SHADOW ENGINE");
 			bgfx::dbgTextPrintf(3, 3, 0x01, "NOT READY FOR PRODUCTION");
 		}
 
@@ -372,7 +371,7 @@ int Shadow::StartRuntime() {
 	bgfx::destroy(program);
 	bgfx::destroy(u_time);
 
-	delete userSettingsDB;
+	Shadow::fs::closeDB(userSettingsDB);
 
 	BX_DELETE(g_allocator, s_fileReader);
 	s_fileReader = NULL;

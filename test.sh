@@ -1,5 +1,5 @@
 #!/bin/zsh
 
-make
+make build
 cd bin
 ./game
