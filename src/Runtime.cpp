@@ -1,4 +1,3 @@
-#include "main.h"
 #include "Components/Camera.h"
 #include "types.h"
 #include "shadow/audio.h"
@@ -36,8 +35,7 @@
 #include <GLFW/glfw3native.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
-//#include <imgui_impl_vulkan.h>
-#include <imgui_impl_bgfx.h>
+#include <imgui/imgui_impl_bgfx.h>
 
 /*#ifdef SHADOW_DEBUG_BUILD
 #define IMGUI_VULKAN_DEBUG_REPORT

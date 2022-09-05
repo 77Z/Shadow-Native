@@ -1,7 +1,7 @@
 // Thank you to Tom Hulton-Harrop
 // https://gist.github.com/pr0g/aff79b71bf9804ddb03f39ca7c0c3bbb
 
-// ImGui BFFX binding
+// ImGui BGFX binding
 // In this binding, ImTextureID is used to store an OpenGL 'GLuint' texture
 // identifier. Read the FAQ about ImTextureID in imgui.cpp.
 
@@ -12,7 +12,7 @@
 // examples/README.txt and documentation at the top of imgui.cpp.
 // https://github.com/ocornut/imgui
 
-#include <imgui_impl_bgfx.h>
+#include <imgui/imgui_impl_bgfx.h>
 #include "imgui.h"
 
 // BGFX/BX
@@ -139,8 +139,8 @@ bool ImGui_Implbgfx_CreateFontsTexture()
 	return true;
 }
 
-#include "fs_ocornut_imgui.bin.h"
-#include "vs_ocornut_imgui.bin.h"
+#include "imgui/fs_ocornut_imgui.bin.h"
+#include "imgui/vs_ocornut_imgui.bin.h"
 
 static const bgfx::EmbeddedShader s_embeddedShaders[] = {
 	BGFX_EMBEDDED_SHADER(vs_ocornut_imgui),

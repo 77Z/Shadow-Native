@@ -80,7 +80,7 @@ endif
 # Good resources:
 # https://stackoverflow.com/a/4158997
 # https://stackoverflow.com/a/11622727
-EMBEDDED_FILES = $(wildcard embeddedResources/*)
+#EMBEDDED_FILES = $(wildcard embeddedResources/*)
 #OBJ		 = $(EMBEDDED_FILES:*=.o)
 
 LDFLAGS += -lstdc++ -lpthread -lm -ldl
@@ -120,10 +120,10 @@ dirs:
 	mkdir -p ./$(BIN)
 
 runtimeres:
-	cp runtimeres/* bin
+	cp res/runtimeres/* bin
 
-embeddedResources: $(EMBEDDED_FILES)
-	ld -r -b binary -o $<.o $<
+#embeddedResources: $(EMBEDDED_FILES)
+#	ld -r -b binary -o $<.o $<
 
 # Shader -> bin
 %.$(SHADER_TARGET).bin: %.sc
@@ -140,7 +140,7 @@ shaders: $(SHADERS_OUT)
 run: build
 	$(shell cd $(BIN); ./game)
 
-build: dirs runtimeres embeddedResources shaders $(OBJ)
+build: dirs runtimeres shaders $(OBJ)
 	$(CC) -o $(BIN)/game $(filter %.o,$^) $(LDFLAGS)
 
 %.o: %.cpp
