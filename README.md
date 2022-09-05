@@ -18,9 +18,13 @@ Add to vscode settings for syntax highlighting on shaders
 - BGFX - bkaradzic
 - BX - bkaradzic
 - BIMG - bkaradzic
+- GLFW
 - OpenVR - Valve
 - Dear ImGui - ocornut
 - Lohmann, N. (2022). JSON for Modern C++ (Version 3.10.5) [Computer software]. https://github.com/nlohmann
 - ImGui Node Editor - thedmd
 - Miniaudio - mackron
 - Termcolor - ikalnytskyi
+- Snappy - Google
+- LevelDB - Google
+- LZ4 - Yann Collet
