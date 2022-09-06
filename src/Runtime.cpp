@@ -7,6 +7,7 @@
 #include <bx/math.h>
 #include <bx/string.h>
 #include <bx/file.h>
+#include <Util.h>
 
 #include "shadow_fs.h"
 #include <leveldb/db.h>
@@ -40,17 +41,6 @@
 /*#ifdef SHADOW_DEBUG_BUILD
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif*/
-
-bx::AllocatorI* getDefaultAllocator() {
-	static bx::DefaultAllocator s_allocator;
-	return &s_allocator;
-}
-
-extern bx::AllocatorI* getDefaultAllocator();
-bx::AllocatorI* g_allocator = getDefaultAllocator();
-
-static bx::FileReaderI* s_fileReader = nullptr;
-bx::FileReaderI* getFileReader() { return s_fileReader; }
 
 namespace ed = ax::NodeEditor;
 
@@ -166,16 +156,19 @@ bgfx::ProgramHandle loadProgram(const char* vsName, const char* fsName) {
 
 int Shadow::StartRuntime() {
 
-	s_fileReader = BX_NEW(g_allocator, bx::FileReader);
+	InitBXFilesystem();
 
-	int width = 1280;
-	int height = 720;
+	//int width = 1280;
+	//int height = 720;
+	
+	int width = 1920;
+	int height = 1080;
 
 	glfwSetErrorCallback(glfw_errorCallback);
 	if (!glfwInit())
 		return 1;
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	GLFWwindow *window = glfwCreateWindow(width, height, "Shadow Engine", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(width, height, "Shadow Engine", glfwGetPrimaryMonitor(), nullptr);
 
 	if (!window)
 		return 1;
@@ -369,10 +362,11 @@ int Shadow::StartRuntime() {
 	bgfx::destroy(program);
 	bgfx::destroy(u_time);
 
+	ImGui_ImplGlfw_Shutdown();
+
 	Shadow::fs::closeDB(userSettingsDB);
 
-	BX_DELETE(g_allocator, s_fileReader);
-	s_fileReader = NULL;
+	ShutdownBXFilesytem();
 
 	Shadow::ShutdownRuntime();
 
@@ -381,11 +375,10 @@ int Shadow::StartRuntime() {
 
 void Shadow::ShutdownRuntime() {
 	ShadowAudio::shutdownAudioEngine();
-	bgfx::shutdown();
 	ed::DestroyEditor(g_Context);
-	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
+	bgfx::shutdown();
 	glfwTerminate();
 
-	printf("Goodbye from Shadow Engine\n");
+	print("Goodbye from Shadow Engine");
 }

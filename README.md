@@ -12,6 +12,7 @@ Add to vscode settings for syntax highlighting on shaders
 - EVERYTHING
 - Meson + Ninja Build System??
 - Hot Reloading with jet-live
+- I have no idea why the ImGui Implementation is leaking memory since the shaders are being destroyed at the programs end of life
 
 # Attributions
 
