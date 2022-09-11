@@ -11,12 +11,12 @@
 #endif
 
 void callme() {
-	warn("I HAVE BEEN CALLED");
+	WARN("I HAVE BEEN CALLED");
 }
 
 int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 
-	print("Starting to load UserCode");
+	PRINT("Starting to load UserCode");
 
 #ifdef _WIN32
 	// https://docs.microsoft.com/en-us/windows/win32/dlls/using-run-time-dynamic-linking
@@ -28,7 +28,7 @@ int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 	std::ifstream libFile(libraryFile);
 	if (!libFile) {
 		// UserCode doesn't exist, throw warning
-		warn("UserCode Library doesn't exist! Shadow will continue without it");
+		WARN("UserCode Library doesn't exist! Shadow will continue without it");
 		libFile.close();
 		return USER_CODE_FAILURE;
 	}
@@ -40,7 +40,7 @@ int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 	void* handle = dlopen(libraryFile.c_str(), RTLD_LAZY);
 
 	if (!handle) {
-		errout("Failed to get handle on UserCode library");
+		ERROUT("Failed to get handle on UserCode library");
 		std::cerr << dlerror() << std::endl;
 		return USER_CODE_FAILURE;
 	}
@@ -52,7 +52,7 @@ int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 	*(void**)(&usrcodefunc_start) = dlsym(handle, "passthroughStart");
 	if (!usrcodefunc_start) {
 		// Symbol doesn't exist
-		errout("Symbol doesn't exist in UserCode");
+		ERROUT("Symbol doesn't exist in UserCode");
 		std::cerr << dlerror() << std::endl;
 		dlclose(handle);
 		return USER_CODE_FAILURE;

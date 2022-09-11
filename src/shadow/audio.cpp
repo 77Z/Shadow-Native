@@ -23,7 +23,7 @@ namespace ShadowAudio {
 			return -1;
 		}
 
-		print("AUDIO ENGINE READY");
+		PRINT("AUDIO ENGINE READY");
 
 		ma_engine_play_sound(&audioEngine, "./sound.wav", nullptr);
 
@@ -67,6 +67,6 @@ namespace ShadowAudio {
 
 	void shutdownAudioEngine() {
 		ma_engine_uninit(&audioEngine);
-		print("AUDIO ENGINE SHUTDOWN");
+		PRINT("AUDIO ENGINE SHUTDOWN");
 	}
 }

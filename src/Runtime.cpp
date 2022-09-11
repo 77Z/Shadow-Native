@@ -115,8 +115,8 @@ static const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath
 		return mem;
 	}
 
-	errout("Failed to load");
-	errout(filePath);
+	ERROUT("Failed to load");
+	ERROUT(filePath);
 	return NULL;
 }
 
@@ -158,17 +158,18 @@ int Shadow::StartRuntime() {
 
 	InitBXFilesystem();
 
-	//int width = 1280;
-	//int height = 720;
+	int width = 1280;
+	int height = 720;
 	
-	int width = 1920;
-	int height = 1080;
+	//int width = 1920;
+	//int height = 1080;
 
 	glfwSetErrorCallback(glfw_errorCallback);
 	if (!glfwInit())
 		return 1;
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	GLFWwindow *window = glfwCreateWindow(width, height, "Shadow Engine", glfwGetPrimaryMonitor(), nullptr);
+	//GLFWwindow *window = glfwCreateWindow(width, height, "Shadow Engine", glfwGetPrimaryMonitor(), nullptr);
+	GLFWwindow *window = glfwCreateWindow(width, height, "Shadow Engine", nullptr, nullptr);
 
 	if (!window)
 		return 1;
@@ -380,5 +381,5 @@ void Shadow::ShutdownRuntime() {
 	bgfx::shutdown();
 	glfwTerminate();
 
-	print("Goodbye from Shadow Engine");
+	PRINT("Goodbye from Shadow Engine");
 }
