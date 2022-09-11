@@ -115,8 +115,7 @@ static const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath
 		return mem;
 	}
 
-	ERROUT("Failed to load");
-	ERROUT(filePath);
+	ERROUT("Failed to load %s", filePath);
 	return NULL;
 }
 

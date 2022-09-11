@@ -19,7 +19,7 @@ leveldb::DB* Shadow::fs::openDB(std::string dbname) {
 	leveldb::Status s = leveldb::DB::Open(options, dbname, &db);
 
 	if (!s.ok())
-		ERROUT(s.ToString());
+		ERROUT(s.ToString().c_str());
 
 	return db;
 }

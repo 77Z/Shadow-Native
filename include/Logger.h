@@ -8,41 +8,62 @@
 #include <iostream>
 #include <string>
 #include <termcolor.hpp>
+#include <inttypes.h>
+#include <cstdarg>
+#include <cstdio>
 
-#define PRINT(msg) Shadow::Logger::internalPrint(__FILE__, msg)
-#define WARN(msg) Shadow::Logger::internalWarn(__FILE__, msg)
-#define ERROUT(msg) Shadow::Logger::internalPrintError(__FILE__, msg)
+#define PRINT(fmt, ...) Shadow::Logger::debugPrintf(__FILE__, fmt, ##__VA_ARGS__)
+#define WARN(fmt, ...) Shadow::Logger::debugWarnf(__FILE__, fmt, ##__VA_ARGS__)
+#define ERROUT(fmt, ...) Shadow::Logger::debugErrorf(__FILE__, fmt, ##__VA_ARGS__)
 
-//TODO: add string formatting like stdio.h printf
-//EX: (std::string caller, std::string fmt, ...)
-//internalPrint("caller", "Cool number: %i", number);
 namespace Shadow {
 	namespace Logger {
-		inline void internalPrint(std::string caller, std::string message) {
+		
+		inline void debugPrintfVargs(const char* fmt, va_list argList) {
+			char temp[8192];
+			char* out = temp;
+			int32_t len = vsnprintf(out, sizeof(temp), fmt, argList);
+			if ((int32_t)sizeof(temp) < len) {
+				out = (char*)alloca(len + 1);
+				len = vsnprintf(out, len, fmt, argList);
+			}
+			out[len] = '\0';
+			std::cout << out << std::endl;
+		}
+
+		inline void debugPrintf(std::string caller, const char* fmt, ...) {
 #ifdef SHADOW_DEBUG_BUILD
-			std::cout << "[" << caller << "] " << message << std::endl;
+			std::cout << "[" << caller << "] ";
+			va_list argList;
+			va_start(argList, fmt);
+			debugPrintfVargs(fmt, argList);
+			va_end(argList);
 #endif
 		}
 
-		inline void internalWarn(std::string caller, std::string message) {
+		inline void debugWarnf(std::string caller, const char* fmt, ...) {
 #ifdef SHADOW_DEBUG_BUILD
 			std::cout <<
 				termcolor::yellow		<<
 				"WARN: {" << caller << "} "	<<
-				termcolor::reset		<<
-				message				<<
-				std::endl;
+				termcolor::reset;
+			va_list argList;
+			va_start(argList, fmt);
+			debugPrintfVargs(fmt, argList);
+			va_end(argList);
 #endif
 		}
 
-		inline void internalPrintError(std::string caller, std::string errmsg) {
+		inline void debugErrorf(std::string caller, const char* fmt, ...) {
 #ifdef SHADOW_DEBUG_BUILD
 			std::cerr <<
 				termcolor::red			<<
 				"ERROR: {" << caller << "} "	<<
-				termcolor::reset		<<
-				errmsg				<<
-				std::endl;
+				termcolor::reset;
+			va_list argList;
+			va_start(argList, fmt);
+			debugPrintfVargs(fmt, argList);
+			va_end(argList);
 #endif
 		}
 	}
