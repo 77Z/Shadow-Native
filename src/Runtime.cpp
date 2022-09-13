@@ -104,55 +104,6 @@ static const uint16_t cubeTriList[] =
     6, 3, 7,
 };
 
-static const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath) {
-	if (bx::open(reader, filePath) )
-	{
-		uint32_t size = (uint32_t)bx::getSize(reader);
-		const bgfx::Memory* mem = bgfx::alloc(size+1);
-		bx::read(reader, mem->data, size, bx::ErrorAssert{});
-		bx::close(reader);
-		mem->data[mem->size-1] = '\0';
-		return mem;
-	}
-
-	ERROUT("Failed to load %s", filePath);
-	return NULL;
-}
-
-static bgfx::ShaderHandle loadShader(bx::FileReaderI* reader, const char* name) {
-	char filePath[512];
-
-	const char* shaderPath = "../res/shaders/test/";
-
-	bx::strCopy(filePath, BX_COUNTOF(filePath), shaderPath);
-	bx::strCat(filePath, BX_COUNTOF(filePath), name);
-	bx::strCat(filePath, BX_COUNTOF(filePath), ".bin");
-
-	bgfx::ShaderHandle handle = bgfx::createShader(loadMem(reader, filePath) );
-	bgfx::setName(handle, name);
-
-	return handle;
-}
-
-static bgfx::ShaderHandle loadShader(const char* name) {
-	return loadShader(getFileReader(), name);
-}
-
-// Nice function to load both shaders and retrun a program automatically
-bgfx::ProgramHandle loadProgram(bx::FileReaderI* reader, const char* vsName, const char* fsName) {
-	bgfx::ShaderHandle vsh = loadShader(reader, vsName);
-	bgfx::ShaderHandle fsh = BGFX_INVALID_HANDLE;
-	if (nullptr != fsName)
-		fsh = loadShader(reader, fsName);
-
-	return bgfx::createProgram(vsh, fsh, true);
-}
-
-bgfx::ProgramHandle loadProgram(const char* vsName, const char* fsName) {
-	return loadProgram(getFileReader(), vsName, fsName);
-}
-
-
 int Shadow::StartRuntime() {
 
 	InitBXFilesystem();
@@ -270,50 +221,46 @@ int Shadow::StartRuntime() {
 
 		ImGui::ShowDemoWindow();
 
-		if (ImGui::GetIO().MouseClicked[1]) {
-			ImGui::OpenPopup("test");
-		}
-
 		ImGui::Begin("Shadow Engine");
 
-		ImGui::Checkbox("Show Stats (F3)", &s_showStats);
-		ImGui::Checkbox("Show warning text (F1)", &s_showWarningText);
+			ImGui::Checkbox("Show Stats (F3)", &s_showStats);
+			ImGui::Checkbox("Show warning text (F1)", &s_showWarningText);
 
-		ImGui::Separator();
-		ImGui::Text("Audio");
-		if (ImGui::Button("Play Demo Audio"))
-			ShadowAudio::playTestAudio();
+			ImGui::Separator();
+			ImGui::Text("Audio");
+			if (ImGui::Button("Play Demo Audio"))
+				ShadowAudio::playTestAudio();
 
-		ImGui::Separator();
-		ImGui::Text("UserCode");
-		if (ImGui::Button("Reload UserCode Library"))
-			Shadow::UserCode::loadUserCode("./libusercode.so");
+			ImGui::Separator();
+			ImGui::Text("UserCode");
+			if (ImGui::Button("Reload UserCode Library"))
+				Shadow::UserCode::loadUserCode("./libusercode.so");
 
 		ImGui::End();
 
 		ImGui::Begin("Shader Editor");
 
-		ed::SetCurrentEditor(g_Context);
-		ed::Begin("My Editor");
+			ed::SetCurrentEditor(g_Context);
+			ed::Begin("My Editor");
 
-		int uniqueId = 1;
+				int uniqueId = 1;
 
-		ed::BeginNode(uniqueId++);
-			ImGui::Text("This is node %i", uniqueId);
-			ed::BeginPin(uniqueId++, ed::PinKind::Input);
-				ImGui::Text("In");
-			ed::EndPin();
-			ImGui::SameLine();
-			ed::BeginPin(uniqueId++, ed::PinKind::Output);
-				ImGui::Text("Out");
-			ed::EndPin();
-		ed::EndNode();
+				ed::BeginNode(uniqueId++);
+					ImGui::Text("This is node %i", uniqueId);
+					ed::BeginPin(uniqueId++, ed::PinKind::Input);
+						ImGui::Text("In");
+					ed::EndPin();
+					ImGui::SameLine();
+					ed::BeginPin(uniqueId++, ed::PinKind::Output);
+						ImGui::Text("Out");
+					ed::EndPin();
+				ed::EndNode();
 
-		ed::BeginNode(uniqueId++);
-			ImGui::Text("Blah %i", uniqueId);
-		ed::EndNode();
+				ed::BeginNode(uniqueId++);
+					ImGui::Text("Blah %i", uniqueId);
+				ed::EndNode();
 
-		ed::End();
+			ed::End();
 		ImGui::End();
 
 		ImGui::Render();
