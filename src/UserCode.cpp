@@ -1,7 +1,6 @@
 #include <string>
 #include "Logger.h"
 #include "UserCode.h"
-#include <iostream>
 #include <fstream>
 
 #ifdef _WIN32
@@ -40,8 +39,7 @@ int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 	void* handle = dlopen(libraryFile.c_str(), RTLD_LAZY);
 
 	if (!handle) {
-		ERROUT("Failed to get handle on UserCode library");
-		std::cerr << dlerror() << std::endl;
+		ERROUT("Failed to get handle on UserCode library ... %s", dlerror());
 		return USER_CODE_FAILURE;
 	}
 	/*
@@ -52,14 +50,18 @@ int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 	*(void**)(&usrcodefunc_start) = dlsym(handle, "passthroughStart");
 	if (!usrcodefunc_start) {
 		// Symbol doesn't exist
-		ERROUT("Symbol doesn't exist in UserCode");
-		std::cerr << dlerror() << std::endl;
+		ERROUT("Symbol doesn't exist in UserCode ... %s", dlerror());
 		dlclose(handle);
 		return USER_CODE_FAILURE;
 	}
 
 
 	*(void**)(&register_function) = dlsym(handle, "register_function");
+	if (!register_function) {
+		ERROUT("Symbol for function registration and callbacks doesn't exist in UserCode library! ... %s", dlerror());
+		dlclose(handle);
+		return USER_CODE_FAILURE;
+	}
 	register_function(callme); // Allow usage of this function
 
 	usrcodefunc_start();

@@ -38,6 +38,7 @@
 // testing whether a standard stream refers to the terminal.
 #if defined(TERMCOLOR_TARGET_POSIX)
 #   include <unistd.h>
+#   include <cinttypes>
 #elif defined(TERMCOLOR_TARGET_WINDOWS)
 #   include <io.h>
 #   include <windows.h>

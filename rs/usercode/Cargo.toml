@@ -1,0 +1,11 @@
+[package]
+name = "usercode"
+version = "0.1.0"
+edition = "2021"
+authors = ["Vince R <vince@77z.dev"]
+
+[lib]
+crate-type = ['dylib']
+
+[dependencies]
+lazy_static = "1.4.0"

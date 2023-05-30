@@ -1,4 +1,5 @@
-CC = g++
+#CC = g++
+CC = clang++
 
 UNAME_S = $(shell uname -s)
 BIN = bin
@@ -23,6 +24,7 @@ INCFLAGS += -Ilib/termcolor
 INCFLAGS += -Ilib/snappy/include
 INCFLAGS += -Ilib/leveldb/include
 INCFLAGS += -Ilib/lz4/include
+INCFLAGS += -Ilib/steamaudio/include
 INCFLAGS += -I$(IMGUI_DIR)
 INCFLAGS += -I$(IMGUI_DIR)/backends
 INCFLAGS += -I$(IMGUI_NODE_EDITOR_DIR)
@@ -72,7 +74,7 @@ BGFX_CONFIG = Debug
 CCFLAGS += -DBX_CONFIG_DEBUG
 
 ifeq ($(BGFX_CONFIG), Debug)
-	CCFLAGS += -DSHADOW_DEBUG_BUILD
+	CCFLAGS += -DSHADOW_DEBUG_BUILD -g
 	LDFLAGS += -Wl,--export-dynamic
 endif
 
@@ -83,6 +85,12 @@ endif
 #EMBEDDED_FILES = $(wildcard embeddedResources/*)
 #OBJ		 = $(EMBEDDED_FILES:*=.o)
 
+# Tell binary to look for libs in the same dir
+# Doesn't work yet but it really doesn't matter
+# right now since for resources, shadow needs
+# to be run from the same dir
+LDFLAGS += -Wl,-rpath,./
+
 LDFLAGS += -lstdc++ -lpthread -lm -ldl
 LDFLAGS += $(BGFX_BIN)/libbgfx$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbimg$(BGFX_CONFIG).a
@@ -91,6 +99,8 @@ LDFLAGS += lib/glfw/src/libglfw3.a
 LDFLAGS += lib/leveldb/libleveldb.a
 LDFLAGS += lib/snappy/libsnappy.a
 LDFLAGS += lib/lz4/liblz4.a
+LDFLAGS += -Llib/steamaudio/lib/linux-x64
+LDFLAGS += -lphonon
 #LDFLAGS += $(EMBEDDED_FILES)
 
 ifeq ($(BGFX_CONFIG), Release)

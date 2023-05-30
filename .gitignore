@@ -1,6 +1,13 @@
 bin
 *.o
+*.so
 .cache
 compile_commands.json
 imgui.ini
 *.bin
+
+debug/
+target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
