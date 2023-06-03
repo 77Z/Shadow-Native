@@ -1,5 +1,5 @@
-#CC = g++
-CC = clang++
+CC = g++
+#CC = clang++
 
 UNAME_S = $(shell uname -s)
 BIN = bin

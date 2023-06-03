@@ -23,7 +23,7 @@
 #include <imgui_node_editor.h>
 #include <imgui_internal.h>
 
-#include <phonon.h>
+//#include <phonon.h>
 #include <algorithm>
 #include <fstream>
 #include <iterator>
@@ -156,7 +156,7 @@ int Shadow::StartRuntime() {
 	ShadowAudio::initAudioEngine();
 
 
-
+/*
 
 	IPLContextSettings contextSettings{};
 	contextSettings.version = STEAMAUDIO_VERSION;
@@ -220,7 +220,7 @@ int Shadow::StartRuntime() {
 
 	save_output_audio("outputaudio.raw", outputaudio);
 
-
+*/
 
 
 
