@@ -6,8 +6,21 @@ compile_commands.json
 imgui.ini
 *.bin
 
+# Rust
 debug/
 target/
 Cargo.lock
 **/*.rs.bk
 *.pdb
+
+# Android
+*.iml
+.gradle
+local.properties
+.DS_Store
+./android/build
+./android/captures
+.externalNativeBuild
+.cxx
+local.properties
+.idea/
