@@ -9,7 +9,7 @@
 
 namespace Shadow {
 
-/*	struct Camera {
+	struct Camera {
 		Camera();
 		void init(const bx::Vec3& _center, float _distance, float _near, float _far);
 		void mtxLookAt(float* _outViewMtx);
@@ -20,17 +20,15 @@ namespace Shadow {
 		void update(float _dt);
 
 		struct Interp3f {
-			bx::Vec3 curr = bx::init::None;
-			bx::Vec3 dest = bx::init::None;
+			bx::Vec3 curr = bx::InitNone;
+			bx::Vec3 dest = bx::InitNone;
 		};
 
 		Interp3f m_target;
 		Interp3f m_pos;
 		float m_orbit[2];
 		float m_near, m_far;
-	};*/
-
-	struct Camera {};
+	};
 
 } // Shadow
 
