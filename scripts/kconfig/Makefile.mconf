@@ -1,0 +1,27 @@
+CC = gcc
+
+SOURCES = mconf.c zconf.tab.c lxdialog/checklist.c lxdialog/util.c lxdialog/inputbox.c lxdialog/textbox.c lxdialog/yesno.c lxdialog/menubox.c
+
+OBJ = ${SOURCES:.c=.o}
+
+CFLAGS = $(shell pkg-config --cflags ncurses) \
+	 $(shell ./lxdialog/check-lxdialog.sh -ccflags) \
+	 -DKBUILD_NO_NLS \
+	 -DLOCALE \
+	 -O2
+
+LDFLAGS = $(shell ./lxdialog/check-lxdialog.sh -ldflags)
+
+all: mconf
+
+mconf: ${OBJ}
+	${CC} -o $@ $^ $(LDFLAGS)
+
+%.o: %.c
+	${CC} ${CFLAGS} -c $< -o $@
+
+.PHONY: clean
+
+clean:
+	rm -f *.o ./lxdialog/*.o
+	rm -f mconf

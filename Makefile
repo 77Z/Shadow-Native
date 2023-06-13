@@ -116,7 +116,7 @@ SHADERS		= $(shell find $(SHADERS_PATH)/* -maxdepth 1 | grep -E ".*/(vs|fs).*.sc
 SHADERS_OUT	= $(SHADERS:.sc=.$(SHADER_TARGET).bin)
 SHADERC		= lib/bgfx/.build/$(BGFX_DEPS_TARGET)/bin/shaderc$(BGFX_CONFIG)
 
-.PHONY: all clean runtimeres
+.PHONY: all clean runtimeres config conftool confgen
 
 all: dirs libs shaders build
 
@@ -127,10 +127,20 @@ libs:
 	cd lib/glfw && cmake . && make -j $(PROCESSER_COUNT)
 
 dirs:
-	mkdir -p ./$(BIN)
+	mkdir -p ./$(BIN) ./include/generated ./include/config
 
 runtimeres:
 	cp res/runtimeres/* bin
+
+config:
+	$(MAKE) -C ./scripts/kconfig -f Makefile.mconf mconf
+	scripts/kconfig/mconf Kconfig
+
+conftool:
+	$(MAKE) -C ./scripts/kconfig -f Makefile.conf conf
+
+confgen: conftool
+	scripts/kconfig/conf --silentoldconfig Kconfig
 
 #embeddedResources: $(EMBEDDED_FILES)
 #	ld -r -b binary -o $<.o $<
@@ -150,7 +160,7 @@ shaders: $(SHADERS_OUT)
 run: build
 	$(shell cd $(BIN); ./game)
 
-build: dirs runtimeres shaders $(OBJ)
+build: dirs confgen runtimeres shaders $(OBJ)
 	$(CC) -o $(BIN)/game $(filter %.o,$^) $(LDFLAGS)
 
 %.o: %.cpp
@@ -163,3 +173,5 @@ clean:
 	find res/shaders -name "*.bin" -delete
 	rm -rf $(BIN) $(OBJ)
 	rm -rf lib/glfw/CMakeCache.txt
+	$(MAKE) -C ./scripts/kconfig -f Makefile.mconf clean
+	$(MAKE) -C ./scripts/kconfig -f Makefile.conf clean

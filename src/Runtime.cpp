@@ -4,10 +4,13 @@
 #include "Runtime.h"
 #include "UserCode.h"
 #include "Logger.h"
+#include <boost/algorithm/string/case_conv.hpp>
 #include <bx/math.h>
 #include <bx/string.h>
 #include <bx/file.h>
 #include <Util.h>
+#include <boost/algorithm/string.hpp>
+#include <generated/autoconf.h>
 
 #include "shadow_fs.h"
 #include <leveldb/db.h>
@@ -146,7 +149,7 @@ int Shadow::StartRuntime() {
 		return 1;
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	//GLFWwindow *window = glfwCreateWindow(width, height, "Shadow Engine", glfwGetPrimaryMonitor(), nullptr);
-	GLFWwindow *window = glfwCreateWindow(width, height, "Shadow Engine", nullptr, nullptr);
+	GLFWwindow *window = glfwCreateWindow(width, height, CONFIG_PRETTY_NAME, nullptr, nullptr);
 
 	if (!window)
 		return 1;
@@ -370,7 +373,7 @@ int Shadow::StartRuntime() {
 		bgfx::dbgTextClear();
 
 		if (s_showWarningText) {
-			bgfx::dbgTextPrintf(3, 2, 0x01, "DEBUG BUILD OF SHADOW ENGINE");
+			bgfx::dbgTextPrintf(3, 2, 0x01, "DEBUG BUILD OF %s", boost::to_upper_copy<std::string>(CONFIG_PRETTY_NAME).c_str());
 			bgfx::dbgTextPrintf(3, 3, 0x01, "NOT READY FOR PRODUCTION");
 		}
 

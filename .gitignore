@@ -5,6 +5,10 @@ bin
 compile_commands.json
 imgui.ini
 *.bin
+.config
+.config.old
+include/config
+include/generated
 
 debug/
 target/
