@@ -15,14 +15,16 @@ void callme() {
 
 int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 
+#ifdef CONFIG_DYNAMIC_USERCODE_LIBRARY
+
 	PRINT("Starting to load UserCode");
 
-#ifdef _WIN32
+#	ifdef _WIN32
 	// https://docs.microsoft.com/en-us/windows/win32/dlls/using-run-time-dynamic-linking
 
 	//TODO: I got no clue if this works, yet to be tested
 	HINSTANCE hinstlib = LoadLibrary(TEXT(libraryFile));
-#else
+#	else
 
 	std::ifstream libFile(libraryFile);
 	if (!libFile) {
@@ -68,7 +70,10 @@ int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 
 	dlclose(handle);
 
-#endif
+#	endif
 
+#else
+	WARN("UserCode disabled in config");
+#endif
 	return USER_CODE_SUCCESS;
 }

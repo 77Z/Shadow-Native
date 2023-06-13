@@ -41,6 +41,24 @@ config OUTPUT_BINARY_NAME
 	  The file name of the binary produced by the build
 	  system
 
+config DYNAMIC_USERCODE_LIBRARY
+	bool "Enable Dynamic UserCode Library"
+	default true
+	help
+	  Enables the implementation of loading UserCode
+	  shared libraries on the fly while the engine is
+	  running. Most will want this disabled for production
+	  opting instead to compile their UserCode library
+	  to an archive and linking it statically to the
+	  engine
+
+config DYNAMIC_USERCODE_LIBRARY_LOCATION
+	string "Dynamic UserCode Library Location"
+	default "./usercode/libusercode.so"
+	depends on DYNAMIC_USERCODE_LIBRARY
+	help
+	  Default location of the UserCode library
+
 choice
 	prompt "Platform"
 	default SHADOW_PLATFORM_LINUX_64

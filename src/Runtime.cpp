@@ -272,7 +272,7 @@ int Shadow::StartRuntime() {
 
 	//Mesh* m_mesh = meshLoad("desk.bin");
 
-	Shadow::UserCode::loadUserCode("./usercode/libusercode.so");
+	Shadow::UserCode::loadUserCode(CONFIG_DYNAMIC_USERCODE_LIBRARY_LOCATION);
 
 	// User Settings
 	leveldb::DB* userSettingsDB = Shadow::fs::openDB("./us");
@@ -334,7 +334,7 @@ int Shadow::StartRuntime() {
 			ImGui::Separator();
 			ImGui::Text("UserCode");
 			if (ImGui::Button("Reload UserCode Library"))
-				Shadow::UserCode::loadUserCode("./usercode/libusercode.so");
+				Shadow::UserCode::loadUserCode(CONFIG_DYNAMIC_USERCODE_LIBRARY_LOCATION);
 
 		ImGui::End();
 
