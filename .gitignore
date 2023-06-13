@@ -10,8 +10,21 @@ imgui.ini
 include/config
 include/generated
 
+# Rust
 debug/
 target/
 Cargo.lock
 **/*.rs.bk
 *.pdb
+
+# Android
+*.iml
+.gradle
+local.properties
+.DS_Store
+./android/build
+./android/captures
+.externalNativeBuild
+.cxx
+local.properties
+.idea/

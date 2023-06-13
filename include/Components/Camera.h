@@ -20,8 +20,8 @@ namespace Shadow {
 		void update(float _dt);
 
 		struct Interp3f {
-			bx::Vec3 curr = bx::init::None;
-			bx::Vec3 dest = bx::init::None;
+			bx::Vec3 curr = bx::InitNone;
+			bx::Vec3 dest = bx::InitNone;
 		};
 
 		Interp3f m_target;

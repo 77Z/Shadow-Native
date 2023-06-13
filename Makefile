@@ -1,5 +1,5 @@
-#CC = g++
-CC = clang++
+CC = g++
+#CC = clang++
 
 UNAME_S = $(shell uname -s)
 BIN = bin
@@ -24,7 +24,7 @@ INCFLAGS += -Ilib/termcolor
 INCFLAGS += -Ilib/snappy/include
 INCFLAGS += -Ilib/leveldb/include
 INCFLAGS += -Ilib/lz4/include
-INCFLAGS += -Ilib/steamaudio/include
+#INCFLAGS += -Ilib/steamaudio/include
 INCFLAGS += -I$(IMGUI_DIR)
 INCFLAGS += -I$(IMGUI_DIR)/backends
 INCFLAGS += -I$(IMGUI_NODE_EDITOR_DIR)
@@ -99,8 +99,8 @@ LDFLAGS += lib/glfw/src/libglfw3.a
 LDFLAGS += lib/leveldb/libleveldb.a
 LDFLAGS += lib/snappy/libsnappy.a
 LDFLAGS += lib/lz4/liblz4.a
-LDFLAGS += -Llib/steamaudio/lib/linux-x64
-LDFLAGS += -lphonon
+#LDFLAGS += -Llib/steamaudio/lib/linux-x64
+#LDFLAGS += -lphonon
 #LDFLAGS += $(EMBEDDED_FILES)
 
 ifeq ($(BGFX_CONFIG), Release)
