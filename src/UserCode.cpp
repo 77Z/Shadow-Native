@@ -2,6 +2,7 @@
 #include "Logger.h"
 #include "UserCode.h"
 #include <fstream>
+#include <generated/autoconf.h>
 
 #ifdef _WIN32
 #	include <Windows.h>
