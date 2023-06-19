@@ -107,7 +107,7 @@ static bgfx::ShaderHandle loadShader(const char* name) {
 	return loadShader(getFileReader(), name);
 }
 
-// Nice function to load both shaders and retrun a program automatically
+// Nice function to load both shaders and return a program automatically
 bgfx::ProgramHandle loadProgram(bx::FileReaderI* reader, const char* vsName, const char* fsName) {
 	bgfx::ShaderHandle vsh = loadShader(reader, vsName);
 	bgfx::ShaderHandle fsh = BGFX_INVALID_HANDLE;

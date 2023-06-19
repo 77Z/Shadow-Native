@@ -1,4 +1,5 @@
 #include "Components/Camera.h"
+#include "bx/platform.h"
 #include "types.h"
 #include "shadow/audio.h"
 #include "Runtime.h"
@@ -59,6 +60,7 @@ static ed::EditorContext* g_Context = nullptr;
 
 static bool s_showStats = false;
 static bool s_showWarningText = true;
+static bool s_cameraFly = true;
 
 static void glfw_errorCallback(int error, const char *description) {
 	fprintf(stderr, "GLFW error %d: %s\n", error, description);
@@ -321,10 +323,11 @@ int Shadow::StartRuntime() {
 
 		ImGui::ShowDemoWindow();
 
-		ImGui::Begin("Shadow Engine");
+		ImGui::Begin(CONFIG_PRETTY_NAME);
 
 			ImGui::Checkbox("Show Stats (F3)", &s_showStats);
 			ImGui::Checkbox("Show warning text (F1)", &s_showWarningText);
+			ImGui::Checkbox("Camera Fly", &s_cameraFly);
 
 			ImGui::Separator();
 			ImGui::Text("Audio");
@@ -375,6 +378,18 @@ int Shadow::StartRuntime() {
 		if (s_showWarningText) {
 			bgfx::dbgTextPrintf(3, 2, 0x01, "DEBUG BUILD OF %s", boost::to_upper_copy<std::string>(CONFIG_PRETTY_NAME).c_str());
 			bgfx::dbgTextPrintf(3, 3, 0x01, "NOT READY FOR PRODUCTION");
+
+			#ifdef CONFIG_VINCES_MORE_VERBOSE_DEBUG_TEXT
+			
+				bgfx::dbgTextPrintf(3, 5, 0x01,
+				BX_PLATFORM_NAME
+				" " BX_CPU_NAME
+				" " BX_ARCH_NAME
+				" " BX_PLATFORM_NAME
+				" " BX_COMPILER_NAME
+				);
+
+			#endif
 		}
 
 #ifdef SHADOW_DEBUG_BUILD

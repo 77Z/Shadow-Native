@@ -121,8 +121,8 @@ SHADERC		= lib/bgfx/.build/$(BGFX_DEPS_TARGET)/bin/shaderc$(BGFX_CONFIG)
 all: dirs libs shaders build
 
 #	cd lib/bx && make -j$(PROCESSER_COUNT) $(BGFX_TARGET)
+#	cd lib/bimg && make -j$(PROCESSER_COUNT) $(BGFX_TARGET)
 libs:
-	cd lib/bimg && make -j$(PROCESSER_COUNT) $(BGFX_TARGET)
 	cd lib/bgfx && make -j$(PROCESSER_COUNT) $(BGFX_TARGET)
 	cd lib/glfw && cmake . && make -j $(PROCESSER_COUNT)
 
