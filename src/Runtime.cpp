@@ -1,5 +1,6 @@
 #include "Components/Camera.h"
 #include "bx/platform.h"
+#include "imgui/imgui_utils.h"
 #include "types.h"
 #include "shadow/audio.h"
 #include "Runtime.h"
@@ -328,6 +329,7 @@ int Shadow::StartRuntime() {
 			ImGui::Checkbox("Show Stats (F3)", &s_showStats);
 			ImGui::Checkbox("Show warning text (F1)", &s_showWarningText);
 			ImGui::Checkbox("Camera Fly", &s_cameraFly);
+			ImGui::Text("ImGui Wants Mouse: %s", ImGui::MouseOverArea() ? "true" : "false");
 
 			ImGui::Separator();
 			ImGui::Text("Audio");
