@@ -1,0 +1,39 @@
+Runtime.cpp : 346
+ImGui::Begin("Shader Editor");
+
+			ed::SetCurrentEditor(g_Context);
+			ed::Begin("My Editor");
+
+				int uniqueId = 1;
+
+				ed::BeginNode(uniqueId++);
+					ImGui::Text("This is node %i", uniqueId);
+					ed::BeginPin(uniqueId++, ed::PinKind::Input);
+						ImGui::Text("In");
+					ed::EndPin();
+					ImGui::SameLine();
+					ed::BeginPin(uniqueId++, ed::PinKind::Output);
+						ImGui::Text("Out");
+					ed::EndPin();
+				ed::EndNode();
+
+				ed::BeginNode(uniqueId++);
+					ImGui::Text("Blah %i", uniqueId);
+				ed::EndNode();
+
+			ed::End();
+		ImGui::End();
+
+Runtime.cpp : 270
+	g_Context = ed::CreateEditor();
+
+Runtime.cpp : 28
+#include <imgui_node_editor.h>
+
+Runtime.cpp : 57
+namespace ed = ax::NodeEditor;
+
+static ed::EditorContext* g_Context = nullptr;
+
+Runtime.cpp : 410
+	ed::DestroyEditor(g_Context);

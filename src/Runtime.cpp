@@ -1,4 +1,6 @@
 #include "Components/Camera.h"
+#include "KeyboardInput.hpp"
+#include "bgfx/defines.h"
 #include "bx/platform.h"
 #include "imgui/imgui_utils.h"
 #include "types.h"
@@ -25,7 +27,6 @@
 #include <bx/bx.h>
 #include <GLFW/glfw3.h>
 #include <cstdio>
-#include <imgui_node_editor.h>
 #include <imgui_internal.h>
 
 //#include <phonon.h>
@@ -55,13 +56,19 @@
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif*/
 
-namespace ed = ax::NodeEditor;
-
-static ed::EditorContext* g_Context = nullptr;
-
 static bool s_showStats = false;
 static bool s_showWarningText = true;
 static bool s_cameraFly = true;
+
+float camX = 0.0f;
+float camY = 0.0f;
+float camZ = 0.0f;
+static bool key_forwards_pressed = false;
+static bool key_backwards_pressed = false;
+static bool key_left_pressed = false;
+static bool key_right_pressed = false;
+static bool key_up_pressed = false;
+static bool key_down_pressed = false;
 
 static void glfw_errorCallback(int error, const char *description) {
 	fprintf(stderr, "GLFW error %d: %s\n", error, description);
@@ -73,6 +80,24 @@ static void glfw_keyCallback(GLFWwindow *window, int key, int scancode, int acti
 
 	if (key == GLFW_KEY_F3 && action == GLFW_PRESS)
 		s_showStats = !s_showStats;
+
+	if (key == GLFW_KEY_W && action == GLFW_PRESS) key_forwards_pressed = true;
+	if (key == GLFW_KEY_W && action == GLFW_RELEASE) key_forwards_pressed = false;
+
+	if (key == GLFW_KEY_S && action == GLFW_PRESS) key_backwards_pressed = true;
+	if (key == GLFW_KEY_S && action == GLFW_RELEASE) key_backwards_pressed = false;
+
+	if (key == GLFW_KEY_A && action == GLFW_PRESS) key_left_pressed = true;
+	if (key == GLFW_KEY_A && action == GLFW_RELEASE) key_left_pressed = false;
+
+	if (key == GLFW_KEY_D && action == GLFW_PRESS) key_right_pressed = true;
+	if (key == GLFW_KEY_D && action == GLFW_RELEASE) key_right_pressed = false;
+
+	if (key == GLFW_KEY_E && action == GLFW_PRESS) key_up_pressed = true;
+	if (key == GLFW_KEY_E && action == GLFW_RELEASE) key_up_pressed = false;
+
+	if (key == GLFW_KEY_Q && action == GLFW_PRESS) key_down_pressed = true;
+	if (key == GLFW_KEY_Q && action == GLFW_RELEASE) key_down_pressed = false;
 }
 
 static const glm::vec2 SIZE = glm::vec2(1280, 720);
@@ -229,9 +254,8 @@ int Shadow::StartRuntime() {
 */
 
 
-
-
 	glfwSetKeyCallback(window, glfw_keyCallback);
+	// glfwSetKeyCallback(window, Shadow::KeyboardInput::glfw_keyCallback);
 
 	bgfx::renderFrame();
 
@@ -255,7 +279,7 @@ int Shadow::StartRuntime() {
 	// ImGui init
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	// io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 //    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
@@ -266,9 +290,7 @@ int Shadow::StartRuntime() {
 
 	ImGui_Implbgfx_Init(255);
 	ImGui_ImplGlfw_InitForVulkan(window, true);
-
-	g_Context = ed::CreateEditor();
-
+	
 	// Init stuffs
 
 	Shadow::Camera camera;
@@ -304,7 +326,7 @@ int Shadow::StartRuntime() {
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
-
+		
 		// Handle Window Resize
 		int oldWidth = width;
 		int oldHeight = height;
@@ -343,31 +365,6 @@ int Shadow::StartRuntime() {
 
 		ImGui::End();
 
-		ImGui::Begin("Shader Editor");
-
-			ed::SetCurrentEditor(g_Context);
-			ed::Begin("My Editor");
-
-				int uniqueId = 1;
-
-				ed::BeginNode(uniqueId++);
-					ImGui::Text("This is node %i", uniqueId);
-					ed::BeginPin(uniqueId++, ed::PinKind::Input);
-						ImGui::Text("In");
-					ed::EndPin();
-					ImGui::SameLine();
-					ed::BeginPin(uniqueId++, ed::PinKind::Output);
-						ImGui::Text("Out");
-					ed::EndPin();
-				ed::EndNode();
-
-				ed::BeginNode(uniqueId++);
-					ImGui::Text("Blah %i", uniqueId);
-				ed::EndNode();
-
-			ed::End();
-		ImGui::End();
-
 		ImGui::Render();
 
 		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
@@ -399,13 +396,20 @@ int Shadow::StartRuntime() {
 		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
 #endif
 
-		const bx::Vec3 at = {0.0f, 0.0f,  0.0f};
-		const bx::Vec3 eye = {0.0f, 0.0f, -10.0f};
+		const bx::Vec3 at = {camX, camY, camZ};
+		const bx::Vec3 eye = {0.0f, 0.0f,  -5.0f};
 		float view[16];
 		bx::mtxLookAt(view, eye, at);
 		float proj[16];
 		bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
 		bgfx::setViewTransform(0, view, proj);
+
+		if (key_backwards_pressed) camZ -= 0.3f;
+		if (key_forwards_pressed) camZ += 0.3f;
+		if (key_left_pressed) camX += 0.3f;
+		if (key_right_pressed) camX -= 0.3f;
+		if (key_up_pressed) camZ += 0.3f;
+		if (key_down_pressed) camZ -= 0.3f;
 
 		float mtx[16];
 		bx::mtxRotateXY(mtx, counter * 0.01f, counter * 0.01f);
@@ -439,7 +443,6 @@ int Shadow::StartRuntime() {
 
 void Shadow::ShutdownRuntime() {
 	ShadowAudio::shutdownAudioEngine();
-	ed::DestroyEditor(g_Context);
 	ImGui::DestroyContext();
 	bgfx::shutdown();
 	glfwTerminate();

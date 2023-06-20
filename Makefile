@@ -1,3 +1,5 @@
+-include .config
+
 CC = g++
 #CC = clang++
 
@@ -8,7 +10,7 @@ BIN = bin
 PROCESSER_COUNT = $(shell nproc)
 
 IMGUI_DIR = lib/imgui
-IMGUI_NODE_EDITOR_DIR = lib/imgui-node-editor
+# IMGUI_NODE_EDITOR_DIR = lib/node-editor
 
 INCFLAGS  = -Iinclude
 INCFLAGS += -Ilib/bgfx/include
@@ -27,7 +29,7 @@ INCFLAGS += -Ilib/lz4/include
 #INCFLAGS += -Ilib/steamaudio/include
 INCFLAGS += -I$(IMGUI_DIR)
 INCFLAGS += -I$(IMGUI_DIR)/backends
-INCFLAGS += -I$(IMGUI_NODE_EDITOR_DIR)
+# INCFLAGS += -I$(IMGUI_NODE_EDITOR_DIR)
 
 CCFLAGS  = -std=c++20
 CCFLAGS += $(INCFLAGS)
@@ -55,7 +57,7 @@ CPP_SOURCES	 = $(wildcard src/*.cpp src/**/*.cpp)
 #COMMON_SOURCES	 = $(wildcard lib/bgfx/examples/common/*.cpp lib/bgfx/examples/common/**/*.cpp)
 #BGFX_3RD_PARTY	 = $(wildcard lib/bgfx/3rdparty/**/*.cpp lib/bgfx/3rdparty/**/**/*.cpp)
 IMGUI_SOURCES	 = $(wildcard $(IMGUI_DIR)/*.cpp)
-IMGUI_NODE_EDITOR_SOURCES = $(wildcard $(IMGUI_NODE_EDITOR_DIR)/*.cpp)
+# IMGUI_NODE_EDITOR_SOURCES = $(wildcard $(IMGUI_NODE_EDITOR_DIR)/*.cpp)
 # Has to use wildcard otherwise errors
 IMGUI_BACKEND_SOURCES = $(wildcard $(IMGUI_DIR)/backends/imgui_impl_glfw.cpp $(IMGUI_DIR)/backends/imgui_impl_vulkan.cpp)
 OBJ		 = $(CPP_SOURCES:.cpp=.o)
@@ -63,7 +65,7 @@ OBJ		 = $(CPP_SOURCES:.cpp=.o)
 #OBJ		+= $(BGFX_3RD_PARTY:.cpp=.o)
 OBJ		+= $(IMGUI_SOURCES:.cpp=.o)
 OBJ		+= $(IMGUI_BACKEND_SOURCES:.cpp=.o)
-OBJ		+= $(IMGUI_NODE_EDITOR_SOURCES:.cpp=.o)
+# OBJ		+= $(IMGUI_NODE_EDITOR_SOURCES:.cpp=.o)
 
 BGFX_BIN = lib/bgfx/.build/$(BGFX_DEPS_TARGET)/bin
 BGFX_CONFIG = Debug
@@ -73,7 +75,12 @@ BGFX_CONFIG = Debug
 # Probably something I don't yet understand.
 CCFLAGS += -DBX_CONFIG_DEBUG
 
-ifeq ($(BGFX_CONFIG), Debug)
+# ifeq ($(BGFX_CONFIG), Debug)
+# 	CCFLAGS += -DSHADOW_DEBUG_BUILD -g
+# 	LDFLAGS += -Wl,--export-dynamic
+# endif
+
+ifeq ($(CONFIG_SHADOW_DEBUG), y)
 	CCFLAGS += -DSHADOW_DEBUG_BUILD -g
 	LDFLAGS += -Wl,--export-dynamic
 endif

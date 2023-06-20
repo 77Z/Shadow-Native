@@ -1,7 +1,3 @@
-//
-// Created by Vince on 6/11/22.
-//
-
 #ifndef SHADOW_NATIVE_CAMERA_H
 #define SHADOW_NATIVE_CAMERA_H
 
