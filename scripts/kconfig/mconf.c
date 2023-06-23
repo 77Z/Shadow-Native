@@ -982,8 +982,12 @@ static int handle_exit(void)
 	case -1:
 		if (!silent)
 			printf(_("\n\n"
-				 "*** End of the configuration.\n"
-				 "*** Execute 'make' to start the build or try 'make help'."
+				 "\033[0;32m"
+				 "*** End of configuration.\n"
+				 "*** Execute 'make confgen' to create the necessary configuration\n"
+				 "*** files and start the build with 'make' (use the -j argument to\n"
+				 "*** speed up build times)"
+				 "\033[0m"
 				 "\n\n"));
 		res = 0;
 		break;

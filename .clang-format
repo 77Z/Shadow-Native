@@ -6,3 +6,4 @@ ColumnLimit: 100
 
 Language: Cpp
 Standard: Cpp11
+BreakBeforeBraces: Attach

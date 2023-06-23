@@ -154,7 +154,8 @@ confgen: conftool
 
 # Shader -> bin
 %.$(SHADER_TARGET).bin: %.sc
-	$(SHADERC)	--type $(shell echo $(notdir $@) | cut -c 1) \
+	@echo [SHADER] $<
+	@$(SHADERC)	--type $(shell echo $(notdir $@) | cut -c 1) \
 			-i lib/bgfx/src \
 			--platform $(SHADER_PLATFORM) \
 			--varyingdef $(dir $@)varying.def.sc \
@@ -167,14 +168,17 @@ shaders: $(SHADERS_OUT)
 run: build
 	$(shell cd $(BIN); ./game)
 
-build: dirs confgen runtimeres shaders $(OBJ)
-	$(CC) -o $(BIN)/game $(filter %.o,$^) $(LDFLAGS)
+build: dirs runtimeres shaders $(OBJ)
+	@echo [LINK ] $(filter %.o,$^)
+	@$(CC) -o $(BIN)/game $(filter %.o,$^) $(LDFLAGS)
 
 %.o: %.cpp
-	$(CC) -o $@ -c $< $(CCFLAGS)
+	@echo [BUILD] $<
+	@$(CC) -o $@ -c $< $(CCFLAGS)
 
 %.o: $(IMGUI_DIR)/%.cpp
-	$(CC) -o $@ -c $< $(CCFLAGS)
+	@echo [BUILD] $<
+	@$(CC) -o $@ -c $< $(CCFLAGS)
 
 clean:
 	find res/shaders -name "*.bin" -delete

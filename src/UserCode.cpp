@@ -1,31 +1,31 @@
-#include <string>
-#include "Logger.h"
 #include "UserCode.h"
+#include "Logger.h"
 #include <fstream>
 #include <generated/autoconf.h>
+#include <string>
 
 #ifdef _WIN32
-#	include <Windows.h>
+#include <Windows.h>
 #else
-#	include <dlfcn.h>
+#include <dlfcn.h>
 #endif
 
-void callme() {
-	WARN("I HAVE BEEN CALLED");
-}
+void callme() { WARN("I HAVE BEEN CALLED"); }
 
-int Shadow::UserCode::loadUserCode(std::string libraryFile) {
+int Shadow::UserCode::loadUserCode(void) {
 
 #ifdef CONFIG_DYNAMIC_USERCODE_LIBRARY
 
+	std::string libraryFile = CONFIG_DYNAMIC_USERCODE_LIBRARY_LOCATION;
+
 	PRINT("Starting to load UserCode");
 
-#	ifdef _WIN32
+#ifdef _WIN32
 	// https://docs.microsoft.com/en-us/windows/win32/dlls/using-run-time-dynamic-linking
 
-	//TODO: I got no clue if this works, yet to be tested
+	// TODO: I got no clue if this works, yet to be tested
 	HINSTANCE hinstlib = LoadLibrary(TEXT(libraryFile));
-#	else
+#else
 
 	std::ifstream libFile(libraryFile);
 	if (!libFile) {
@@ -37,7 +37,7 @@ int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 	libFile.close();
 
 	// function registration from within UserCode Lib
-	void (*register_function)(void(*)());
+	void (*register_function)(void (*)());
 
 	void* handle = dlopen(libraryFile.c_str(), RTLD_LAZY);
 
@@ -58,10 +58,11 @@ int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 		return USER_CODE_FAILURE;
 	}
 
-
 	*(void**)(&register_function) = dlsym(handle, "register_function");
 	if (!register_function) {
-		ERROUT("Symbol for function registration and callbacks doesn't exist in UserCode library! ... %s", dlerror());
+		ERROUT("Symbol for function registration and callbacks doesn't exist in UserCode library! "
+			   "... %s",
+			dlerror());
 		dlclose(handle);
 		return USER_CODE_FAILURE;
 	}
@@ -71,7 +72,7 @@ int Shadow::UserCode::loadUserCode(std::string libraryFile) {
 
 	dlclose(handle);
 
-#	endif
+#endif
 
 #else
 	WARN("UserCode disabled in config");
