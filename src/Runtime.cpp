@@ -80,6 +80,24 @@ static void glfw_errorCallback(int error, const char* description) {
 	fprintf(stderr, "GLFW error %d: %s\n", error, description);
 }
 
+static bool leftMouseDown = false;
+static bool rightMouseDown = false;
+static void glfw_mouseCallback(GLFWwindow* window, int button, int action, int mods) {
+	if (button == GLFW_MOUSE_BUTTON_LEFT) {
+		if (action == GLFW_PRESS)
+			leftMouseDown = true;
+		else if (action == GLFW_RELEASE)
+			leftMouseDown = false;
+	}
+
+	if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+		if (action == GLFW_PRESS)
+			rightMouseDown = true;
+		else if (action == GLFW_RELEASE)
+			rightMouseDown = false;
+	}
+}
+
 static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
 		s_showWarningText = !s_showWarningText;
@@ -293,6 +311,7 @@ int Shadow::StartRuntime() {
 
 	*/
 
+	glfwSetMouseButtonCallback(window, glfw_mouseCallback);
 	glfwSetKeyCallback(window, glfw_keyCallback);
 	// glfwSetKeyCallback(window, Shadow::KeyboardInput::glfw_keyCallback);
 
@@ -333,6 +352,7 @@ int Shadow::StartRuntime() {
 	// Init stuffs
 
 	Shadow::Camera camera;
+	camera.distance(10.0f);
 
 	// Mesh* m_mesh = meshLoad("desk.bin");
 
@@ -368,6 +388,8 @@ int Shadow::StartRuntime() {
 	float speed = 0.37f;
 	float time = 0.0f;
 
+	double lastMouseX, lastMouseY;
+
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
@@ -380,6 +402,13 @@ int Shadow::StartRuntime() {
 			bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 		}
 
+		double mouseX, mouseY;
+		glfwGetCursorPos(window, &mouseX, &mouseY);
+		double mouseXdiff = mouseX - lastMouseX;
+		double mouseYdiff = mouseY - lastMouseY;
+		lastMouseX = mouseX;
+		lastMouseY = mouseY;
+
 		// TODO: ImGui should probably be disabled for production use
 		// #ifndef SHADOW_DEBUG_BUILD
 
@@ -387,6 +416,8 @@ int Shadow::StartRuntime() {
 		ImGui_Implbgfx_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 7.0f);
 
 		ImGui::ShowDemoWindow();
 
@@ -396,6 +427,8 @@ int Shadow::StartRuntime() {
 		ImGui::Checkbox("Show warning text (F1)", &s_showWarningText);
 		ImGui::Checkbox("Camera Fly", &s_cameraFly);
 		ImGui::Text("ImGui Wants Mouse: %s", ImGui::MouseOverArea() ? "true" : "false");
+		ImGui::Text("Mouse X: %i Y: %i", (int)mouseX, (int)mouseY);
+		ImGui::Text("Mouse Diff X: %i Y: %i", (int)mouseXdiff, (int)mouseYdiff);
 		ImGui::SliderFloat("FOV", &fov, 0.0f, 180.0f);
 
 		ImGui::Separator();
@@ -409,6 +442,8 @@ int Shadow::StartRuntime() {
 			Shadow::UserCode::loadUserCode();
 
 		ImGui::End();
+
+		ImGui::PopStyleVar(1);
 
 		ImGui::Render();
 
@@ -482,6 +517,12 @@ int Shadow::StartRuntime() {
 
 		// bx::mtxRotateXY(mtx, counter * 0.01f, counter * 0.01f);
 		// bgfx::setTransform(mtx);
+
+		if (leftMouseDown && !ImGui::MouseOverArea())
+			camera.orbit(mouseXdiff / 1000, mouseYdiff / 1000);
+
+		if (rightMouseDown && !ImGui::MouseOverArea())
+			camera.dolly(mouseYdiff / 1000);
 
 		if (key_backwards_pressed)
 			camZ -= 0.3f;
