@@ -14,7 +14,6 @@ public:
 	Camera(const Camera&) = delete;
 	Camera& operator=(const Camera&) = delete;
 
-private:
 	void init(const bx::Vec3& _center, float _distance, float _near, float _far);
 	void mtxLookAt(float* _outViewMtx);
 	void orbit(float _dx, float _dy);
@@ -23,6 +22,7 @@ private:
 	void consumeOrbit(float _amount);
 	void update(float _dt);
 
+private:
 	struct Interp3f {
 		bx::Vec3 curr = bx::InitNone;
 		bx::Vec3 dest = bx::InitNone;

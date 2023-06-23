@@ -5,6 +5,7 @@
 #include "UserCode.h"
 #include "bgfx/defines.h"
 #include "bx/platform.h"
+#include "bx/timer.h"
 #include "imgui/imgui_utils.h"
 #include "shadow/audio.h"
 #include "types.h"
@@ -14,6 +15,7 @@
 #include <bx/file.h>
 #include <bx/math.h>
 #include <bx/string.h>
+#include <cstdint>
 #include <generated/autoconf.h>
 
 #include "shadow_fs.h"
@@ -56,9 +58,13 @@
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif*/
 
+#define SCENE_VIEW_ID 0
+
 static bool s_showStats = false;
 static bool s_showWarningText = true;
 static bool s_cameraFly = true;
+
+float fov = 60.0f;
 
 float camX = 0.0f;
 float camY = 0.0f;
@@ -359,6 +365,9 @@ int Shadow::StartRuntime() {
 
 	unsigned int counter = 0;
 
+	float speed = 0.37f;
+	float time = 0.0f;
+
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
 
@@ -387,6 +396,7 @@ int Shadow::StartRuntime() {
 		ImGui::Checkbox("Show warning text (F1)", &s_showWarningText);
 		ImGui::Checkbox("Camera Fly", &s_cameraFly);
 		ImGui::Text("ImGui Wants Mouse: %s", ImGui::MouseOverArea() ? "true" : "false");
+		ImGui::SliderFloat("FOV", &fov, 0.0f, 180.0f);
 
 		ImGui::Separator();
 		ImGui::Text("Audio");
@@ -433,14 +443,45 @@ int Shadow::StartRuntime() {
 		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
 #endif
 
-		const bx::Vec3 at = { camX, camY, camZ };
-		const bx::Vec3 eye = { 0.0f, 0.0f, -5.0f };
-		float view[16];
-		bx::mtxLookAt(view, eye, at);
-		float proj[16];
-		bx::mtxProj(proj, 60.0f, float(width) / float(height), 0.1f, 100.0f,
-			bgfx::getCaps()->homogeneousDepth);
-		bgfx::setViewTransform(0, view, proj);
+		int64_t now = bx::getHPCounter();
+		static int64_t last = now;
+		const int64_t frameTime = now - last;
+		last = now;
+		const double freq = double(bx::getHPFrequency());
+		const float deltaTime = float(frameTime / freq);
+
+		time += (float)(frameTime + speed / freq);
+
+		float viewMatrix[16];
+		camera.update(deltaTime);
+		camera.mtxLookAt(viewMatrix);
+
+		float projectionMatrix[16];
+		const float aspectRatio = float(width) / float(height);
+		bx::mtxProj(
+			projectionMatrix, fov, aspectRatio, 0.01f, 1000.0f, bgfx::getCaps()->homogeneousDepth);
+
+		bgfx::setViewTransform(SCENE_VIEW_ID, viewMatrix, projectionMatrix);
+		bgfx::setViewRect(SCENE_VIEW_ID, 0, 0, uint16_t(width), uint16_t(height));
+
+		bgfx::touch(SCENE_VIEW_ID);
+
+		float orientation[16];
+		bx::mtxIdentity(orientation);
+		bgfx::setTransform(orientation);
+
+		// float mtx[16];
+		// const bx::Vec3 at = { camX, camY, camZ };
+		// const bx::Vec3 eye = { 0.0f, 0.0f, -5.0f };
+		// float view[16];
+		// bx::mtxLookAt(view, eye, at);
+		// float proj[16];
+		// bx::mtxProj(proj, fov, float(width) / float(height), 0.1f, 100.0f,
+		// 	bgfx::getCaps()->homogeneousDepth);
+		// bgfx::setViewTransform(0, view, proj);
+
+		// bx::mtxRotateXY(mtx, counter * 0.01f, counter * 0.01f);
+		// bgfx::setTransform(mtx);
 
 		if (key_backwards_pressed)
 			camZ -= 0.3f;
@@ -454,10 +495,6 @@ int Shadow::StartRuntime() {
 			camZ += 0.3f;
 		if (key_down_pressed)
 			camZ -= 0.3f;
-
-		float mtx[16];
-		bx::mtxRotateXY(mtx, counter * 0.01f, counter * 0.01f);
-		bgfx::setTransform(mtx);
 
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
