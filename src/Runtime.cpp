@@ -2,7 +2,9 @@
 #include "Components/Camera.h"
 #include "KeyboardInput.hpp"
 #include "Logger.h"
+#include "ShadowWindow.h"
 #include "UserCode.h"
+#include "UserInput.h"
 #include "bgfx/defines.h"
 #include "bx/platform.h"
 #include "bx/timer.h"
@@ -80,22 +82,8 @@ static void glfw_errorCallback(int error, const char* description) {
 	fprintf(stderr, "GLFW error %d: %s\n", error, description);
 }
 
-static bool leftMouseDown = false;
-static bool rightMouseDown = false;
-static void glfw_mouseCallback(GLFWwindow* window, int button, int action, int mods) {
-	if (button == GLFW_MOUSE_BUTTON_LEFT) {
-		if (action == GLFW_PRESS)
-			leftMouseDown = true;
-		else if (action == GLFW_RELEASE)
-			leftMouseDown = false;
-	}
-
-	if (button == GLFW_MOUSE_BUTTON_RIGHT) {
-		if (action == GLFW_PRESS)
-			rightMouseDown = true;
-		else if (action == GLFW_RELEASE)
-			rightMouseDown = false;
-	}
+static void mouseInputPassthrough(GLFWwindow* window, int button, int action, int mods) {
+	Shadow::UserInput::mouseCallback(window, button, action, mods);
 }
 
 static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -226,8 +214,7 @@ int Shadow::StartRuntime() {
 	int width = 1280;
 	int height = 720;
 
-	// int width = 1920;
-	// int height = 1080;
+	// ShadowWindow shadowWindow(width, height, CONFIG_PRETTY_NAME);
 
 	glfwSetErrorCallback(glfw_errorCallback);
 	if (!glfwInit())
@@ -310,8 +297,7 @@ int Shadow::StartRuntime() {
 		save_output_audio("outputaudio.raw", outputaudio);
 
 	*/
-
-	glfwSetMouseButtonCallback(window, glfw_mouseCallback);
+	glfwSetMouseButtonCallback(window, mouseInputPassthrough);
 	glfwSetKeyCallback(window, glfw_keyCallback);
 	// glfwSetKeyCallback(window, Shadow::KeyboardInput::glfw_keyCallback);
 
@@ -350,6 +336,8 @@ int Shadow::StartRuntime() {
 	ImGui_ImplGlfw_InitForVulkan(window, true);
 
 	// Init stuffs
+
+	const bgfx::Caps* rendererCapabilities = bgfx::getCaps();
 
 	Shadow::Camera camera;
 	camera.distance(10.0f);
@@ -462,11 +450,12 @@ int Shadow::StartRuntime() {
 
 #ifdef CONFIG_VINCES_MORE_VERBOSE_DEBUG_TEXT
 
-			bgfx::dbgTextPrintf(
-				3, 5, 0x01, BX_PLATFORM_NAME " " BX_CPU_NAME " " BX_ARCH_NAME " " BX_COMPILER_NAME);
+			uint16_t line = 5;
+			bgfx::dbgTextPrintf(3, line++, 0xf0,
+				BX_PLATFORM_NAME " " BX_CPU_NAME " " BX_ARCH_NAME " " BX_COMPILER_NAME);
 
 #ifdef CONFIG_DYNAMIC_USERCODE_LIBRARY
-			bgfx::dbgTextPrintf(3, 6, 0x01, "Dynamic UserCode Loading Enabled");
+			bgfx::dbgTextPrintf(3, line++, 0xf0, "Dynamic UserCode Loading Enabled");
 
 #endif
 
@@ -493,8 +482,8 @@ int Shadow::StartRuntime() {
 
 		float projectionMatrix[16];
 		const float aspectRatio = float(width) / float(height);
-		bx::mtxProj(
-			projectionMatrix, fov, aspectRatio, 0.01f, 1000.0f, bgfx::getCaps()->homogeneousDepth);
+		bx::mtxProj(projectionMatrix, fov, aspectRatio, 0.01f, 1000.0f,
+			rendererCapabilities->homogeneousDepth);
 
 		bgfx::setViewTransform(SCENE_VIEW_ID, viewMatrix, projectionMatrix);
 		bgfx::setViewRect(SCENE_VIEW_ID, 0, 0, uint16_t(width), uint16_t(height));
@@ -518,10 +507,10 @@ int Shadow::StartRuntime() {
 		// bx::mtxRotateXY(mtx, counter * 0.01f, counter * 0.01f);
 		// bgfx::setTransform(mtx);
 
-		if (leftMouseDown && !ImGui::MouseOverArea())
+		if (Shadow::UserInput::isLeftMouseDown() && !ImGui::MouseOverArea())
 			camera.orbit(mouseXdiff / 1000, mouseYdiff / 1000);
 
-		if (rightMouseDown && !ImGui::MouseOverArea())
+		if (Shadow::UserInput::isRightMouseDown() && !ImGui::MouseOverArea())
 			camera.dolly(mouseYdiff / 1000);
 
 		if (key_backwards_pressed)
@@ -540,7 +529,7 @@ int Shadow::StartRuntime() {
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
 
-		bgfx::submit(0, program);
+		bgfx::submit(SCENE_VIEW_ID, program);
 
 		bgfx::frame();
 
