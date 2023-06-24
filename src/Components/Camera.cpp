@@ -13,7 +13,7 @@
 namespace Shadow {
 
 Camera::Camera() { init(bx::InitZero, 2.0f, 0.01f, 100.0f); }
-Camera::~Camera() { WARN("Camera destroyed"); }
+Camera::~Camera() { PRINT("Camera destroyed"); }
 
 void Camera::init(const bx::Vec3& _center, float _distance, float _near, float _far) {
 	m_target.curr = _center;

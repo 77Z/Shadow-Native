@@ -7,11 +7,17 @@ namespace Shadow {
 
 namespace UserInput {
 
+	void initMouse(GLFWwindow* window);
+	void updateMouse();
+
 	bool isLeftMouseDown();
 	bool isRightMouseDown();
 
 	double getMouseX();
 	double getMouseY();
+
+	double getMouseXDiff();
+	double getMouseYDiff();
 
 	void mouseCallback(GLFWwindow* window, int button, int action, int mods);
 

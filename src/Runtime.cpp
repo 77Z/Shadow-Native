@@ -8,6 +8,7 @@
 #include "bgfx/defines.h"
 #include "bx/platform.h"
 #include "bx/timer.h"
+#include "db.h"
 #include "imgui/imgui_utils.h"
 #include "shadow/audio.h"
 #include "types.h"
@@ -19,9 +20,7 @@
 #include <bx/string.h>
 #include <cstdint>
 #include <generated/autoconf.h>
-
-#include "shadow_fs.h"
-#include <leveldb/db.h>
+#include <string>
 
 #define GLM_FORCE_RADIANS
 #include <glm/ext.hpp>
@@ -68,15 +67,15 @@ static bool s_cameraFly = true;
 
 float fov = 60.0f;
 
-float camX = 0.0f;
-float camY = 0.0f;
-float camZ = 0.0f;
-static bool key_forwards_pressed = false;
-static bool key_backwards_pressed = false;
-static bool key_left_pressed = false;
-static bool key_right_pressed = false;
-static bool key_up_pressed = false;
-static bool key_down_pressed = false;
+// float camX = 0.0f;
+// float camY = 0.0f;
+// float camZ = 0.0f;
+// static bool key_forwards_pressed = false;
+// static bool key_backwards_pressed = false;
+// static bool key_left_pressed = false;
+// static bool key_right_pressed = false;
+// static bool key_up_pressed = false;
+// static bool key_down_pressed = false;
 
 // static void glfw_errorCallback(int error, const char* description) {
 // 	fprintf(stderr, "GLFW error %d: %s\n", error, description);
@@ -219,6 +218,7 @@ int Shadow::StartRuntime() {
 	IMGUI_CHECKVERSION();
 
 	ShadowAudio::initAudioEngine();
+	Shadow::UserInput::initMouse(shadowWindow.window);
 
 	/*
 
@@ -315,7 +315,7 @@ int Shadow::StartRuntime() {
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	// io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	//    io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	// io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
@@ -338,11 +338,14 @@ int Shadow::StartRuntime() {
 	Shadow::UserCode::loadUserCode();
 
 	// User Settings
-	leveldb::DB* userSettingsDB = Shadow::fs::openDB("./us");
 
-	userSettingsDB->Put(leveldb::WriteOptions(), "mykey", "Hello!");
+	Database newUserSettingsDB("./usersettings");
+	std::string readFOV = newUserSettingsDB.read("FOV");
+	WARN("FOV: %s", readFOV.c_str());
+	if (readFOV.empty())
+		newUserSettingsDB.write("FOV", std::to_string(60.0f));
 
-	fs::writeDB(userSettingsDB, "myotherkey", "Hello again");
+	fov = std::stof(newUserSettingsDB.read("FOV"));
 
 	int64_t m_timeOffset;
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
@@ -357,12 +360,9 @@ int Shadow::StartRuntime() {
 	bgfx::IndexBufferHandle ibh
 		= bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
 
-	// bgfx::ShaderHandle vsh = loadShader("vs_test.vulkan");
-	// bgfx::ShaderHandle fsh = loadShader("fs_test.vulkan");
-
 	bgfx::ProgramHandle program = loadProgram("vs_test.vulkan", "fs_test.vulkan");
 
-	unsigned int counter = 0;
+	// unsigned int counter = 0;
 
 	float speed = 0.37f;
 	float time = 0.0f;
@@ -380,12 +380,7 @@ int Shadow::StartRuntime() {
 			bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 		}
 
-		double mouseX, mouseY;
-		glfwGetCursorPos(shadowWindow.window, &mouseX, &mouseY);
-		double mouseXdiff = mouseX - lastMouseX;
-		double mouseYdiff = mouseY - lastMouseY;
-		lastMouseX = mouseX;
-		lastMouseY = mouseY;
+		Shadow::UserInput::updateMouse();
 
 		// TODO: ImGui should probably be disabled for production use
 		// #ifndef SHADOW_DEBUG_BUILD
@@ -405,8 +400,9 @@ int Shadow::StartRuntime() {
 		ImGui::Checkbox("Show warning text (F1)", &s_showWarningText);
 		ImGui::Checkbox("Camera Fly", &s_cameraFly);
 		ImGui::Text("ImGui Wants Mouse: %s", ImGui::MouseOverArea() ? "true" : "false");
-		ImGui::Text("Mouse X: %i Y: %i", (int)mouseX, (int)mouseY);
-		ImGui::Text("Mouse Diff X: %i Y: %i", (int)mouseXdiff, (int)mouseYdiff);
+		ImGui::Text("MOUSE X: %i Y: %i", (int)UserInput::getMouseX(), (int)UserInput::getMouseY());
+		ImGui::Text("Mouse Diff X: %i Y: %i", (int)UserInput::getMouseXDiff(),
+			(int)UserInput::getMouseYDiff());
 		ImGui::Text("Window Extents: W: %i, H: %i", width, height);
 		ImGui::SliderFloat("FOV", &fov, 0.0f, 180.0f);
 
@@ -485,37 +481,24 @@ int Shadow::StartRuntime() {
 		bx::mtxIdentity(orientation);
 		bgfx::setTransform(orientation);
 
-		// float mtx[16];
-		// const bx::Vec3 at = { camX, camY, camZ };
-		// const bx::Vec3 eye = { 0.0f, 0.0f, -5.0f };
-		// float view[16];
-		// bx::mtxLookAt(view, eye, at);
-		// float proj[16];
-		// bx::mtxProj(proj, fov, float(width) / float(height), 0.1f, 100.0f,
-		// 	bgfx::getCaps()->homogeneousDepth);
-		// bgfx::setViewTransform(0, view, proj);
-
-		// bx::mtxRotateXY(mtx, counter * 0.01f, counter * 0.01f);
-		// bgfx::setTransform(mtx);
-
 		if (Shadow::UserInput::isLeftMouseDown() && !ImGui::MouseOverArea())
-			camera.orbit(mouseXdiff / 1000, mouseYdiff / 1000);
+			camera.orbit(UserInput::getMouseXDiff() / 1000, UserInput::getMouseYDiff() / 1000);
 
 		if (Shadow::UserInput::isRightMouseDown() && !ImGui::MouseOverArea())
-			camera.dolly(mouseYdiff / 1000);
+			camera.dolly(UserInput::getMouseYDiff() / 1000);
 
-		if (key_backwards_pressed)
-			camZ -= 0.3f;
-		if (key_forwards_pressed)
-			camZ += 0.3f;
-		if (key_left_pressed)
-			camX += 0.3f;
-		if (key_right_pressed)
-			camX -= 0.3f;
-		if (key_up_pressed)
-			camZ += 0.3f;
-		if (key_down_pressed)
-			camZ -= 0.3f;
+		// if (key_backwards_pressed)
+		// 	camZ -= 0.3f;
+		// if (key_forwards_pressed)
+		// 	camZ += 0.3f;
+		// if (key_left_pressed)
+		// 	camX += 0.3f;
+		// if (key_right_pressed)
+		// 	camX -= 0.3f;
+		// if (key_up_pressed)
+		// 	camZ += 0.3f;
+		// if (key_down_pressed)
+		// 	camZ -= 0.3f;
 
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
@@ -524,8 +507,10 @@ int Shadow::StartRuntime() {
 
 		bgfx::frame();
 
-		counter++;
+		// counter++;
 	}
+
+	newUserSettingsDB.write("FOV", std::to_string(fov));
 
 	bgfx::destroy(ibh);
 	bgfx::destroy(vbh);
@@ -535,7 +520,7 @@ int Shadow::StartRuntime() {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui_Implbgfx_Shutdown();
 
-	Shadow::fs::closeDB(userSettingsDB);
+	// Shadow::fs::closeDB(userSettingsDB);
 
 	ShutdownBXFilesytem();
 
