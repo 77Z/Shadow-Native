@@ -78,51 +78,51 @@ static bool key_right_pressed = false;
 static bool key_up_pressed = false;
 static bool key_down_pressed = false;
 
-static void glfw_errorCallback(int error, const char* description) {
-	fprintf(stderr, "GLFW error %d: %s\n", error, description);
-}
+// static void glfw_errorCallback(int error, const char* description) {
+// 	fprintf(stderr, "GLFW error %d: %s\n", error, description);
+// }
 
-static void mouseInputPassthrough(GLFWwindow* window, int button, int action, int mods) {
-	Shadow::UserInput::mouseCallback(window, button, action, mods);
-}
+// static void mouseInputPassthrough(GLFWwindow* window, int button, int action, int mods) {
+// 	Shadow::UserInput::mouseCallback(window, button, action, mods);
+// }
 
-static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
-		s_showWarningText = !s_showWarningText;
+// static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+// 	if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
+// 		s_showWarningText = !s_showWarningText;
 
-	if (key == GLFW_KEY_F3 && action == GLFW_PRESS)
-		s_showStats = !s_showStats;
+// 	if (key == GLFW_KEY_F3 && action == GLFW_PRESS)
+// 		s_showStats = !s_showStats;
 
-	if (key == GLFW_KEY_W && action == GLFW_PRESS)
-		key_forwards_pressed = true;
-	if (key == GLFW_KEY_W && action == GLFW_RELEASE)
-		key_forwards_pressed = false;
+// 	if (key == GLFW_KEY_W && action == GLFW_PRESS)
+// 		key_forwards_pressed = true;
+// 	if (key == GLFW_KEY_W && action == GLFW_RELEASE)
+// 		key_forwards_pressed = false;
 
-	if (key == GLFW_KEY_S && action == GLFW_PRESS)
-		key_backwards_pressed = true;
-	if (key == GLFW_KEY_S && action == GLFW_RELEASE)
-		key_backwards_pressed = false;
+// 	if (key == GLFW_KEY_S && action == GLFW_PRESS)
+// 		key_backwards_pressed = true;
+// 	if (key == GLFW_KEY_S && action == GLFW_RELEASE)
+// 		key_backwards_pressed = false;
 
-	if (key == GLFW_KEY_A && action == GLFW_PRESS)
-		key_left_pressed = true;
-	if (key == GLFW_KEY_A && action == GLFW_RELEASE)
-		key_left_pressed = false;
+// 	if (key == GLFW_KEY_A && action == GLFW_PRESS)
+// 		key_left_pressed = true;
+// 	if (key == GLFW_KEY_A && action == GLFW_RELEASE)
+// 		key_left_pressed = false;
 
-	if (key == GLFW_KEY_D && action == GLFW_PRESS)
-		key_right_pressed = true;
-	if (key == GLFW_KEY_D && action == GLFW_RELEASE)
-		key_right_pressed = false;
+// 	if (key == GLFW_KEY_D && action == GLFW_PRESS)
+// 		key_right_pressed = true;
+// 	if (key == GLFW_KEY_D && action == GLFW_RELEASE)
+// 		key_right_pressed = false;
 
-	if (key == GLFW_KEY_E && action == GLFW_PRESS)
-		key_up_pressed = true;
-	if (key == GLFW_KEY_E && action == GLFW_RELEASE)
-		key_up_pressed = false;
+// 	if (key == GLFW_KEY_E && action == GLFW_PRESS)
+// 		key_up_pressed = true;
+// 	if (key == GLFW_KEY_E && action == GLFW_RELEASE)
+// 		key_up_pressed = false;
 
-	if (key == GLFW_KEY_Q && action == GLFW_PRESS)
-		key_down_pressed = true;
-	if (key == GLFW_KEY_Q && action == GLFW_RELEASE)
-		key_down_pressed = false;
-}
+// 	if (key == GLFW_KEY_Q && action == GLFW_PRESS)
+// 		key_down_pressed = true;
+// 	if (key == GLFW_KEY_Q && action == GLFW_RELEASE)
+// 		key_down_pressed = false;
+// }
 
 static const glm::vec2 SIZE = glm::vec2(1280, 720);
 
@@ -214,18 +214,7 @@ int Shadow::StartRuntime() {
 	int width = 1280;
 	int height = 720;
 
-	// ShadowWindow shadowWindow(width, height, CONFIG_PRETTY_NAME);
-
-	glfwSetErrorCallback(glfw_errorCallback);
-	if (!glfwInit())
-		return 1;
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	// GLFWwindow *window = glfwCreateWindow(width, height, "Shadow Engine",
-	// glfwGetPrimaryMonitor(), nullptr);
-	GLFWwindow* window = glfwCreateWindow(width, height, CONFIG_PRETTY_NAME, nullptr, nullptr);
-
-	if (!window)
-		return 1;
+	ShadowWindow shadowWindow(width, height, CONFIG_PRETTY_NAME);
 
 	IMGUI_CHECKVERSION();
 
@@ -297,8 +286,8 @@ int Shadow::StartRuntime() {
 		save_output_audio("outputaudio.raw", outputaudio);
 
 	*/
-	glfwSetMouseButtonCallback(window, mouseInputPassthrough);
-	glfwSetKeyCallback(window, glfw_keyCallback);
+	// glfwSetMouseButtonCallback(window, mouseInputPassthrough);
+	// glfwSetKeyCallback(window, glfw_keyCallback);
 	// glfwSetKeyCallback(window, Shadow::KeyboardInput::glfw_keyCallback);
 
 	bgfx::renderFrame();
@@ -306,9 +295,11 @@ int Shadow::StartRuntime() {
 	bgfx::Init init;
 
 	init.platformData.ndt = glfwGetX11Display();
-	init.platformData.nwh = (void*)(uintptr_t)glfwGetX11Window(window);
+	init.platformData.nwh = (void*)(uintptr_t)glfwGetX11Window(shadowWindow.window);
 
-	glfwGetWindowSize(window, &width, &height);
+	auto bounds = shadowWindow.getExtent();
+	width = bounds.width;
+	height = bounds.height;
 	init.resolution.width = (uint32_t)width;
 	init.resolution.height = (uint32_t)height;
 	init.resolution.reset = BGFX_RESET_VSYNC;
@@ -333,7 +324,7 @@ int Shadow::StartRuntime() {
 	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 
 	ImGui_Implbgfx_Init(255);
-	ImGui_ImplGlfw_InitForVulkan(window, true);
+	ImGui_ImplGlfw_InitForVulkan(shadowWindow.window, true);
 
 	// Init stuffs
 
@@ -378,20 +369,19 @@ int Shadow::StartRuntime() {
 
 	double lastMouseX, lastMouseY;
 
-	while (!glfwWindowShouldClose(window)) {
+	while (!shadowWindow.shouldClose()) {
 		glfwPollEvents();
 
-		// Handle Window Resize
-		int oldWidth = width;
-		int oldHeight = height;
-		glfwGetWindowSize(window, &width, &height);
-		if (width != oldWidth || height != oldHeight) {
+		if (shadowWindow.wasWindowResized()) {
+			auto bounds = shadowWindow.getExtent();
+			width = bounds.width;
+			height = bounds.height;
 			bgfx::reset((uint32_t)width, (uint32_t)height, BGFX_RESET_VSYNC);
 			bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 		}
 
 		double mouseX, mouseY;
-		glfwGetCursorPos(window, &mouseX, &mouseY);
+		glfwGetCursorPos(shadowWindow.window, &mouseX, &mouseY);
 		double mouseXdiff = mouseX - lastMouseX;
 		double mouseYdiff = mouseY - lastMouseY;
 		lastMouseX = mouseX;
@@ -417,6 +407,7 @@ int Shadow::StartRuntime() {
 		ImGui::Text("ImGui Wants Mouse: %s", ImGui::MouseOverArea() ? "true" : "false");
 		ImGui::Text("Mouse X: %i Y: %i", (int)mouseX, (int)mouseY);
 		ImGui::Text("Mouse Diff X: %i Y: %i", (int)mouseXdiff, (int)mouseYdiff);
+		ImGui::Text("Window Extents: W: %i, H: %i", width, height);
 		ImGui::SliderFloat("FOV", &fov, 0.0f, 180.0f);
 
 		ImGui::Separator();
@@ -542,6 +533,7 @@ int Shadow::StartRuntime() {
 	bgfx::destroy(u_time);
 
 	ImGui_ImplGlfw_Shutdown();
+	ImGui_Implbgfx_Shutdown();
 
 	Shadow::fs::closeDB(userSettingsDB);
 
@@ -553,10 +545,11 @@ int Shadow::StartRuntime() {
 }
 
 void Shadow::ShutdownRuntime() {
+	// * Most of the classes shut themselves down at
+	// * this point, which happens after this step
 	ShadowAudio::shutdownAudioEngine();
 	ImGui::DestroyContext();
 	bgfx::shutdown();
-	glfwTerminate();
 
 	PRINT("Goodbye from Shadow Engine");
 }

@@ -4,9 +4,9 @@
 // and general reading and writing of files,
 // and basic LevelDB control
 
+#include "Logger.h"
 #include <leveldb/db.h>
 #include <string>
-#include "Logger.h"
 
 #include "lz4.h"
 
@@ -24,11 +24,8 @@ leveldb::DB* Shadow::fs::openDB(std::string dbname) {
 	return db;
 }
 
-void Shadow::fs::closeDB(leveldb::DB* db) {
-	delete db;
-}
+void Shadow::fs::closeDB(leveldb::DB* db) { delete db; }
 
 void Shadow::fs::writeDB(leveldb::DB* db, leveldb::Slice key, std::string value) {
 	db->Put(leveldb::WriteOptions(), key, value);
 }
-

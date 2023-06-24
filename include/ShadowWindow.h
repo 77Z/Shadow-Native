@@ -23,9 +23,12 @@ public:
 	bool wasWindowResized() { return framebufferResized; }
 	void resetWindowResizedFlag() { framebufferResized = false; }
 
+	GLFWwindow* window;
+
 private:
 	static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 	static void glfw_errorCallback(int error, const char* description);
+	// static void mouseInputPassthrough(GLFWwindow* window, int button, int action, int mods);
 	void initWindow();
 
 	int width;
@@ -33,7 +36,6 @@ private:
 	bool framebufferResized = false;
 
 	std::string windowTitle;
-	GLFWwindow* window;
 };
 }
 
