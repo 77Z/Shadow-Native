@@ -25,6 +25,12 @@ static bgfx::ShaderHandle loadShader(const char* name);
 bgfx::ProgramHandle loadProgram(bx::FileReaderI* reader, const char* vsName, const char* fsName);
 bgfx::ProgramHandle loadProgram(const char* vsName, const char* fsName);
 
+struct Mesh {
+	void load(bx::ReaderSeekerI* _reader, bool _ramcopy);
+};
+
+Mesh* meshLoad(const char* _filePath, bool _ramcopy = false);
+
 namespace Utilities {
 
 // struct MouseButton {

@@ -7,6 +7,6 @@ project('WIS 77Z UserCode', 'cpp',
 
 add_project_arguments('-s', language: 'cpp')
 
-inc = include_directories(['include', '../include'])
+inc = include_directories(['include', '../include', '../lib/leveldb/include'])
 
 library('usercode', ['code.cpp'], include_directories : inc)

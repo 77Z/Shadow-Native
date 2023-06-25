@@ -333,19 +333,21 @@ int Shadow::StartRuntime() {
 	Shadow::Camera camera;
 	camera.distance(10.0f);
 
-	// Mesh* m_mesh = meshLoad("desk.bin");
+	// Mesh* m_mesh = meshLoad("suzanne.bin");
 
 	Shadow::UserCode::loadUserCode();
 
 	// User Settings
 
-	Database newUserSettingsDB("./usersettings");
-	std::string readFOV = newUserSettingsDB.read("FOV");
-	WARN("FOV: %s", readFOV.c_str());
+	Database userSettingsDB("./usersettings");
+	std::string readFOV = userSettingsDB.read("FOV");
 	if (readFOV.empty())
-		newUserSettingsDB.write("FOV", std::to_string(60.0f));
+		userSettingsDB.write("FOV", std::to_string(60.0f));
+	fov = std::stof(userSettingsDB.read("FOV"));
 
-	fov = std::stof(newUserSettingsDB.read("FOV"));
+	std::string nameDemo = userSettingsDB.read("Name");
+	if (nameDemo.empty())
+		userSettingsDB.write("Name", "Blank name...");
 
 	int64_t m_timeOffset;
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
@@ -405,6 +407,7 @@ int Shadow::StartRuntime() {
 			(int)UserInput::getMouseYDiff());
 		ImGui::Text("Window Extents: W: %i, H: %i", width, height);
 		ImGui::SliderFloat("FOV", &fov, 0.0f, 180.0f);
+		ImGui::InputText("Name Demo", &nameDemo);
 
 		ImGui::Separator();
 		ImGui::Text("Audio");
@@ -510,7 +513,8 @@ int Shadow::StartRuntime() {
 		// counter++;
 	}
 
-	newUserSettingsDB.write("FOV", std::to_string(fov));
+	userSettingsDB.write("FOV", std::to_string(fov));
+	userSettingsDB.write("Name", nameDemo);
 
 	bgfx::destroy(ibh);
 	bgfx::destroy(vbh);
