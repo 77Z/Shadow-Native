@@ -1,12 +1,15 @@
 #include <Util.h>
 
 #include "Logger.h"
+#include "bx/readerwriter.h"
 
 #include <bgfx/bgfx.h>
 
+#include <bx/allocator.h>
 #include <bx/bx.h>
 #include <bx/file.h>
-#include <bx/allocator.h>
+
+#include "../3rdparty/meshoptimizer/src/meshoptimizer.h"
 
 #include <bimg/bimg.h>
 #include <bimg/decode.h>
@@ -26,7 +29,6 @@ bx::AllocatorI* getAllocator() {
 	return g_allocator;
 }
 
-
 static bx::FileReaderI* s_fileReader = nullptr;
 static bx::FileWriterI* s_fileWriter = nullptr;
 
@@ -45,12 +47,13 @@ void ShutdownBXFilesytem() {
 	s_fileWriter = nullptr;
 }
 
-void* load(bx::FileReaderI* _reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size) {
-	if (bx::open(_reader, _filePath) ) {
-		uint32_t size = (uint32_t)bx::getSize(_reader);
+void* load(
+	bx::FileReaderI* reader, bx::AllocatorI* _allocator, const char* _filePath, uint32_t* _size) {
+	if (bx::open(reader, _filePath)) {
+		uint32_t size = (uint32_t)bx::getSize(reader);
 		void* data = bx::alloc(_allocator, size);
-		bx::read(_reader, data, size, bx::ErrorAssert{});
-		bx::close(_reader);
+		bx::read(reader, data, size, bx::ErrorAssert {});
+		bx::close(reader);
 		if (NULL != _size)
 			*_size = size;
 		return data;
@@ -69,18 +72,15 @@ void* load(const char* _filePath, uint32_t* _size) {
 	return load(getFileReader(), getAllocator(), _filePath, _size);
 }
 
-void unload(void* _ptr) {
-	bx::free(getAllocator(), _ptr);
-}
+void unload(void* _ptr) { bx::free(getAllocator(), _ptr); }
 
 static const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath) {
-	if (bx::open(reader, filePath) )
-	{
+	if (bx::open(reader, filePath)) {
 		uint32_t size = (uint32_t)bx::getSize(reader);
-		const bgfx::Memory* mem = bgfx::alloc(size+1);
-		bx::read(reader, mem->data, size, bx::ErrorAssert{});
+		const bgfx::Memory* mem = bgfx::alloc(size + 1);
+		bx::read(reader, mem->data, size, bx::ErrorAssert {});
 		bx::close(reader);
-		mem->data[mem->size-1] = '\0';
+		mem->data[mem->size - 1] = '\0';
 		return mem;
 	}
 
@@ -97,15 +97,13 @@ static bgfx::ShaderHandle loadShader(bx::FileReaderI* reader, const char* name) 
 	bx::strCat(filePath, BX_COUNTOF(filePath), name);
 	bx::strCat(filePath, BX_COUNTOF(filePath), ".bin");
 
-	bgfx::ShaderHandle handle = bgfx::createShader(loadMem(reader, filePath) );
+	bgfx::ShaderHandle handle = bgfx::createShader(loadMem(reader, filePath));
 	bgfx::setName(handle, name);
 
 	return handle;
 }
 
-static bgfx::ShaderHandle loadShader(const char* name) {
-	return loadShader(getFileReader(), name);
-}
+static bgfx::ShaderHandle loadShader(const char* name) { return loadShader(getFileReader(), name); }
 
 // Nice function to load both shaders and return a program automatically
 bgfx::ProgramHandle loadProgram(bx::FileReaderI* reader, const char* vsName, const char* fsName) {
@@ -127,12 +125,12 @@ static void imageReleaseCb(void* _ptr, void* _userData) {
 	bimg::imageFree(imageContainer);
 }
 
-/*bgfx::TextureHandle loadTexture(bx::FileReaderI* _reader, const char* _filePath, uint64_t _flags, uint8_t _skip, bgfx::TextureInfo* _info, bimg::Orientation::Enum* _orientation) {
-	BX_UNUSED(_skip);
+/*bgfx::TextureHandle loadTexture(bx::FileReaderI* reader, const char* _filePath, uint64_t _flags,
+uint8_t _skip, bgfx::TextureInfo* _info, bimg::Orientation::Enum* _orientation) { BX_UNUSED(_skip);
 	bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
 
 	uint32_t size;
-	void* data = load(_reader, getAllocator(), _filePath, &size);
+	void* data = load(reader, getAllocator(), _filePath, &size);
 	if (NULL != data) {
 		bimg::ImageContainer* imageContainer = bimg::imageParse(getAllocator(), data, size);
 
@@ -168,8 +166,8 @@ static void imageReleaseCb(void* _ptr, void* _userData) {
 					, mem
 					);
 			}
-			else if (bgfx::isTextureValid(0, false, imageContainer->m_numLayers, bgfx::TextureFormat::Enum(imageContainer->m_format), _flags)) {
-				handle = bgfx::createTexture2D(
+			else if (bgfx::isTextureValid(0, false, imageContainer->m_numLayers,
+bgfx::TextureFormat::Enum(imageContainer->m_format), _flags)) { handle = bgfx::createTexture2D(
 					  uint16_t(imageContainer->m_width)
 					, uint16_t(imageContainer->m_height)
 					, 1 < imageContainer->m_numMips
@@ -201,7 +199,7 @@ static void imageReleaseCb(void* _ptr, void* _userData) {
 	return handle;
 }
 
-bgfx::TextureHandle loadTexture(const char* _name, uint64_t _flags, uint8_t _skip, bgfx::TextureInfo* _info, bimg::Orientation::Enum* _orientation) {
-	return loadTexture(getFileReader(), _name, _flags, _skip, _info, _orientation);
+bgfx::TextureHandle loadTexture(const char* _name, uint64_t _flags, uint8_t _skip,
+bgfx::TextureInfo* _info, bimg::Orientation::Enum* _orientation) { return
+loadTexture(getFileReader(), _name, _flags, _skip, _info, _orientation);
 }*/
-

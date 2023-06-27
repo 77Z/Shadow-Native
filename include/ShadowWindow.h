@@ -19,6 +19,7 @@ public:
 	};
 
 	bool shouldClose() { return glfwWindowShouldClose(window); }
+	void close() { glfwSetWindowShouldClose(window, GLFW_TRUE); }
 	WindowDimensions getExtent() { return { width, height }; };
 	bool wasWindowResized() { return framebufferResized; }
 	void resetWindowResizedFlag() { framebufferResized = false; }

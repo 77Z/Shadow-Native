@@ -23,4 +23,4 @@ typedef __ssize_t isize;
 typedef float f32;
 typedef double f64;
 
-#endif //SHADOW_NATIVE_TYPES_H
+#endif // SHADOW_NATIVE_TYPES_H

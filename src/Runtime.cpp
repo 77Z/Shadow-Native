@@ -3,6 +3,7 @@
 #include "KeyboardInput.hpp"
 #include "Logger.h"
 #include "ShadowWindow.h"
+#include "UI/Font.h"
 #include "UserCode.h"
 #include "UserInput.h"
 #include "bgfx/defines.h"
@@ -10,6 +11,8 @@
 #include "bx/timer.h"
 #include "db.h"
 #include "imgui/imgui_utils.h"
+#include "imgui/theme.h"
+#include "shadow/Mesh.h"
 #include "shadow/audio.h"
 #include "types.h"
 #include <Util.h>
@@ -18,6 +21,7 @@
 #include <bx/file.h>
 #include <bx/math.h>
 #include <bx/string.h>
+#include <csignal>
 #include <cstdint>
 #include <generated/autoconf.h>
 #include <string>
@@ -26,6 +30,7 @@
 #include <glm/ext.hpp>
 #include <glm/glm.hpp>
 
+#include "imgui/imgui_memory_editor.h"
 #include <GLFW/glfw3.h>
 #include <bgfx/bgfx.h>
 #include <bx/bx.h>
@@ -64,6 +69,7 @@
 static bool s_showStats = false;
 static bool s_showWarningText = true;
 static bool s_cameraFly = true;
+static bool vsync = true;
 
 float fov = 60.0f;
 
@@ -76,14 +82,6 @@ float fov = 60.0f;
 // static bool key_right_pressed = false;
 // static bool key_up_pressed = false;
 // static bool key_down_pressed = false;
-
-// static void glfw_errorCallback(int error, const char* description) {
-// 	fprintf(stderr, "GLFW error %d: %s\n", error, description);
-// }
-
-// static void mouseInputPassthrough(GLFWwindow* window, int button, int action, int mods) {
-// 	Shadow::UserInput::mouseCallback(window, button, action, mods);
-// }
 
 // static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 // 	if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
@@ -123,7 +121,7 @@ float fov = 60.0f;
 // 		key_down_pressed = false;
 // }
 
-static const glm::vec2 SIZE = glm::vec2(1280, 720);
+// static const glm::vec2 SIZE = glm::vec2(1280, 720);
 
 struct Vertex {
 	glm::vec3 position;
@@ -137,15 +135,28 @@ struct PosColorVertex {
 	uint32_t abgr;
 };
 
+// static PosColorVertex cubeVertices[] = {
+// 	{ -1.0f, 1.0f, 1.0f, 0xff000000 },
+// 	{ 1.0f, 1.0f, 1.0f, 0xff0000ff },
+// 	{ -1.0f, -1.0f, 1.0f, 0xff00ff00 },
+// 	{ 1.0f, -1.0f, 1.0f, 0xff00ffff },
+// 	{ -1.0f, 1.0f, -1.0f, 0xffff0000 },
+// 	{ 1.0f, 1.0f, -1.0f, 0xff0000ff },
+// 	{ -1.0f, -1.0f, -1.0f, 0xffffff00 },
+// 	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
+// };
+
+static u32 color = 0xff0000ff;
+
 static PosColorVertex cubeVertices[] = {
-	{ -1.0f, 1.0f, 1.0f, 0xff000000 },
-	{ 1.0f, 1.0f, 1.0f, 0xff0000ff },
-	{ -1.0f, -1.0f, 1.0f, 0xff00ff00 },
-	{ 1.0f, -1.0f, 1.0f, 0xff00ffff },
-	{ -1.0f, 1.0f, -1.0f, 0xffff0000 },
-	{ 1.0f, 1.0f, -1.0f, 0xff0000ff },
-	{ -1.0f, -1.0f, -1.0f, 0xffffff00 },
-	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
+	{ -1.5f, 1.0f, 1.0f, color },
+	{ 1.0f, 1.0f, 1.0f, color },
+	{ -1.0f, -1.0f, 1.0f, color },
+	{ 1.0f, -1.0f, 1.0f, color },
+	{ -1.0f, 1.0f, -1.0f, color },
+	{ 1.0f, 1.0f, -1.0f, color },
+	{ -1.0f, -1.0f, -1.0f, 0xffff0000 },
+	{ 1.0f, -1.0f, -1.0f, 0xffff0000 },
 };
 
 static const uint16_t cubeTriList[] = {
@@ -187,24 +198,26 @@ static const uint16_t cubeTriList[] = {
 	7,
 };
 
-std::vector<float> load_input_audio(const std::string filename) {
-	std::ifstream file(filename.c_str(), std::ios::binary);
+// std::vector<float> load_input_audio(const std::string filename) {
+// 	std::ifstream file(filename.c_str(), std::ios::binary);
 
-	file.seekg(0, std::ios::end);
-	auto filesize = file.tellg();
-	auto numsamples = static_cast<int>(filesize / sizeof(float));
+// 	file.seekg(0, std::ios::end);
+// 	auto filesize = file.tellg();
+// 	auto numsamples = static_cast<int>(filesize / sizeof(float));
 
-	std::vector<float> inputaudio(numsamples);
-	file.seekg(0, std::ios::beg);
-	file.read(reinterpret_cast<char*>(inputaudio.data()), filesize);
+// 	std::vector<float> inputaudio(numsamples);
+// 	file.seekg(0, std::ios::beg);
+// 	file.read(reinterpret_cast<char*>(inputaudio.data()), filesize);
 
-	return inputaudio;
-}
+// 	return inputaudio;
+// }
 
-void save_output_audio(const std::string filename, std::vector<float> outputaudio) {
-	std::ofstream file(filename.c_str(), std::ios::binary);
-	file.write(reinterpret_cast<char*>(outputaudio.data()), outputaudio.size() * sizeof(float));
-}
+// void save_output_audio(const std::string filename, std::vector<float> outputaudio) {
+// 	std::ofstream file(filename.c_str(), std::ios::binary);
+// 	file.write(reinterpret_cast<char*>(outputaudio.data()), outputaudio.size() * sizeof(float));
+// }
+
+// void handle_sigint(int signal) { WARN("Recieved SIGINT"); }
 
 int Shadow::StartRuntime() {
 
@@ -214,6 +227,8 @@ int Shadow::StartRuntime() {
 	int height = 720;
 
 	ShadowWindow shadowWindow(width, height, CONFIG_PRETTY_NAME);
+
+	// signal(SIGINT, handle_sigint);
 
 	IMGUI_CHECKVERSION();
 
@@ -286,7 +301,6 @@ int Shadow::StartRuntime() {
 		save_output_audio("outputaudio.raw", outputaudio);
 
 	*/
-	// glfwSetMouseButtonCallback(window, mouseInputPassthrough);
 	// glfwSetKeyCallback(window, glfw_keyCallback);
 	// glfwSetKeyCallback(window, Shadow::KeyboardInput::glfw_keyCallback);
 
@@ -302,13 +316,13 @@ int Shadow::StartRuntime() {
 	height = bounds.height;
 	init.resolution.width = (uint32_t)width;
 	init.resolution.height = (uint32_t)height;
-	init.resolution.reset = BGFX_RESET_VSYNC;
+	init.resolution.reset = vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE;
 	if (!bgfx::init(init))
 		return 1;
 
 	// Set view 0 to be the same dimensions as the window and to clear the color buffer
 	const bgfx::ViewId kClearView = 0;
-	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x443355FF, 1.0f, 0);
+	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x222222FF, 1.0f, 0);
 	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	// ImGui init
@@ -322,6 +336,9 @@ int Shadow::StartRuntime() {
 	// Load DebugUI fonts
 	//    io.Fonts->AddFontDefault();
 	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
+	io.FontGlobalScale = 1.3f;
+
+	ImGui::SetupTheme();
 
 	ImGui_Implbgfx_Init(255);
 	ImGui_ImplGlfw_InitForVulkan(shadowWindow.window, true);
@@ -333,7 +350,11 @@ int Shadow::StartRuntime() {
 	Shadow::Camera camera;
 	camera.distance(10.0f);
 
+	Shadow::FontManager fontManager;
+	fontManager.createFontFromTTF();
+
 	// Mesh* m_mesh = meshLoad("suzanne.bin");
+	Shadow::Mesh mesh("suzanne.bin");
 
 	Shadow::UserCode::loadUserCode();
 
@@ -349,7 +370,7 @@ int Shadow::StartRuntime() {
 	if (nameDemo.empty())
 		userSettingsDB.write("Name", "Blank name...");
 
-	int64_t m_timeOffset;
+	// int64_t m_timeOffset;
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 
 	bgfx::VertexLayout pcvDecl;
@@ -371,6 +392,8 @@ int Shadow::StartRuntime() {
 
 	double lastMouseX, lastMouseY;
 
+	char sampleData[256] = "Hello, World!";
+
 	while (!shadowWindow.shouldClose()) {
 		glfwPollEvents();
 
@@ -378,8 +401,10 @@ int Shadow::StartRuntime() {
 			auto bounds = shadowWindow.getExtent();
 			width = bounds.width;
 			height = bounds.height;
-			bgfx::reset((uint32_t)width, (uint32_t)height, BGFX_RESET_VSYNC);
+			bgfx::reset(
+				(uint32_t)width, (uint32_t)height, vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE);
 			bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+			shadowWindow.resetWindowResizedFlag();
 		}
 
 		Shadow::UserInput::updateMouse();
@@ -392,9 +417,10 @@ int Shadow::StartRuntime() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 7.0f);
-
 		ImGui::ShowDemoWindow();
+
+		static MemoryEditor memedit;
+		memedit.DrawWindow("Memory Editor", &color, sizeof(color));
 
 		ImGui::Begin(CONFIG_PRETTY_NAME);
 
@@ -408,6 +434,9 @@ int Shadow::StartRuntime() {
 		ImGui::Text("Window Extents: W: %i, H: %i", width, height);
 		ImGui::SliderFloat("FOV", &fov, 0.0f, 180.0f);
 		ImGui::InputText("Name Demo", &nameDemo);
+		ImGui::Checkbox("Vsync", &vsync);
+		if (ImGui::Button("Close Window?"))
+			shadowWindow.close();
 
 		ImGui::Separator();
 		ImGui::Text("Audio");
@@ -420,8 +449,6 @@ int Shadow::StartRuntime() {
 			Shadow::UserCode::loadUserCode();
 
 		ImGui::End();
-
-		ImGui::PopStyleVar(1);
 
 		ImGui::Render();
 
@@ -449,6 +476,8 @@ int Shadow::StartRuntime() {
 
 #endif
 
+			bgfx::dbgTextPrintf(3, line++, 0xf0, "%s", sampleData);
+
 #endif
 		}
 
@@ -465,6 +494,8 @@ int Shadow::StartRuntime() {
 		const float deltaTime = float(frameTime / freq);
 
 		time += (float)(frameTime + speed / freq);
+
+		bgfx::setUniform(u_time, &time);
 
 		float viewMatrix[16];
 		camera.update(deltaTime);
@@ -506,7 +537,10 @@ int Shadow::StartRuntime() {
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
 
-		bgfx::submit(SCENE_VIEW_ID, program);
+		float meshMtx[16];
+		mesh.submit(SCENE_VIEW_ID, program, meshMtx);
+
+		// bgfx::submit(SCENE_VIEW_ID, program);
 
 		bgfx::frame();
 
@@ -520,6 +554,8 @@ int Shadow::StartRuntime() {
 	bgfx::destroy(vbh);
 	bgfx::destroy(program);
 	bgfx::destroy(u_time);
+
+	mesh.unload();
 
 	ImGui_ImplGlfw_Shutdown();
 	ImGui_Implbgfx_Shutdown();
