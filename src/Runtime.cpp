@@ -4,6 +4,7 @@
 #include "Logger.h"
 #include "ShadowWindow.h"
 #include "UI/Font.h"
+#include "UI/ShadowFlinger.hpp"
 #include "UserCode.h"
 #include "UserInput.h"
 #include "bgfx/defines.h"
@@ -65,6 +66,7 @@
 #endif*/
 
 #define SCENE_VIEW_ID 0
+#define SHADOW_FLINGER_VIEW_ID 10
 
 static bool s_showStats = false;
 static bool s_showWarningText = true;
@@ -320,10 +322,13 @@ int Shadow::StartRuntime() {
 	if (!bgfx::init(init))
 		return 1;
 
+	bgfx::setViewClear(
+		SHADOW_FLINGER_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xFF0000FF, 1.0f, 0);
+	bgfx::setViewRect(SHADOW_FLINGER_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
+
 	// Set view 0 to be the same dimensions as the window and to clear the color buffer
-	const bgfx::ViewId kClearView = 0;
-	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xFFFFFFFF, 1.0f, 0);
-	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+	bgfx::setViewClear(SCENE_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x222222FF, 1.0f, 0);
+	bgfx::setViewRect(SCENE_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	// ImGui init
 	ImGui::CreateContext();
@@ -353,7 +358,6 @@ int Shadow::StartRuntime() {
 	Shadow::FontManager fontManager;
 	fontManager.createFontFromTTF();
 
-	// Mesh* m_mesh = meshLoad("suzanne.bin");
 	Shadow::Mesh mesh("suzanne.bin");
 
 	Shadow::UserCode::loadUserCode();
@@ -373,6 +377,7 @@ int Shadow::StartRuntime() {
 	// int64_t m_timeOffset;
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 
+	// CUBE RENDERING
 	bgfx::VertexLayout pcvDecl;
 	pcvDecl.begin()
 		.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
@@ -384,6 +389,14 @@ int Shadow::StartRuntime() {
 		= bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
 
 	bgfx::ProgramHandle program = loadProgram("test/vs_test.vulkan", "test/fs_test.vulkan");
+	// END CUBE RENDERING
+
+	bgfx::VertexLayout rectDrawDecl;
+	rectDrawDecl.begin().add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float).end();
+	bgfx::VertexBufferHandle rectVBH = bgfx::createVertexBuffer(
+		bgfx::makeRef(Shadow::UI::rectangle, sizeof(Shadow::UI::rectangle)), rectDrawDecl);
+	bgfx::IndexBufferHandle rectIBH = bgfx::createIndexBuffer(
+		bgfx::makeRef(Shadow::UI::rectangleTriList, sizeof(Shadow::UI::rectangleTriList)));
 
 	bgfx::ProgramHandle meshProgram = loadProgram("mesh/vs_mesh.vulkan", "mesh/fs_mesh.vulkan");
 
@@ -405,7 +418,8 @@ int Shadow::StartRuntime() {
 			height = bounds.height;
 			bgfx::reset(
 				(uint32_t)width, (uint32_t)height, vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE);
-			bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
+			bgfx::setViewRect(SCENE_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
+			bgfx::setViewRect(SHADOW_FLINGER_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 			shadowWindow.resetWindowResizedFlag();
 		}
 
@@ -422,7 +436,7 @@ int Shadow::StartRuntime() {
 		ImGui::ShowDemoWindow();
 
 		static MemoryEditor memedit;
-		memedit.DrawWindow("Memory Editor", &color, sizeof(color));
+		memedit.DrawWindow("Memory Editor", &sampleData, sizeof(sampleData));
 
 		ImGui::Begin(CONFIG_PRETTY_NAME);
 
@@ -456,9 +470,9 @@ int Shadow::StartRuntime() {
 
 		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
 
-		// This dummy draw call is here to make sure that view 0 is cleared if no other draw calls
-		// are submitted to view 0
-		bgfx::touch(kClearView);
+		// This dummy draw call is here to make sure that view 0 is cleared if no other draw
+		// calls are submitted to view 0
+		bgfx::touch(SCENE_VIEW_ID);
 		// Use debug font to print information about this example.
 		bgfx::dbgTextClear();
 
@@ -499,6 +513,22 @@ int Shadow::StartRuntime() {
 
 		bgfx::setUniform(u_time, &time);
 
+		// SHADOW FLINGER MATRIX
+
+		const bx::Vec3 at = { 0.0f, 0.0f, 0.0f };
+		const bx::Vec3 eye = { 0.0f, 0.0f, -5.0f };
+		float flingerViewMatrix[16];
+		bx::mtxLookAt(flingerViewMatrix, eye, at);
+		float flingerProjectionMatrix[16];
+		bx::mtxProj(flingerProjectionMatrix, 60.0f, float(width) / float(height), 0.1f, 100.0f,
+			bgfx::getCaps()->homogeneousDepth);
+		bgfx::setViewTransform(SHADOW_FLINGER_VIEW_ID, flingerViewMatrix, flingerProjectionMatrix);
+		bgfx::setViewRect(SHADOW_FLINGER_VIEW_ID, 0, 0, uint16_t(width / 3), uint16_t(height));
+
+		bgfx::touch(SHADOW_FLINGER_VIEW_ID);
+
+		///////////////////////////////
+
 		float viewMatrix[16];
 		camera.update(deltaTime);
 		camera.mtxLookAt(viewMatrix);
@@ -509,7 +539,7 @@ int Shadow::StartRuntime() {
 			rendererCapabilities->homogeneousDepth);
 
 		bgfx::setViewTransform(SCENE_VIEW_ID, viewMatrix, projectionMatrix);
-		bgfx::setViewRect(SCENE_VIEW_ID, 100, 100, uint16_t(width), uint16_t(height));
+		bgfx::setViewRect(SCENE_VIEW_ID, 0, 0, uint16_t(width), uint16_t(height));
 
 		bgfx::touch(SCENE_VIEW_ID);
 
@@ -539,8 +569,13 @@ int Shadow::StartRuntime() {
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
 
+		bgfx::setVertexBuffer(1, rectVBH);
+		bgfx::setIndexBuffer(rectIBH);
+
 		float meshMtx[16];
 		// mesh.submit(SCENE_VIEW_ID, meshProgram, meshMtx);
+
+		bgfx::submit(SHADOW_FLINGER_VIEW_ID, program);
 
 		bgfx::submit(SCENE_VIEW_ID, meshProgram);
 
@@ -557,6 +592,9 @@ int Shadow::StartRuntime() {
 	bgfx::destroy(program);
 	bgfx::destroy(meshProgram);
 	bgfx::destroy(u_time);
+
+	bgfx::destroy(rectIBH);
+	bgfx::destroy(rectVBH);
 
 	mesh.unload();
 
