@@ -69,7 +69,7 @@
 static bool s_showStats = false;
 static bool s_showWarningText = true;
 static bool s_cameraFly = true;
-static bool vsync = true;
+static bool vsync = false;
 
 float fov = 60.0f;
 
@@ -322,7 +322,7 @@ int Shadow::StartRuntime() {
 
 	// Set view 0 to be the same dimensions as the window and to clear the color buffer
 	const bgfx::ViewId kClearView = 0;
-	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x222222FF, 1.0f, 0);
+	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xFFFFFFFF, 1.0f, 0);
 	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	// ImGui init
@@ -383,7 +383,9 @@ int Shadow::StartRuntime() {
 	bgfx::IndexBufferHandle ibh
 		= bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
 
-	bgfx::ProgramHandle program = loadProgram("vs_test.vulkan", "fs_test.vulkan");
+	bgfx::ProgramHandle program = loadProgram("test/vs_test.vulkan", "test/fs_test.vulkan");
+
+	bgfx::ProgramHandle meshProgram = loadProgram("mesh/vs_mesh.vulkan", "mesh/fs_mesh.vulkan");
 
 	// unsigned int counter = 0;
 
@@ -507,7 +509,7 @@ int Shadow::StartRuntime() {
 			rendererCapabilities->homogeneousDepth);
 
 		bgfx::setViewTransform(SCENE_VIEW_ID, viewMatrix, projectionMatrix);
-		bgfx::setViewRect(SCENE_VIEW_ID, 0, 0, uint16_t(width), uint16_t(height));
+		bgfx::setViewRect(SCENE_VIEW_ID, 100, 100, uint16_t(width), uint16_t(height));
 
 		bgfx::touch(SCENE_VIEW_ID);
 
@@ -538,9 +540,9 @@ int Shadow::StartRuntime() {
 		bgfx::setIndexBuffer(ibh);
 
 		float meshMtx[16];
-		mesh.submit(SCENE_VIEW_ID, program, meshMtx);
+		// mesh.submit(SCENE_VIEW_ID, meshProgram, meshMtx);
 
-		// bgfx::submit(SCENE_VIEW_ID, program);
+		bgfx::submit(SCENE_VIEW_ID, meshProgram);
 
 		bgfx::frame();
 
@@ -553,6 +555,7 @@ int Shadow::StartRuntime() {
 	bgfx::destroy(ibh);
 	bgfx::destroy(vbh);
 	bgfx::destroy(program);
+	bgfx::destroy(meshProgram);
 	bgfx::destroy(u_time);
 
 	mesh.unload();

@@ -1,11 +1,6 @@
 $input v_pos, v_view, v_normal, v_color0
 
-/*
- * Copyright 2011-2023 Branimir Karadzic. All rights reserved.
- * License: https://github.com/bkaradzic/bgfx/blob/master/LICENSE
- */
-
-#include "../common/common.sh"
+#include "../common.sh"
 
 uniform vec4 u_time;
 
