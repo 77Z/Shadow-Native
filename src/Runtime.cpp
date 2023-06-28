@@ -64,7 +64,8 @@
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif*/
 
-#define SCENE_VIEW_ID 0
+#define SCENE_VIEW_ID 10
+#define EDITOR_BG_VIEW_ID 0
 
 static bool s_showStats = false;
 static bool s_showWarningText = true;
@@ -320,15 +321,18 @@ int Shadow::StartRuntime() {
 	if (!bgfx::init(init))
 		return 1;
 
+	bgfx::setViewClear(EDITOR_BG_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x222222FF, 1.0f, 0);
+	bgfx::setViewRect(EDITOR_BG_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
+
 	// Set view 0 to be the same dimensions as the window and to clear the color buffer
-	const bgfx::ViewId kClearView = 0;
+	const bgfx::ViewId kClearView = SCENE_VIEW_ID;
 	bgfx::setViewClear(kClearView, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xFFFFFFFF, 1.0f, 0);
 	bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	// ImGui init
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	// io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	// io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
@@ -405,8 +409,7 @@ int Shadow::StartRuntime() {
 			height = bounds.height;
 			bgfx::reset(
 				(uint32_t)width, (uint32_t)height, vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE);
-			bgfx::setViewRect(kClearView, 0, 0, bgfx::BackbufferRatio::Equal);
-			shadowWindow.resetWindowResizedFlag();
+			bgfx::setViewRect(EDITOR_BG_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 		}
 
 		Shadow::UserInput::updateMouse();
@@ -421,8 +424,39 @@ int Shadow::StartRuntime() {
 
 		ImGui::ShowDemoWindow();
 
+		// const ImGuiViewport* imguiViewport = ImGui::GetMainViewport();
+		// ImGui::SetNextWindowPos(imguiViewport->WorkPos);
+		// ImGui::SetNextWindowSize(imguiViewport->WorkSize);
+		// ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		// ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		// ImGui::Begin("Dock space", nullptr,
+		// 	ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground
+		// 		| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+		// 		| ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus);
+
+		// ImGui::End();
+		// ImGui::PopStyleVar(2);
+
 		static MemoryEditor memedit;
-		memedit.DrawWindow("Memory Editor", &color, sizeof(color));
+		memedit.DrawWindow("Memory Editor", &sampleData, sizeof(sampleData));
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+		ImGui::Begin("Viewport", nullptr,
+			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground
+				| ImGuiWindowFlags_NoMouseInputs);
+		ImVec2 vMin = ImGui::GetWindowContentRegionMin();
+		ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+
+		vMin.x += ImGui::GetWindowPos().x;
+		vMin.y += ImGui::GetWindowPos().y;
+		vMax.x += ImGui::GetWindowPos().x;
+		vMax.y += ImGui::GetWindowPos().y;
+
+		ImGui::GetForegroundDrawList()->AddRect(vMin, vMax, IM_COL32(255, 255, 0, 255));
+		ImGui::End();
+
+		ImGui::PopStyleVar(1);
 
 		ImGui::Begin(CONFIG_PRETTY_NAME);
 
@@ -499,6 +533,21 @@ int Shadow::StartRuntime() {
 
 		bgfx::setUniform(u_time, &time);
 
+		// EDITOR MATRIX
+
+		const bx::Vec3 at = { 0.0f, 0.0f, 0.0f };
+		const bx::Vec3 eye = { 0.0f, 0.0f, 0.0f };
+		float editorViewMatrix[16];
+		bx::mtxLookAt(editorViewMatrix, eye, at);
+		float editorProjectionMatrix[16];
+		bx::mtxProj(editorProjectionMatrix, 60.0f, float(width) / float(height), 0.1f, 100.0f,
+			bgfx::getCaps()->homogeneousDepth);
+		bgfx::setViewTransform(EDITOR_BG_VIEW_ID, editorViewMatrix, editorProjectionMatrix);
+
+		bgfx::touch(EDITOR_BG_VIEW_ID);
+
+		////////
+
 		float viewMatrix[16];
 		camera.update(deltaTime);
 		camera.mtxLookAt(viewMatrix);
@@ -509,7 +558,8 @@ int Shadow::StartRuntime() {
 			rendererCapabilities->homogeneousDepth);
 
 		bgfx::setViewTransform(SCENE_VIEW_ID, viewMatrix, projectionMatrix);
-		bgfx::setViewRect(SCENE_VIEW_ID, 100, 100, uint16_t(width), uint16_t(height));
+		bgfx::setViewRect(
+			SCENE_VIEW_ID, vMin.x, vMin.y, uint16_t(vMax.x - vMin.x), uint16_t(vMax.y - vMin.y));
 
 		bgfx::touch(SCENE_VIEW_ID);
 
