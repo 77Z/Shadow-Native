@@ -1,6 +1,5 @@
 #include "Runtime.h"
 #include "Components/Camera.h"
-#include "KeyboardInput.hpp"
 #include "Logger.h"
 #include "ShadowWindow.h"
 #include "UI/Font.h"
@@ -19,10 +18,7 @@
 #include <Util.h>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
-#include <bx/file.h>
 #include <bx/math.h>
-#include <bx/string.h>
-#include <csignal>
 #include <cstdint>
 #include <generated/autoconf.h>
 #include <string>
@@ -34,15 +30,6 @@
 #include "imgui/imgui_memory_editor.h"
 #include <GLFW/glfw3.h>
 #include <bgfx/bgfx.h>
-#include <bx/bx.h>
-#include <cstdio>
-#include <imgui_internal.h>
-
-// #include <phonon.h>
-#include <algorithm>
-#include <fstream>
-#include <iterator>
-#include <vector>
 
 #if BX_PLATFORM_LINUX
 #define GLFW_EXPOSE_NATIVE_X11
@@ -59,8 +46,6 @@
 #include <imgui/imgui_impl_bgfx.h>
 #include <imgui_impl_glfw.h>
 
-#include <unistd.h>
-
 /*#ifdef SHADOW_DEBUG_BUILD
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif*/
@@ -71,64 +56,59 @@
 static bool s_showStats = false;
 static bool s_showWarningText = true;
 static bool s_cameraFly = true;
+static bool s_showDemoWindow = false;
 static bool vsync = false;
 
 float fov = 60.0f;
 
-// float camX = 0.0f;
-// float camY = 0.0f;
-// float camZ = 0.0f;
-// static bool key_forwards_pressed = false;
-// static bool key_backwards_pressed = false;
-// static bool key_left_pressed = false;
-// static bool key_right_pressed = false;
-// static bool key_up_pressed = false;
-// static bool key_down_pressed = false;
+/*
+float camX = 0.0f;
+float camY = 0.0f;
+float camZ = 0.0f;
+static bool key_forwards_pressed = false;
+static bool key_backwards_pressed = false;
+static bool key_left_pressed = false;
+static bool key_right_pressed = false;
+static bool key_up_pressed = false;
+static bool key_down_pressed = false;
 
-// static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-// 	if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
-// 		s_showWarningText = !s_showWarningText;
+static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+	if (key == GLFW_KEY_F1 && action == GLFW_PRESS)
+		s_showWarningText = !s_showWarningText;
 
-// 	if (key == GLFW_KEY_F3 && action == GLFW_PRESS)
-// 		s_showStats = !s_showStats;
+	if (key == GLFW_KEY_F3 && action == GLFW_PRESS)
+		s_showStats = !s_showStats;
 
-// 	if (key == GLFW_KEY_W && action == GLFW_PRESS)
-// 		key_forwards_pressed = true;
-// 	if (key == GLFW_KEY_W && action == GLFW_RELEASE)
-// 		key_forwards_pressed = false;
+	if (key == GLFW_KEY_W && action == GLFW_PRESS)
+		key_forwards_pressed = true;
+	if (key == GLFW_KEY_W && action == GLFW_RELEASE)
+		key_forwards_pressed = false;
 
-// 	if (key == GLFW_KEY_S && action == GLFW_PRESS)
-// 		key_backwards_pressed = true;
-// 	if (key == GLFW_KEY_S && action == GLFW_RELEASE)
-// 		key_backwards_pressed = false;
+	if (key == GLFW_KEY_S && action == GLFW_PRESS)
+		key_backwards_pressed = true;
+	if (key == GLFW_KEY_S && action == GLFW_RELEASE)
+		key_backwards_pressed = false;
 
-// 	if (key == GLFW_KEY_A && action == GLFW_PRESS)
-// 		key_left_pressed = true;
-// 	if (key == GLFW_KEY_A && action == GLFW_RELEASE)
-// 		key_left_pressed = false;
+	if (key == GLFW_KEY_A && action == GLFW_PRESS)
+		key_left_pressed = true;
+	if (key == GLFW_KEY_A && action == GLFW_RELEASE)
+		key_left_pressed = false;
 
-// 	if (key == GLFW_KEY_D && action == GLFW_PRESS)
-// 		key_right_pressed = true;
-// 	if (key == GLFW_KEY_D && action == GLFW_RELEASE)
-// 		key_right_pressed = false;
+	if (key == GLFW_KEY_D && action == GLFW_PRESS)
+		key_right_pressed = true;
+	if (key == GLFW_KEY_D && action == GLFW_RELEASE)
+		key_right_pressed = false;
 
-// 	if (key == GLFW_KEY_E && action == GLFW_PRESS)
-// 		key_up_pressed = true;
-// 	if (key == GLFW_KEY_E && action == GLFW_RELEASE)
-// 		key_up_pressed = false;
+	if (key == GLFW_KEY_E && action == GLFW_PRESS)
+		key_up_pressed = true;
+	if (key == GLFW_KEY_E && action == GLFW_RELEASE)
+		key_up_pressed = false;
 
-// 	if (key == GLFW_KEY_Q && action == GLFW_PRESS)
-// 		key_down_pressed = true;
-// 	if (key == GLFW_KEY_Q && action == GLFW_RELEASE)
-// 		key_down_pressed = false;
-// }
-
-// static const glm::vec2 SIZE = glm::vec2(1280, 720);
-
-struct Vertex {
-	glm::vec3 position;
-	u32 color;
-};
+	if (key == GLFW_KEY_Q && action == GLFW_PRESS)
+		key_down_pressed = true;
+	if (key == GLFW_KEY_Q && action == GLFW_RELEASE)
+		key_down_pressed = false;
+}*/
 
 struct PosColorVertex {
 	float x;
@@ -137,28 +117,15 @@ struct PosColorVertex {
 	uint32_t abgr;
 };
 
-// static PosColorVertex cubeVertices[] = {
-// 	{ -1.0f, 1.0f, 1.0f, 0xff000000 },
-// 	{ 1.0f, 1.0f, 1.0f, 0xff0000ff },
-// 	{ -1.0f, -1.0f, 1.0f, 0xff00ff00 },
-// 	{ 1.0f, -1.0f, 1.0f, 0xff00ffff },
-// 	{ -1.0f, 1.0f, -1.0f, 0xffff0000 },
-// 	{ 1.0f, 1.0f, -1.0f, 0xff0000ff },
-// 	{ -1.0f, -1.0f, -1.0f, 0xffffff00 },
-// 	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
-// };
-
-static u32 color = 0xff0000ff;
-
 static PosColorVertex cubeVertices[] = {
-	{ -1.5f, 1.0f, 1.0f, color },
-	{ 1.0f, 1.0f, 1.0f, color },
-	{ -1.0f, -1.0f, 1.0f, color },
-	{ 1.0f, -1.0f, 1.0f, color },
-	{ -1.0f, 1.0f, -1.0f, color },
-	{ 1.0f, 1.0f, -1.0f, color },
-	{ -1.0f, -1.0f, -1.0f, 0xffff0000 },
-	{ 1.0f, -1.0f, -1.0f, 0xffff0000 },
+	{ -1.0f, 1.0f, 1.0f, 0xff000000 },
+	{ 1.0f, 1.0f, 1.0f, 0xff0000ff },
+	{ -1.0f, -1.0f, 1.0f, 0xff00ff00 },
+	{ 1.0f, -1.0f, 1.0f, 0xff00ffff },
+	{ -1.0f, 1.0f, -1.0f, 0xffff0000 },
+	{ 1.0f, 1.0f, -1.0f, 0xff0000ff },
+	{ -1.0f, -1.0f, -1.0f, 0xffffff00 },
+	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
 };
 
 static const uint16_t cubeTriList[] = {
@@ -200,25 +167,6 @@ static const uint16_t cubeTriList[] = {
 	7,
 };
 
-// std::vector<float> load_input_audio(const std::string filename) {
-// 	std::ifstream file(filename.c_str(), std::ios::binary);
-
-// 	file.seekg(0, std::ios::end);
-// 	auto filesize = file.tellg();
-// 	auto numsamples = static_cast<int>(filesize / sizeof(float));
-
-// 	std::vector<float> inputaudio(numsamples);
-// 	file.seekg(0, std::ios::beg);
-// 	file.read(reinterpret_cast<char*>(inputaudio.data()), filesize);
-
-// 	return inputaudio;
-// }
-
-// void save_output_audio(const std::string filename, std::vector<float> outputaudio) {
-// 	std::ofstream file(filename.c_str(), std::ios::binary);
-// 	file.write(reinterpret_cast<char*>(outputaudio.data()), outputaudio.size() * sizeof(float));
-// }
-
 // void handle_sigint(int signal) { WARN("Recieved SIGINT"); }
 
 int Shadow::StartRuntime() {
@@ -229,84 +177,11 @@ int Shadow::StartRuntime() {
 	int height = 720;
 
 	ShadowWindow shadowWindow(width, height, CONFIG_PRETTY_NAME);
-
-	// signal(SIGINT, handle_sigint);
+	Audio::AudioEngine audio;
 
 	IMGUI_CHECKVERSION();
 
-	ShadowAudio::initAudioEngine();
 	Shadow::UserInput::initMouse(shadowWindow.window);
-
-	/*
-
-		IPLContextSettings contextSettings{};
-		contextSettings.version = STEAMAUDIO_VERSION;
-
-		IPLContext context = nullptr;
-		iplContextCreate(&contextSettings, &context);
-
-		IPLHRTFSettings hrtfSettings{};
-		hrtfSettings.type = IPL_HRTFTYPE_DEFAULT;
-
-		IPLAudioSettings audioSettings{};
-		audioSettings.samplingRate = 44100;
-		audioSettings.frameSize = 1024;
-
-		IPLHRTF hrtf = nullptr;
-		iplHRTFCreate(context, &audioSettings, &hrtfSettings, &hrtf);
-
-		IPLBinauralEffectSettings effectSettings{};
-		effectSettings.hrtf = hrtf;
-
-		IPLBinauralEffect effect{};
-		iplBinauralEffectCreate(context, &audioSettings, &effectSettings, &effect);
-
-		std::vector<float> inputaudio = load_input_audio("Fail_Sound.raw");
-		std::vector<float> outputaudio;
-
-		float* inData[] = { inputaudio.data() };
-
-		IPLAudioBuffer inBuffer{};
-		inBuffer.numChannels = 1;
-		inBuffer.numSamples = audioSettings.frameSize;
-		inBuffer.data = inData;
-
-		IPLAudioBuffer outBuffer{};
-		iplAudioBufferAllocate(context, 2, audioSettings.frameSize, &outBuffer);
-
-		std::vector<float> outputaudioframe(2 * audioSettings.frameSize);
-
-		int numframes = inputaudio.size() / audioSettings.frameSize;
-
-		for (int i = 0; i < numframes; i++) {
-			IPLBinauralEffectParams effectParams{};
-			effectParams.direction = IPLVector3{1.0f, 1.0f, 1.0f};
-			effectParams.interpolation = IPL_HRTFINTERPOLATION_NEAREST;
-			effectParams.spatialBlend = 1.0f;
-			effectParams.hrtf = hrtf;
-
-			iplBinauralEffectApply(effect, &effectParams, &inBuffer, &outBuffer);
-
-			iplAudioBufferInterleave(context, &outBuffer, outputaudioframe.data());
-
-			std::copy(std::begin(outputaudioframe), std::end(outputaudioframe),
-	   std::back_inserter(outputaudio));
-
-			inData[0] += audioSettings.frameSize;
-		}
-
-		iplAudioBufferFree(context, &outBuffer);
-		iplBinauralEffectRelease(&effect);
-		iplHRTFRelease(&hrtf);
-		iplContextRelease(&context);
-
-		save_output_audio("outputaudio.raw", outputaudio);
-
-	*/
-	// glfwSetKeyCallback(window, glfw_keyCallback);
-	// glfwSetKeyCallback(window, Shadow::KeyboardInput::glfw_keyCallback);
-
-	bgfx::renderFrame();
 
 	bgfx::Init init;
 
@@ -322,10 +197,6 @@ int Shadow::StartRuntime() {
 	if (!bgfx::init(init))
 		return 1;
 
-	bgfx::setViewClear(
-		SHADOW_FLINGER_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xFF0000FF, 1.0f, 0);
-	bgfx::setViewRect(SHADOW_FLINGER_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
-
 	// Set view 0 to be the same dimensions as the window and to clear the color buffer
 	bgfx::setViewClear(SCENE_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x222222FF, 1.0f, 0);
 	bgfx::setViewRect(SCENE_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
@@ -339,7 +210,7 @@ int Shadow::StartRuntime() {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
 	// Load DebugUI fonts
-	//    io.Fonts->AddFontDefault();
+	// io.Fonts->AddFontDefault();
 	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 	io.FontGlobalScale = 1.3f;
 
@@ -355,10 +226,7 @@ int Shadow::StartRuntime() {
 	Shadow::Camera camera;
 	camera.distance(10.0f);
 
-	Shadow::FontManager fontManager;
-	fontManager.createFontFromTTF();
-
-	Shadow::Mesh mesh("suzanne.bin");
+	Shadow::Mesh mesh("bunny.bin");
 
 	Shadow::UserCode::loadUserCode();
 
@@ -391,23 +259,12 @@ int Shadow::StartRuntime() {
 	bgfx::ProgramHandle program = loadProgram("test/vs_test.vulkan", "test/fs_test.vulkan");
 	// END CUBE RENDERING
 
-	bgfx::VertexLayout rectDrawDecl;
-	rectDrawDecl.begin().add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float).end();
-	bgfx::VertexBufferHandle rectVBH = bgfx::createVertexBuffer(
-		bgfx::makeRef(Shadow::UI::rectangle, sizeof(Shadow::UI::rectangle)), rectDrawDecl);
-	bgfx::IndexBufferHandle rectIBH = bgfx::createIndexBuffer(
-		bgfx::makeRef(Shadow::UI::rectangleTriList, sizeof(Shadow::UI::rectangleTriList)));
-
 	bgfx::ProgramHandle meshProgram = loadProgram("mesh/vs_mesh.vulkan", "mesh/fs_mesh.vulkan");
-
-	// unsigned int counter = 0;
 
 	float speed = 0.37f;
 	float time = 0.0f;
 
-	double lastMouseX, lastMouseY;
-
-	char sampleData[256] = "Hello, World!";
+	UI::ShadowFlingerViewport shadowFlinger(SHADOW_FLINGER_VIEW_ID);
 
 	while (!shadowWindow.shouldClose()) {
 		glfwPollEvents();
@@ -419,7 +276,7 @@ int Shadow::StartRuntime() {
 			bgfx::reset(
 				(uint32_t)width, (uint32_t)height, vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE);
 			bgfx::setViewRect(SCENE_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
-			bgfx::setViewRect(SHADOW_FLINGER_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
+			shadowFlinger.resized();
 			shadowWindow.resetWindowResizedFlag();
 		}
 
@@ -433,10 +290,11 @@ int Shadow::StartRuntime() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::ShowDemoWindow();
+		if (s_showDemoWindow)
+			ImGui::ShowDemoWindow();
 
 		static MemoryEditor memedit;
-		memedit.DrawWindow("Memory Editor", &sampleData, sizeof(sampleData));
+		memedit.DrawWindow("Memory Editor", &mesh, sizeof(mesh));
 
 		ImGui::Begin(CONFIG_PRETTY_NAME);
 
@@ -451,13 +309,16 @@ int Shadow::StartRuntime() {
 		ImGui::SliderFloat("FOV", &fov, 0.0f, 180.0f);
 		ImGui::InputText("Name Demo", &nameDemo);
 		ImGui::Checkbox("Vsync", &vsync);
-		if (ImGui::Button("Close Window?"))
+		if (ImGui::Button("Close Engine"))
 			shadowWindow.close();
+		ImGui::SameLine();
+		if (ImGui::Button("Open Dev UI Demo"))
+			s_showDemoWindow = !s_showDemoWindow;
 
 		ImGui::Separator();
 		ImGui::Text("Audio");
 		if (ImGui::Button("Play Demo Audio"))
-			ShadowAudio::playTestAudio();
+			audio.playTestAudio();
 
 		ImGui::Separator();
 		ImGui::Text("UserCode");
@@ -473,6 +334,12 @@ int Shadow::StartRuntime() {
 		// This dummy draw call is here to make sure that view 0 is cleared if no other draw
 		// calls are submitted to view 0
 		bgfx::touch(SCENE_VIEW_ID);
+
+#ifdef SHADOW_DEBUG_BUILD
+		const bgfx::Stats* stats = bgfx::getStats();
+		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
+#endif
+
 		// Use debug font to print information about this example.
 		bgfx::dbgTextClear();
 
@@ -492,15 +359,10 @@ int Shadow::StartRuntime() {
 
 #endif
 
-			bgfx::dbgTextPrintf(3, line++, 0xf0, "%s", sampleData);
+			bgfx::dbgTextPrintf(3, line++, 0xf0, "%i", stats->numViews);
 
 #endif
 		}
-
-#ifdef SHADOW_DEBUG_BUILD
-		const bgfx::Stats* stats = bgfx::getStats();
-		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
-#endif
 
 		int64_t now = bx::getHPCounter();
 		static int64_t last = now;
@@ -512,22 +374,6 @@ int Shadow::StartRuntime() {
 		time += (float)(frameTime + speed / freq);
 
 		bgfx::setUniform(u_time, &time);
-
-		// SHADOW FLINGER MATRIX
-
-		const bx::Vec3 at = { 0.0f, 0.0f, 0.0f };
-		const bx::Vec3 eye = { 0.0f, 0.0f, -5.0f };
-		float flingerViewMatrix[16];
-		bx::mtxLookAt(flingerViewMatrix, eye, at);
-		float flingerProjectionMatrix[16];
-		bx::mtxProj(flingerProjectionMatrix, 60.0f, float(width) / float(height), 0.1f, 100.0f,
-			bgfx::getCaps()->homogeneousDepth);
-		bgfx::setViewTransform(SHADOW_FLINGER_VIEW_ID, flingerViewMatrix, flingerProjectionMatrix);
-		bgfx::setViewRect(SHADOW_FLINGER_VIEW_ID, 0, 0, uint16_t(width / 3), uint16_t(height));
-
-		bgfx::touch(SHADOW_FLINGER_VIEW_ID);
-
-		///////////////////////////////
 
 		float viewMatrix[16];
 		camera.update(deltaTime);
@@ -553,35 +399,32 @@ int Shadow::StartRuntime() {
 		if (Shadow::UserInput::isRightMouseDown() && !ImGui::MouseOverArea())
 			camera.dolly(UserInput::getMouseYDiff() / 1000);
 
-		// if (key_backwards_pressed)
-		// 	camZ -= 0.3f;
-		// if (key_forwards_pressed)
-		// 	camZ += 0.3f;
-		// if (key_left_pressed)
-		// 	camX += 0.3f;
-		// if (key_right_pressed)
-		// 	camX -= 0.3f;
-		// if (key_up_pressed)
-		// 	camZ += 0.3f;
-		// if (key_down_pressed)
-		// 	camZ -= 0.3f;
+		/*
+		if (key_backwards_pressed)
+			camZ -= 0.3f;
+		if (key_forwards_pressed)
+			camZ += 0.3f;
+		if (key_left_pressed)
+			camX += 0.3f;
+		if (key_right_pressed)
+			camX -= 0.3f;
+		if (key_up_pressed)
+			camZ += 0.3f;
+		if (key_down_pressed)
+			camZ -= 0.3f;
+		*/
+
+		shadowFlinger.draw(program, width, height);
+
+		float meshMtx[16];
+		mesh.submit(SCENE_VIEW_ID, meshProgram, meshMtx);
 
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
 
-		bgfx::setVertexBuffer(1, rectVBH);
-		bgfx::setIndexBuffer(rectIBH);
-
-		float meshMtx[16];
-		// mesh.submit(SCENE_VIEW_ID, meshProgram, meshMtx);
-
-		bgfx::submit(SHADOW_FLINGER_VIEW_ID, program);
-
-		bgfx::submit(SCENE_VIEW_ID, meshProgram);
+		bgfx::submit(SCENE_VIEW_ID, program);
 
 		bgfx::frame();
-
-		// counter++;
 	}
 
 	userSettingsDB.write("FOV", std::to_string(fov));
@@ -593,15 +436,12 @@ int Shadow::StartRuntime() {
 	bgfx::destroy(meshProgram);
 	bgfx::destroy(u_time);
 
-	bgfx::destroy(rectIBH);
-	bgfx::destroy(rectVBH);
+	shadowFlinger.unload();
 
 	mesh.unload();
 
 	ImGui_ImplGlfw_Shutdown();
 	ImGui_Implbgfx_Shutdown();
-
-	// Shadow::fs::closeDB(userSettingsDB);
 
 	ShutdownBXFilesytem();
 
@@ -613,7 +453,6 @@ int Shadow::StartRuntime() {
 void Shadow::ShutdownRuntime() {
 	// * Most of the classes shut themselves down at
 	// * this point, which happens after this step
-	ShadowAudio::shutdownAudioEngine();
 	ImGui::DestroyContext();
 	bgfx::shutdown();
 

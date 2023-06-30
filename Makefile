@@ -1,7 +1,7 @@
 -include .config
 
-CC = g++
-#CC = clang++
+# CC = g++
+CC = clang++
 
 UNAME_S = $(shell uname -s)
 BIN = bin
@@ -169,7 +169,7 @@ run: build
 	$(shell cd $(BIN); ./game)
 
 build: dirs runtimeres shaders $(OBJ)
-	@echo [LINK ] $(filter %.o,$^)
+	@echo [LINK ] $(BIN)/game
 	@$(CC) -o $(BIN)/game $(filter %.o,$^) $(LDFLAGS)
 
 %.o: %.cpp

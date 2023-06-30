@@ -13,29 +13,20 @@ namespace UI {
 		float z;
 	};
 
-	const UIVertex rectangle[] = {
-		{ 0.0f, 0.0f, 0.0f },
-		{ 4.0f, 0.0f, 0.0f },
-		{ 0.0f, 1.0f, 0.0f },
-		{ 4.0f, 1.0f, 0.0f },
-	};
-
-	const u16 rectangleTriList[] = {
-		0,
-		1,
-		2,
-		1,
-		2,
-		3,
-	};
-
 	class ShadowFlingerViewport {
-		ShadowFlingerViewport(bgfx::ViewId viewId)
-			: viewId(viewId) { }
-		~ShadowFlingerViewport() { }
+	public:
+		ShadowFlingerViewport(bgfx::ViewId viewId);
+
+		void resized();
+		void draw(bgfx::ProgramHandle program, int width, int height);
+		void unload();
 
 	private:
 		bgfx::ViewId viewId;
+		bgfx::VertexLayout drawDecl;
+
+		bgfx::VertexBufferHandle vbh;
+		bgfx::IndexBufferHandle ibh;
 	};
 
 }
