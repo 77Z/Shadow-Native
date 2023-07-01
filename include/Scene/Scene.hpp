@@ -3,15 +3,20 @@
 
 #include <bgfx/bgfx.h>
 #include <entt.hpp>
+#include <string>
 
 namespace Shadow {
+
+// Forward Decl
+class Entity;
 
 class Scene {
 public:
 	Scene();
 	~Scene();
 
-	entt::entity createEntity();
+	// entt::entity createEntity();
+	Entity createEntity(const std::string& name = std::string());
 	entt::registry m_Registry;
 
 	bgfx::VertexLayout pcvDecl;

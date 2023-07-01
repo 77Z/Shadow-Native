@@ -4,6 +4,7 @@
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
+#include "Scene/SceneExplorer.hpp"
 #include "ShadowWindow.h"
 #include "UI/Font.h"
 #include "UI/ShadowFlinger.hpp"
@@ -113,67 +114,9 @@ static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int acti
 		key_down_pressed = false;
 }*/
 
-struct PosColorVertex {
-	float x;
-	float y;
-	float z;
-	uint32_t abgr;
-};
-
-static PosColorVertex cubeVertices[] = {
-	{ -1.0f, 1.0f, 1.0f, 0xff000000 },
-	{ 1.0f, 1.0f, 1.0f, 0xff0000ff },
-	{ -1.0f, -1.0f, 1.0f, 0xff00ff00 },
-	{ 1.0f, -1.0f, 1.0f, 0xff00ffff },
-	{ -1.0f, 1.0f, -1.0f, 0xffff0000 },
-	{ 1.0f, 1.0f, -1.0f, 0xff0000ff },
-	{ -1.0f, -1.0f, -1.0f, 0xffffff00 },
-	{ 1.0f, -1.0f, -1.0f, 0xffffffff },
-};
-
-static const uint16_t cubeTriList[] = {
-	0,
-	1,
-	2,
-	1,
-	3,
-	2,
-	4,
-	6,
-	5,
-	5,
-	6,
-	7,
-	0,
-	2,
-	4,
-	4,
-	2,
-	6,
-	1,
-	5,
-	3,
-	5,
-	7,
-	3,
-	0,
-	4,
-	1,
-	4,
-	5,
-	1,
-	2,
-	3,
-	6,
-	6,
-	3,
-	7,
-};
-
 // void handle_sigint(int signal) { WARN("Recieved SIGINT"); }
 
 int Shadow::StartRuntime() {
-
 	InitBXFilesystem();
 
 	int width = 1280;
@@ -248,20 +191,7 @@ int Shadow::StartRuntime() {
 	// int64_t m_timeOffset;
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 
-	// CUBE RENDERING
-	/* bgfx::VertexLayout pcvDecl;
-	pcvDecl.begin()
-		.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
-		.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
-		.end();
-	bgfx::VertexBufferHandle vbh
-		= bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), pcvDecl);
-	bgfx::IndexBufferHandle ibh
-		= bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList))); */
-
 	bgfx::ProgramHandle program = loadProgram("test/vs_test.vulkan", "test/fs_test.vulkan");
-	// END CUBE RENDERING
-
 	bgfx::ProgramHandle meshProgram = loadProgram("mesh/vs_mesh.vulkan", "mesh/fs_mesh.vulkan");
 
 	float speed = 0.37f;
@@ -270,17 +200,28 @@ int Shadow::StartRuntime() {
 	UI::ShadowFlingerViewport shadowFlinger(SHADOW_FLINGER_VIEW_ID);
 
 	Shadow::Scene activeScene;
+	Shadow::SceneExplorer(&activeScene);
 
-	auto demoCube = activeScene.createEntity();
+	auto demoCube = activeScene.createEntity("Primary Cube");
 	auto cubeTwo = activeScene.createEntity();
 	auto another = activeScene.createEntity();
+	auto againn = activeScene.createEntity();
 
-	activeScene.m_Registry.emplace<CubeComponent>(demoCube, 5.0f);
-	activeScene.m_Registry.emplace<CubeComponent>(cubeTwo, -5.0f);
-	activeScene.m_Registry.emplace<CubeComponent>(another);
+	demoCube.addComponent<CubeComponent>(5.0f);
+	cubeTwo.addComponent<CubeComponent>(-5.0f);
+	another.addComponent<CubeComponent>();
+	againn.addComponent<CubeComponent>(2.0f);
 
-	// float cubeMtx[16];
-	// bx::mtxSRT(cubeMtx, 3.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	float cubeMtx[16];
+	bx::mtxSRT(cubeMtx, 3.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+	std::string outStr = "[ ";
+	for (float item : cubeMtx) {
+		outStr.append(std::to_string((int)item));
+		outStr.append(" ");
+	}
+	outStr.append("]");
+
+	WARN("%s", outStr.c_str());
 
 	// activeScene.Reg().emplace<TransformComponent>(demoCube, cubeMtx);
 	// activeScene.Reg().emplace<ShapePusherComponent>(demoCube, 0xFF00FF00);
@@ -343,6 +284,9 @@ int Shadow::StartRuntime() {
 		ImGui::Text("UserCode");
 		// if (ImGui::Button("Reload UserCode Library"))
 		//			userCode.reload();
+		ImGui::Separator();
+		ImGui::Text("Entity & Actors");
+		ImGui::Text("%s", demoCube.GetComponent<TagComponent>().tag.c_str());
 
 		ImGui::End();
 

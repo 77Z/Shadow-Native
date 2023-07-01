@@ -4,10 +4,21 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
+#include <glm/glm.hpp>
+#include <string>
 
 namespace Shadow {
 
-/* struct TransformComponent {
+struct TagComponent {
+	std::string tag;
+
+	TagComponent() = default;
+	TagComponent(const TagComponent&) = default;
+	TagComponent(const std::string& tag)
+		: tag(tag) { }
+};
+
+struct TransformComponent {
 	glm::mat4 transform = glm::mat4(1.0f);
 
 	TransformComponent() = default;
@@ -17,7 +28,7 @@ namespace Shadow {
 
 	operator glm::mat4&() { return transform; }
 	operator const glm::mat4&() const { return transform; }
-}; */
+};
 
 /* struct TransformComponent {
 	float transform[16];

@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 
 #include "Scene/Components.hpp"
+#include "Scene/Entity.hpp"
 #include "bx/math.h"
 
 struct PosColorVertex {
@@ -107,7 +108,14 @@ Scene::Scene() {
 
 Scene::~Scene() { }
 
-entt::entity Scene::createEntity() { return m_Registry.create(); }
+Entity Scene::createEntity(const std::string& name) {
+	Entity entity = { m_Registry.create(), this };
+	entity.addComponent<TransformComponent>();
+	auto& tag = entity.addComponent<TagComponent>();
+	tag.tag = name.empty() ? "Unnamed Actor" : name;
+
+	return entity;
+}
 
 void Scene::onUpdate(bgfx::ProgramHandle program) {
 
