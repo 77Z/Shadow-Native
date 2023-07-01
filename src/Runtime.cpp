@@ -1,6 +1,9 @@
 #include "Runtime.h"
 #include "Components/Camera.h"
 #include "Logger.h"
+#include "Scene/Components.hpp"
+#include "Scene/Entity.hpp"
+#include "Scene/Scene.hpp"
 #include "ShadowWindow.h"
 #include "UI/Font.h"
 #include "UI/ShadowFlinger.hpp"
@@ -228,7 +231,7 @@ int Shadow::StartRuntime() {
 
 	Shadow::Mesh mesh("bunny.bin");
 
-	Shadow::UserCode userCode;
+	// Shadow::UserCode userCode;
 
 	// User Settings
 
@@ -246,7 +249,7 @@ int Shadow::StartRuntime() {
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 
 	// CUBE RENDERING
-	bgfx::VertexLayout pcvDecl;
+	/* bgfx::VertexLayout pcvDecl;
 	pcvDecl.begin()
 		.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
 		.add(bgfx::Attrib::Color0, 4, bgfx::AttribType::Uint8, true)
@@ -254,7 +257,7 @@ int Shadow::StartRuntime() {
 	bgfx::VertexBufferHandle vbh
 		= bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), pcvDecl);
 	bgfx::IndexBufferHandle ibh
-		= bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
+		= bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList))); */
 
 	bgfx::ProgramHandle program = loadProgram("test/vs_test.vulkan", "test/fs_test.vulkan");
 	// END CUBE RENDERING
@@ -265,6 +268,22 @@ int Shadow::StartRuntime() {
 	float time = 0.0f;
 
 	UI::ShadowFlingerViewport shadowFlinger(SHADOW_FLINGER_VIEW_ID);
+
+	Shadow::Scene activeScene;
+
+	auto demoCube = activeScene.createEntity();
+	auto cubeTwo = activeScene.createEntity();
+	auto another = activeScene.createEntity();
+
+	activeScene.m_Registry.emplace<CubeComponent>(demoCube, 5.0f);
+	activeScene.m_Registry.emplace<CubeComponent>(cubeTwo, -5.0f);
+	activeScene.m_Registry.emplace<CubeComponent>(another);
+
+	// float cubeMtx[16];
+	// bx::mtxSRT(cubeMtx, 3.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
+
+	// activeScene.Reg().emplace<TransformComponent>(demoCube, cubeMtx);
+	// activeScene.Reg().emplace<ShapePusherComponent>(demoCube, 0xFF00FF00);
 
 	while (!shadowWindow.shouldClose()) {
 		glfwPollEvents();
@@ -293,8 +312,8 @@ int Shadow::StartRuntime() {
 		if (s_showDemoWindow)
 			ImGui::ShowDemoWindow();
 
-		static MemoryEditor memedit;
-		memedit.DrawWindow("Memory Editor", &userCode.handle, sizeof(userCode.handle));
+		// static MemoryEditor memedit;
+		// memedit.DrawWindow("Memory Editor", &memedit, sizeof(memedit));
 
 		ImGui::Begin(CONFIG_PRETTY_NAME);
 
@@ -307,7 +326,7 @@ int Shadow::StartRuntime() {
 			(int)UserInput::getMouseYDiff());
 		ImGui::Text("Window Extents: W: %i, H: %i", width, height);
 		ImGui::SliderFloat("FOV", &fov, 0.0f, 180.0f);
-		ImGui::InputText("Name Demo", &nameDemo);
+		// ImGui::InputText("Name Demo", &nameDemo);
 		ImGui::Checkbox("Vsync", &vsync);
 		if (ImGui::Button("Close Engine"))
 			shadowWindow.close();
@@ -322,8 +341,8 @@ int Shadow::StartRuntime() {
 
 		ImGui::Separator();
 		ImGui::Text("UserCode");
-		if (ImGui::Button("Reload UserCode Library"))
-			userCode.reload();
+		// if (ImGui::Button("Reload UserCode Library"))
+		//			userCode.reload();
 
 		ImGui::End();
 
@@ -414,15 +433,18 @@ int Shadow::StartRuntime() {
 			camZ -= 0.3f;
 		*/
 
+		activeScene.onUpdate(program);
+
 		shadowFlinger.draw(program, width, height);
 
-		float meshMtx[16];
-		mesh.submit(SCENE_VIEW_ID, meshProgram, meshMtx);
+		// float meshMtx[16];
+		// mesh.submit(SCENE_VIEW_ID, meshProgram, meshMtx);
 
+		/* bgfx::setTransform(cubeMtx, 1);
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
 
-		bgfx::submit(SCENE_VIEW_ID, program);
+		bgfx::submit(SCENE_VIEW_ID, program); */
 
 		bgfx::frame();
 	}
@@ -430,8 +452,8 @@ int Shadow::StartRuntime() {
 	userSettingsDB.write("FOV", std::to_string(fov));
 	userSettingsDB.write("Name", nameDemo);
 
-	bgfx::destroy(ibh);
-	bgfx::destroy(vbh);
+	// bgfx::destroy(ibh);
+	// bgfx::destroy(vbh);
 	bgfx::destroy(program);
 	bgfx::destroy(meshProgram);
 	bgfx::destroy(u_time);
