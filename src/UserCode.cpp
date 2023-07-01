@@ -1,16 +1,74 @@
 #include "UserCode.h"
 #include "Logger.h"
+#include <bx/bx.h>
 #include <fstream>
 #include <generated/autoconf.h>
 #include <string>
 
-#ifdef _WIN32
+/* ----------------------------------- */
+/*        FUNCTION POINTERS            */
+/* Return type       Parameter Types   */
+/*  ||                   ||            */
+/*  \/                   \/            */
+/* int (*functionName)(float)          */
+/* ----------------------------------- */
+
+// Functions prefixed with UC_ are from the
+// UserCode Library loaded at runtime
+
+#if BX_PLATFORM_WINDOWS
 #include <Windows.h>
 #else
 #include <dlfcn.h>
 #endif
 
-void callme() { WARN("I HAVE BEEN CALLED"); }
+namespace Shadow {
+
+#if BX_PLATFORM_LINUX
+UserCode::UserCode() { reload(); }
+UserCode::~UserCode() { unload(); }
+
+void UserCode::reload() {
+	PRINT("Loading UserCode");
+	unload();
+
+	handle = dlopen(CONFIG_DYNAMIC_USERCODE_LIBRARY_LOCATION, RTLD_LAZY);
+	if (!handle) {
+		WARN("Can't get handle on UserCode Library ... %s", dlerror());
+		return;
+	}
+
+	void (*UC_start)(void);
+	*(void**)(&UC_start) = dlsym(handle, "passthroughStart");
+	if (!UC_start) {
+		ERROUT("Start symbol doesn't exist in UserCode ... %s", dlerror());
+		return;
+	}
+
+	UC_start();
+}
+
+void UserCode::unload() {
+	if (handle)
+		dlclose(handle);
+}
+
+#endif
+
+#if BX_PLATFORM_WINDOWS
+UserCode::UserCode() { reload(); }
+UserCode::~UserCode() { unload(); }
+
+void UserCode::reload() {
+	PRINT("Loading UserCode");
+	unload();
+}
+
+void UserCode::unload() { }
+#endif
+}
+
+/* void callme() { WARN("I HAVE BEEN CALLED"); }
 
 int Shadow::UserCode::loadUserCode(void) {
 
@@ -45,10 +103,6 @@ int Shadow::UserCode::loadUserCode(void) {
 		ERROUT("Failed to get handle on UserCode library ... %s", dlerror());
 		return USER_CODE_FAILURE;
 	}
-	/*
-	 Return type           Argument Types
-	 ||                        ||
-	 \/                        \/		*/
 	void (*usrcodefunc_start)(void);
 	*(void**)(&usrcodefunc_start) = dlsym(handle, "passthroughStart");
 	if (!usrcodefunc_start) {
@@ -79,3 +133,4 @@ int Shadow::UserCode::loadUserCode(void) {
 #endif
 	return USER_CODE_SUCCESS;
 }
+ */

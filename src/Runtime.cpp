@@ -228,7 +228,7 @@ int Shadow::StartRuntime() {
 
 	Shadow::Mesh mesh("bunny.bin");
 
-	Shadow::UserCode::loadUserCode();
+	Shadow::UserCode userCode;
 
 	// User Settings
 
@@ -294,7 +294,7 @@ int Shadow::StartRuntime() {
 			ImGui::ShowDemoWindow();
 
 		static MemoryEditor memedit;
-		memedit.DrawWindow("Memory Editor", &mesh, sizeof(mesh));
+		memedit.DrawWindow("Memory Editor", &userCode.handle, sizeof(userCode.handle));
 
 		ImGui::Begin(CONFIG_PRETTY_NAME);
 
@@ -323,7 +323,7 @@ int Shadow::StartRuntime() {
 		ImGui::Separator();
 		ImGui::Text("UserCode");
 		if (ImGui::Button("Reload UserCode Library"))
-			Shadow::UserCode::loadUserCode();
+			userCode.reload();
 
 		ImGui::End();
 

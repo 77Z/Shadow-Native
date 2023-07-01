@@ -3,12 +3,22 @@
 
 #include <string>
 
-enum UserCodeReturnStatus { USER_CODE_SUCCESS, USER_CODE_FAILURE };
-
 namespace Shadow {
-namespace UserCode {
-	int loadUserCode(void);
-}
+
+class UserCode {
+public:
+	UserCode();
+	~UserCode();
+
+	UserCode(const UserCode&) = delete;
+	UserCode& operator=(const UserCode&) = delete;
+
+	void reload();
+	void unload();
+
+	void* handle;
+};
+
 }
 
 #endif // USER_CODE_H
