@@ -1,7 +1,7 @@
 -include .config
 
-CC = g++
-#CC = clang++
+# CC = g++
+CC = clang++
 
 UNAME_S = $(shell uname -s)
 BIN = bin
@@ -26,6 +26,7 @@ INCFLAGS += -Ilib/termcolor
 INCFLAGS += -Ilib/snappy/include
 INCFLAGS += -Ilib/leveldb/include
 INCFLAGS += -Ilib/lz4/include
+INCFLAGS += -Ilib/entt
 #INCFLAGS += -Ilib/steamaudio/include
 INCFLAGS += -I$(IMGUI_DIR)
 INCFLAGS += -I$(IMGUI_DIR)/backends
@@ -169,7 +170,7 @@ run: build
 	$(shell cd $(BIN); ./game)
 
 build: dirs runtimeres shaders $(OBJ)
-	@echo [LINK ] $(filter %.o,$^)
+	@echo [LINK ] $(BIN)/game
 	@$(CC) -o $(BIN)/game $(filter %.o,$^) $(LDFLAGS)
 
 %.o: %.cpp

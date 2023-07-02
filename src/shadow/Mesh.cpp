@@ -187,14 +187,17 @@ void Mesh::load(const char* _filePath, bool _ramcopy) {
 }
 
 void Mesh::unload() {
+	WARN("Unloading mesh...");
 	bx::AllocatorI* allocator = getAllocator();
 
 	for (GroupArray::const_iterator it = m_groups.begin(), itEnd = m_groups.end(); it != itEnd;
 		 ++it) {
 		const Group& group = *it;
+		WARN("VBH is valid, destroying...");
 		bgfx::destroy(group.m_vbh);
 
 		if (bgfx::isValid(group.m_ibh)) {
+			WARN("IBH is valid, destroying...");
 			bgfx::destroy(group.m_ibh);
 		}
 
