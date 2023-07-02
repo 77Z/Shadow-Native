@@ -5,6 +5,7 @@
 #include "Scene/Scene.hpp"
 #include "imgui.h"
 #include "imgui/imgui_entt_entity_editor.hpp"
+#include "imgui/imgui_utils.h"
 #include <string>
 
 namespace MM {
@@ -13,19 +14,27 @@ void ComponentEditorWidget<Shadow::TransformComponent>(
 	entt::registry& reg, entt::registry::entity_type e) {
 	auto& t = reg.get<Shadow::TransformComponent>(e);
 	ImGui::SeparatorText("Translation");
-	ImGui::DragFloat("tx", &t.translation.x, 0.05f);
-	ImGui::DragFloat("ty", &t.translation.y, 0.05f);
-	ImGui::DragFloat("tz", &t.translation.z, 0.05f);
+	ImGui::SetNextItemWidth(100.0f);
+	ImGui::DragFloat("x##t", &t.translation.x, 0.05f);
+	ImGui::DragFloat("y##t", &t.translation.y, 0.05f);
+	ImGui::DragFloat("z##t", &t.translation.z, 0.05f);
 
 	ImGui::SeparatorText("Rotation");
-	ImGui::DragFloat("rx", &t.rotation.x, 0.05f);
-	ImGui::DragFloat("ry", &t.rotation.y, 0.05f);
-	ImGui::DragFloat("rz", &t.rotation.z, 0.05f);
+	ImGui::DragFloat("x##r", &t.rotation.x, 0.05f);
+	ImGui::DragFloat("y##r", &t.rotation.y, 0.05f);
+	ImGui::DragFloat("z##r", &t.rotation.z, 0.05f);
 
 	ImGui::SeparatorText("Scale");
-	ImGui::DragFloat("sx", &t.scale.x, 0.05f);
-	ImGui::DragFloat("sy", &t.scale.y, 0.05f);
-	ImGui::DragFloat("sz", &t.scale.z, 0.05f);
+	ImGui::DragFloat("x##s", &t.scale.x, 0.05f);
+	ImGui::DragFloat("y##s", &t.scale.y, 0.05f);
+	ImGui::DragFloat("z##s", &t.scale.z, 0.05f);
+}
+
+template <>
+void ComponentEditorWidget<Shadow::TagComponent>(
+	entt::registry& reg, entt::registry::entity_type e) {
+	auto& t = reg.get<Shadow::TagComponent>(e);
+	ImGui::InputText("Tag", &t.tag);
 }
 }
 
@@ -66,6 +75,7 @@ void SceneExplorer::onUpdate(entt::entity& entity) {
 	MM::EntityEditor<entt::entity> editor;
 
 	editor.registerComponent<TransformComponent>("Transform");
+	editor.registerComponent<TagComponent>("Tag");
 
 	// editor.renderEntityList(scene.m_Registry, std::set<ComponentTypeID> &comp_list)
 

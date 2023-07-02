@@ -150,7 +150,7 @@ int Shadow::StartRuntime() {
 		return 1;
 
 	// Set view 0 to be the same dimensions as the window and to clear the color buffer
-	bgfx::setViewClear(SCENE_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x222222FF, 1.0f, 0);
+	bgfx::setViewClear(SCENE_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xFFFFFFFF, 1.0f, 0);
 	bgfx::setViewRect(SCENE_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	// ImGui init
