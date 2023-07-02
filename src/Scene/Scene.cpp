@@ -125,9 +125,12 @@ void Scene::onUpdate(bgfx::ProgramHandle program) {
 		// auto& shape = group.get<ShapePusherComponent>(entity);
 
 		auto& offset = m_Registry.get<CubeComponent>(entity);
+		auto& transform = m_Registry.get<TransformComponent>(entity);
 
 		float tfMtx[16];
-		bx::mtxSRT(tfMtx, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, offset.offset, 0.0f, 0.0f);
+		bx::mtxSRT(tfMtx, transform.scale.x, transform.scale.y, transform.scale.z,
+			transform.rotation.x, transform.rotation.y, transform.rotation.z,
+			transform.translation.x, transform.translation.y, transform.translation.z);
 
 		bgfx::setTransform(tfMtx, 1);
 		bgfx::setVertexBuffer(0, vbh);

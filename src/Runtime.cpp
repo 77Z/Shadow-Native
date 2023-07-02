@@ -1,6 +1,6 @@
 #include "Runtime.h"
 #include "Chunker/Chunker.hpp"
-#include "Chunker/ChunkerDevUI.hpp"
+// #include "Chunker/ChunkerDevUI.hpp"
 #include "Components/Camera.h"
 #include "Logger.h"
 #include "Scene/Components.hpp"
@@ -129,7 +129,7 @@ int Shadow::StartRuntime() {
 
 	ShadowWindow shadowWindow(width, height, CONFIG_PRETTY_NAME);
 	Audio::AudioEngine audio;
-	Chunker::ChunkerDevUI chunkerDevUI;
+	// Chunker::ChunkerDevUI chunkerDevUI;
 
 	IMGUI_CHECKVERSION();
 
@@ -163,10 +163,13 @@ int Shadow::StartRuntime() {
 
 	// Load DebugUI fonts
 	// io.Fonts->AddFontDefault();
-	Chunker::FileIndex imguiChunkFileIndex = Chunker::indexChunk("./imgui.chunk");
-	std::string nerdFont = Chunker::readFile(imguiChunkFileIndex, "imgui.chunk/nerdfont.ttf");
-	io.Fonts->AddFontFromMemoryTTF(nerdFont.data(), nerdFont.size(), 16.0f);
-	// io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
+
+	// Loading font from Chunker works but causes runtime error on close
+	// Chunker::FileIndex imguiChunkFileIndex = Chunker::indexChunk("./imgui.chunk");
+	// std::string nerdFont = Chunker::readFile(imguiChunkFileIndex, "imgui.chunk/nerdfont.ttf");
+	// io.Fonts->AddFontFromMemoryTTF(nerdFont.data(), nerdFont.size(), 16.0f);
+
+	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 	io.FontGlobalScale = 1.3f;
 
 	ImGui::SetupTheme();
@@ -212,17 +215,24 @@ int Shadow::StartRuntime() {
 	Shadow::Scene activeScene;
 	Shadow::SceneExplorer sceneExplorer(activeScene);
 
+	auto dummyEntity = activeScene.createEntity("Dummy");
+	entt::entity eneenen = dummyEntity;
 	auto demoCube = activeScene.createEntity("Primary Cube");
-	auto cubeTwo = activeScene.createEntity();
-	auto another = activeScene.createEntity();
-	auto againn = activeScene.createEntity();
-	auto mooree = activeScene.createEntity();
+	auto cubeTwo = activeScene.createEntity("Cube Two!");
+	// auto another = activeScene.createEntity("Another Cube");
+	// auto againn = activeScene.createEntity("Cube Again");
 
 	demoCube.addComponent<CubeComponent>(5.0f);
 	cubeTwo.addComponent<CubeComponent>(-5.0f);
-	another.addComponent<CubeComponent>();
-	againn.addComponent<CubeComponent>(2.0f);
-	mooree.addComponent<CubeComponent>(7.0f);
+	// another.addComponent<CubeComponent>();
+	// againn.addComponent<CubeComponent>(2.0f);
+
+	auto& transform = demoCube.GetComponent<TransformComponent>();
+	// transform.translation.z = 3.0f;
+	transform.translation.x = 3.0f;
+	transform.translation.y = 1.2f;
+	transform.rotation.x = 5.0f;
+	transform.rotation.y = 8.0f;
 
 	float cubeMtx[16];
 	bx::mtxSRT(cubeMtx, 3.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
@@ -268,9 +278,9 @@ int Shadow::StartRuntime() {
 		// static MemoryEditor memedit;
 		// memedit.DrawWindow("Memory Editor", &memedit, sizeof(memedit));
 
-		sceneExplorer.onUpdate();
+		sceneExplorer.onUpdate(eneenen);
 
-		chunkerDevUI.drawUI();
+		// chunkerDevUI.drawUI();
 
 		ImGui::Begin(CONFIG_PRETTY_NAME);
 

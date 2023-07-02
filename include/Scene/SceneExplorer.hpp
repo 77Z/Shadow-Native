@@ -9,10 +9,11 @@ public:
 	SceneExplorer(Scene& scene);
 	~SceneExplorer();
 
-	void onUpdate();
+	void onUpdate(entt::entity& entity);
 
 private:
 	Scene& scene;
+	int selectedNode = -1;
 };
 
 }

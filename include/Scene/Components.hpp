@@ -23,7 +23,7 @@ struct TransformComponent {
 	// glm::mat4 transform = glm::mat4(1.0f);
 	bx::Vec3 translation = bx::Vec3(0.0f, 0.0f, 0.0f);
 	bx::Vec3 rotation = bx::Vec3(0.0f, 0.0f, 0.0f);
-	bx::Vec3 scale = bx::Vec3(0.0f, 0.0f, 0.0f);
+	bx::Vec3 scale = bx::Vec3(1.0f, 1.0f, 1.0f);
 
 	TransformComponent() = default;
 	TransformComponent(const TransformComponent&) = default;
