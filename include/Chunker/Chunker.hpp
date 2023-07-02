@@ -32,9 +32,8 @@ namespace Chunker {
 		std::unordered_map<std::string, uint32_t> sizeMap;
 	};
 
-	int chunkFolder(std::string folderpath, CompressionType compression);
 	Chunker::FileIndex indexChunk(const char* inputfile);
-	std::vector<char> readFile(Chunker::FileIndex index, const char* innerFile);
+	std::string readFile(Chunker::FileIndex index, const char* innerFile);
 
 }
 }

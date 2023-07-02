@@ -16,114 +16,6 @@
 #include <vector>
 
 namespace Shadow {
-int Chunker::chunkFolder(std::string folderpath, Chunker::CompressionType compression) {
-	std::ifstream folderToChunk(folderpath);
-	if (!folderToChunk) {
-		std::cerr << "Unable to open given folder" << std::endl;
-		return 1;
-	}
-
-	unsigned char nullchar = 0x00;
-
-	std::fstream outfile(
-		"outputchunk", std::ios::trunc | std::ios::out | std::ios::in | std::ios::binary);
-
-	// Write header
-	const char* header = "SHADOW";
-	outfile.write(header, strlen(header));
-
-	// Write type of compression used, stored as an unsigned 8-bit number (1 byte in size)
-	outfile.write((char*)&compression, sizeof(compression));
-
-	// Write chunk filesize template
-	outfile.write((char*)&nullchar, sizeof(nullchar));
-	outfile.write((char*)&nullchar, sizeof(nullchar));
-	outfile.write((char*)&nullchar, sizeof(nullchar));
-	outfile.write((char*)&nullchar, sizeof(nullchar));
-
-	uint32_t offset = 0;
-
-	for (const auto& file : std::filesystem::recursive_directory_iterator(folderpath)) {
-		std::string fileNameStr = file.path().string();
-		std::cout << "Found file " << fileNameStr << std::endl;
-
-		// Get file contents (we are not writing the actual data yet!)
-		std::ifstream iteratedFile(fileNameStr);
-		std::stringstream ss;
-		ss << iteratedFile.rdbuf();
-		std::string fileData = ss.str();
-
-		// We loaded the file to get its size
-
-		// Write filename (Terminates at \0)
-		// const char* filename = fileNameStr.c_str();
-		// outfile.write(filename, strlen(filename));
-		// outfile.write((char*)&nullchar, sizeof(nullchar));
-
-		// Write filename, stating the size of the string beforehand, as a uint32_t
-		// This would be a size_t, but I struggle to read those for some reason
-		uint32_t filenameSize = fileNameStr.size();
-		std::cout << filenameSize << std::endl;
-		outfile.write((char*)&filenameSize, sizeof(filenameSize));
-		outfile.write(fileNameStr.c_str(), filenameSize);
-
-		// Write offset as an unsigned 32-bit number (4 bytes in size)
-		outfile.write((char*)&offset, sizeof(offset));
-
-		// Write filesize as an unsigned 32-bit number (4 bytes in size)
-		uint32_t encodedFilesize = (uint32_t)fileData.size();
-		outfile.write((char*)&encodedFilesize, sizeof(encodedFilesize));
-
-		// Add current filesize to the offset
-		offset = offset + encodedFilesize;
-
-		// Close file for now
-		iteratedFile.close();
-	}
-
-	std::cout << std::endl;
-
-	// Overwrite the 4 bytes at 0x00000007 that stores the size
-	// of the header + TOC
-
-	std::cout << "Overwriting internal filesize data" << std::endl;
-
-	// Seek to end to get file size
-	outfile.seekg(0, std::ios::end);
-	uint32_t offrsizetowrite = outfile.tellg();
-
-	outfile.seekg(7);
-	outfile.write((char*)&offrsizetowrite, sizeof(offrsizetowrite));
-
-	// Use stage2 file handle if possible using file.seekg(0, std::ios::end)
-
-	std::cout << std::endl;
-
-	for (const auto& file : std::filesystem::recursive_directory_iterator(folderpath)) {
-		// Second loop to actually add the data
-
-		std::string fileNameStr = file.path().string();
-		std::cout << "Adding file data to chunk: " << fileNameStr << std::endl;
-
-		// Get file contents
-		std::ifstream iteratedFile(fileNameStr);
-		std::stringstream ss;
-		ss << iteratedFile.rdbuf();
-		std::string fileData = ss.str();
-
-		outfile.seekg(0, std::ios::end);
-		// Use << because data can contain nullchars
-		outfile << fileData;
-
-		iteratedFile.close();
-	}
-
-	outfile.close();
-
-	folderToChunk.close();
-
-	return 0;
-}
 
 Chunker::FileIndex Chunker::indexChunk(const char* inputfile) {
 	std::ifstream file(inputfile, std::ios::binary | std::ios::in);
@@ -132,8 +24,9 @@ Chunker::FileIndex Chunker::indexChunk(const char* inputfile) {
 
 	// Make sure header is correct
 	file.seekg(0);
-	char headerVerificationBuffer[6];
+	char headerVerificationBuffer[7];
 	file.read(headerVerificationBuffer, 6);
+	headerVerificationBuffer[6] = '\0';
 	if (strcmp(headerVerificationBuffer, "SHADOW") != 0)
 		throw std::runtime_error("Header doesn't match, this isn't a Chunker file!");
 
@@ -189,15 +82,16 @@ Chunker::FileIndex Chunker::indexChunk(const char* inputfile) {
 	return fileIndex;
 }
 
-std::vector<char> Chunker::readFile(Chunker::FileIndex fileIndex, const char* innerFile) {
+std::string Chunker::readFile(Chunker::FileIndex fileIndex, const char* innerFile) {
 	std::ifstream file(fileIndex.filename, std::ios::binary | std::ios::in);
 	if (!file)
 		throw std::runtime_error("Unable to open file");
 
 	// Make sure header is correct
 	file.seekg(0);
-	char headerVerificationBuffer[6];
+	char headerVerificationBuffer[7];
 	file.read(headerVerificationBuffer, 6);
+	headerVerificationBuffer[6] = '\0';
 	if (strcmp(headerVerificationBuffer, "SHADOW") != 0)
 		throw std::runtime_error("Header doesn't match, this isn't a Chunker file!");
 
@@ -208,6 +102,16 @@ std::vector<char> Chunker::readFile(Chunker::FileIndex fileIndex, const char* in
 	file.seekg(fileIndex.offsetMap[innerFile] + fileIndex.internalFilesize);
 	file.read(retBuffer.data(), retBuffer.size());
 
-	return retBuffer;
+	std::string result;
+
+	if (fileIndex.compression == CompressionType::Snappy) {
+		PRINT("Snappy compression detected, decompressing...");
+		std::string toBeDecompressed = std::string(retBuffer.data(), retBuffer.size());
+		snappy::Uncompress(toBeDecompressed.data(), toBeDecompressed.size(), &result);
+	} else {
+		result = std::string(retBuffer.data(), retBuffer.size());
+	}
+
+	return result;
 }
 }

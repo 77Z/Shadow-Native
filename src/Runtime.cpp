@@ -1,4 +1,5 @@
 #include "Runtime.h"
+#include "Chunker/Chunker.hpp"
 #include "Chunker/ChunkerDevUI.hpp"
 #include "Components/Camera.h"
 #include "Logger.h"
@@ -128,6 +129,7 @@ int Shadow::StartRuntime() {
 
 	ShadowWindow shadowWindow(width, height, CONFIG_PRETTY_NAME);
 	Audio::AudioEngine audio;
+	Chunker::ChunkerDevUI chunkerDevUI;
 
 	IMGUI_CHECKVERSION();
 
@@ -161,7 +163,10 @@ int Shadow::StartRuntime() {
 
 	// Load DebugUI fonts
 	// io.Fonts->AddFontDefault();
-	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
+	Chunker::FileIndex imguiChunkFileIndex = Chunker::indexChunk("./imgui.chunk");
+	std::string nerdFont = Chunker::readFile(imguiChunkFileIndex, "imgui.chunk/nerdfont.ttf");
+	io.Fonts->AddFontFromMemoryTTF(nerdFont.data(), nerdFont.size(), 16.0f);
+	// io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 	io.FontGlobalScale = 1.3f;
 
 	ImGui::SetupTheme();
@@ -176,6 +181,7 @@ int Shadow::StartRuntime() {
 	Shadow::Camera camera;
 	camera.distance(10.0f);
 
+	// Yes, this causes a memory leak. Too bad!
 	Shadow::Mesh mesh("bunny.bin");
 
 	// Shadow::UserCode userCode;
@@ -264,7 +270,7 @@ int Shadow::StartRuntime() {
 
 		sceneExplorer.onUpdate();
 
-		Shadow::Chunker::drawUI();
+		chunkerDevUI.drawUI();
 
 		ImGui::Begin(CONFIG_PRETTY_NAME);
 
