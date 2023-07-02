@@ -136,7 +136,7 @@ void Scene::onUpdate(bgfx::ProgramHandle program) {
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
 
-		bgfx::submit(0, program);
+		bgfx::submit(10, program);
 	}
 }
 

@@ -289,9 +289,8 @@ int Shadow::StartRuntime() {
 
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-		ImGui::Begin("Viewport", nullptr,
-			ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground
-				| ImGuiWindowFlags_NoMouseInputs);
+		ImGui::Begin(
+			"Viewport", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground);
 		ImVec2 vMin = ImGui::GetWindowContentRegionMin();
 		ImVec2 vMax = ImGui::GetWindowContentRegionMax();
 
@@ -404,7 +403,7 @@ int Shadow::StartRuntime() {
 		camera.mtxLookAt(viewMatrix);
 
 		float projectionMatrix[16];
-		const float aspectRatio = float(width) / float(height);
+		const float aspectRatio = float(vMax.x - vMin.x) / float(vMax.y - vMin.y);
 		bx::mtxProj(projectionMatrix, fov, aspectRatio, 0.01f, 1000.0f,
 			rendererCapabilities->homogeneousDepth);
 
