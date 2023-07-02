@@ -7,15 +7,13 @@ Add to vscode settings for syntax highlighting on shaders
 
 # TODO
 
-- Recreate common folder from BGFX to use in Shadow
-- Fork a version of imgui-node-editor that compiles without modification
-- EVERYTHING
-- Meson + Ninja Build System??
-- Hot Reloading with jet-live
-- I have no idea why the ImGui Implementation is leaking memory since the shaders are being destroyed at the programs end of life
+- Different build system maybe? I'm pretty happy with Make right now, but maybe premake, or a custom solution that generates Ninja build files, probably not Meson or CMake tho
+- Hot Reloading with jet-live or custom solution - https://slembcke.github.io/HotLoadC
+- Physics
+- PBR Rendering
+- Proper Editor Interface (seems like a pain to write)
 
 # Attributions
-
 - BGFX - bkaradzic
 - BX - bkaradzic
 - BIMG - bkaradzic
@@ -28,4 +26,5 @@ Add to vscode settings for syntax highlighting on shaders
 - Termcolor - ikalnytskyi
 - Snappy - Google
 - LevelDB - Google
-- LZ4 - Yann Collet
+- EnTT - Michele Caini
+- meshoptimizer - Arseny Kapoulkine
