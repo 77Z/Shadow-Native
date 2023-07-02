@@ -1,4 +1,5 @@
 #include "Runtime.h"
+#include "Chunker/ChunkerDevUI.hpp"
 #include "Components/Camera.h"
 #include "Logger.h"
 #include "Scene/Components.hpp"
@@ -119,8 +120,11 @@ static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int acti
 int Shadow::StartRuntime() {
 	InitBXFilesystem();
 
-	int width = 1280;
-	int height = 720;
+	// int width = 1280;
+	// int height = 720;
+
+	int width = 1800;
+	int height = 1000;
 
 	ShadowWindow shadowWindow(width, height, CONFIG_PRETTY_NAME);
 	Audio::AudioEngine audio;
@@ -150,7 +154,7 @@ int Shadow::StartRuntime() {
 	// ImGui init
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	// io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	// io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
@@ -200,17 +204,19 @@ int Shadow::StartRuntime() {
 	UI::ShadowFlingerViewport shadowFlinger(SHADOW_FLINGER_VIEW_ID);
 
 	Shadow::Scene activeScene;
-	Shadow::SceneExplorer(&activeScene);
+	Shadow::SceneExplorer sceneExplorer(activeScene);
 
 	auto demoCube = activeScene.createEntity("Primary Cube");
 	auto cubeTwo = activeScene.createEntity();
 	auto another = activeScene.createEntity();
 	auto againn = activeScene.createEntity();
+	auto mooree = activeScene.createEntity();
 
 	demoCube.addComponent<CubeComponent>(5.0f);
 	cubeTwo.addComponent<CubeComponent>(-5.0f);
 	another.addComponent<CubeComponent>();
 	againn.addComponent<CubeComponent>(2.0f);
+	mooree.addComponent<CubeComponent>(7.0f);
 
 	float cubeMtx[16];
 	bx::mtxSRT(cubeMtx, 3.0f, 1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f);
@@ -256,6 +262,10 @@ int Shadow::StartRuntime() {
 		// static MemoryEditor memedit;
 		// memedit.DrawWindow("Memory Editor", &memedit, sizeof(memedit));
 
+		sceneExplorer.onUpdate();
+
+		Shadow::Chunker::drawUI();
+
 		ImGui::Begin(CONFIG_PRETTY_NAME);
 
 		ImGui::Checkbox("Show Stats (F3)", &s_showStats);
@@ -275,17 +285,14 @@ int Shadow::StartRuntime() {
 		if (ImGui::Button("Open Dev UI Demo"))
 			s_showDemoWindow = !s_showDemoWindow;
 
-		ImGui::Separator();
-		ImGui::Text("Audio");
+		ImGui::SeparatorText("Audio");
 		if (ImGui::Button("Play Demo Audio"))
 			audio.playTestAudio();
 
-		ImGui::Separator();
-		ImGui::Text("UserCode");
+		ImGui::SeparatorText("UserCode");
 		// if (ImGui::Button("Reload UserCode Library"))
 		//			userCode.reload();
-		ImGui::Separator();
-		ImGui::Text("Entity & Actors");
+		ImGui::SeparatorText("Entities & Actors");
 		ImGui::Text("%s", demoCube.GetComponent<TagComponent>().tag.c_str());
 
 		ImGui::End();

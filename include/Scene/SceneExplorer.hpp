@@ -6,7 +6,7 @@ namespace Shadow {
 
 class SceneExplorer {
 public:
-	SceneExplorer(Scene* scene);
+	SceneExplorer(Scene& scene);
 	~SceneExplorer();
 
 	void onUpdate();

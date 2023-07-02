@@ -1,6 +1,7 @@
 #ifndef SHADOW_NATIVE_SCENE_COMPONENTS_HPP
 #define SHADOW_NATIVE_SCENE_COMPONENTS_HPP
 
+#include "bx/math.h"
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -19,22 +20,16 @@ struct TagComponent {
 };
 
 struct TransformComponent {
-	glm::mat4 transform = glm::mat4(1.0f);
+	// glm::mat4 transform = glm::mat4(1.0f);
+	bx::Vec3 translation = bx::Vec3(0.0f, 0.0f, 0.0f);
+	bx::Vec3 rotation = bx::Vec3(0.0f, 0.0f, 0.0f);
+	bx::Vec3 scale = bx::Vec3(0.0f, 0.0f, 0.0f);
 
 	TransformComponent() = default;
 	TransformComponent(const TransformComponent&) = default;
-	TransformComponent(const glm::mat4& transform)
-		: transform(transform) { }
 
-	operator glm::mat4&() { return transform; }
-	operator const glm::mat4&() const { return transform; }
-};
-
-/* struct TransformComponent {
-	float transform[16];
-
-	TransformComponent() = default;
-	TransformComponent(float mtx[16]) { memcpy(transform, mtx, size_t(transform)); }
+	// operator glm::mat4&() { return transform; }
+	// operator const glm::mat4&() const { return transform; }
 };
 
 struct MeshComponent { };
@@ -46,7 +41,7 @@ struct ShapePusherComponent {
 	ShapePusherComponent(const ShapePusherComponent&) = default;
 	ShapePusherComponent(const uint32_t& color)
 		: abgr(color) { }
-}; */
+};
 
 struct CubeComponent {
 	float offset = 0.0f;

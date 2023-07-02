@@ -1,0 +1,12 @@
+#ifndef SHADOW_NATIVE_CHUNKER_CHUNKER_DEVUI_HPP
+#define SHADOW_NATIVE_CHUNKER_CHUNKER_DEVUI_HPP
+
+namespace Shadow {
+namespace Chunker {
+
+	void drawUI();
+
+}
+}
+
+#endif /* SHADOW_NATIVE_CHUNKER_CHUNKER_DEVUI_HPP */

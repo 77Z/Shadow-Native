@@ -3,6 +3,7 @@
 
 #include "Scene/Scene.hpp"
 #include "ppk_assert.h"
+#include <cstdint>
 #include <entt.hpp>
 #include <utility>
 
@@ -31,10 +32,12 @@ public:
 		scene->m_Registry.remove<T>(entityHandle);
 	}
 
-	// operator bool() const { return entityHandle != 0; }
+	operator bool() const { return entityHandle != entt::null; }
+	operator entt::entity() const { return entityHandle; }
+	operator uint32_t() const { return (uint32_t)entityHandle; }
 
 private:
-	entt::entity entityHandle { 0 };
+	entt::entity entityHandle { entt::null };
 	Scene* scene = nullptr;
 };
 
