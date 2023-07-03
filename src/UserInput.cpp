@@ -1,5 +1,5 @@
 #include "UserInput.h"
-#include "Logger.h"
+#include "Debug/Logger.h"
 #include <GLFW/glfw3.h>
 
 // * This isn't a class due to some issues I

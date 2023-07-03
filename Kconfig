@@ -14,6 +14,15 @@ config INCLUDE_BUILD_SYMBOLS
 	  Symbols are automatically disabled for release
 	  builds
 
+config ENABLE_SHADOW_PROFILER
+	bool "Enable Shadow Engine Profiler"
+	default true
+	depends on SHADOW_DEBUG
+	help
+	  Enables the time profiler built into Shadow,
+	  useful internally while developing the engine
+	  to profile how long certain things take
+
 config VINCES_MORE_VERBOSE_DEBUG_TEXT
 	bool "Vince's Personal Verbose Debug Text Output"
 	default false

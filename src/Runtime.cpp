@@ -2,7 +2,8 @@
 #include "Chunker/Chunker.hpp"
 // #include "Chunker/ChunkerDevUI.hpp"
 #include "Components/Camera.h"
-#include "Logger.h"
+#include "Debug/Logger.h"
+#include "Debug/Profiler.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
@@ -120,6 +121,8 @@ static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int acti
 
 int Shadow::StartRuntime() {
 	InitBXFilesystem();
+	RAPID_PROFILE_INIT();
+	INTERVAL(STARTUP);
 
 	// int width = 1280;
 	// int height = 720;
@@ -150,7 +153,7 @@ int Shadow::StartRuntime() {
 		return 1;
 
 	// Set view 0 to be the same dimensions as the window and to clear the color buffer
-	bgfx::setViewClear(SCENE_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xFFFFFFFF, 1.0f, 0);
+	bgfx::setViewClear(SCENE_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x222222FF, 1.0f, 0);
 	bgfx::setViewRect(SCENE_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	// ImGui init
@@ -248,8 +251,12 @@ int Shadow::StartRuntime() {
 	// activeScene.Reg().emplace<TransformComponent>(demoCube, cubeMtx);
 	// activeScene.Reg().emplace<ShapePusherComponent>(demoCube, 0xFF00FF00);
 
+	INTERVAL_END(STARTUP);
+
 	while (!shadowWindow.shouldClose()) {
 		glfwPollEvents();
+
+		INTERVAL(GAMELOOP);
 
 		if (shadowWindow.wasWindowResized()) {
 			auto bounds = shadowWindow.getExtent();
@@ -414,6 +421,8 @@ int Shadow::StartRuntime() {
 		bgfx::submit(SCENE_VIEW_ID, program); */
 
 		bgfx::frame();
+
+		INTERVAL_END(GAMELOOP);
 	}
 
 	userSettingsDB.write("FOV", std::to_string(fov));

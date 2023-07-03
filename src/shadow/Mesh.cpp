@@ -1,5 +1,5 @@
 #include "shadow/Mesh.h"
-#include "Logger.h"
+#include "Debug/Logger.h"
 #include "Util.h"
 #include "meshoptimizer/meshoptimizer.h"
 #include <bgfx/bgfx.h>
