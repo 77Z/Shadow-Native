@@ -173,7 +173,7 @@ int Shadow::StartRuntime() {
 	// io.Fonts->AddFontFromMemoryTTF(nerdFont.data(), nerdFont.size(), 16.0f);
 
 	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
-	io.FontGlobalScale = 1.3f;
+	// io.FontGlobalScale = 1.3f;
 
 	ImGui::SetupTheme();
 
@@ -188,7 +188,7 @@ int Shadow::StartRuntime() {
 	camera.distance(10.0f);
 
 	// Yes, this causes a memory leak. Too bad!
-	Shadow::Mesh mesh("bunny.bin");
+	Shadow::Mesh mesh("suzanne.mesh");
 
 	// Shadow::UserCode userCode;
 
