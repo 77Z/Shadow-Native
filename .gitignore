@@ -28,3 +28,7 @@ local.properties
 .cxx
 local.properties
 .idea/
+
+# Visual Studio
+.vs/
+*.user

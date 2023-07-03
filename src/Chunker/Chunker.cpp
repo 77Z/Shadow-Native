@@ -3,7 +3,7 @@
 // at the diagram: "Chunker File Format.png" SO GO LOOK!
 
 #include "Chunker/Chunker.hpp"
-#include "Logger.h"
+#include "Debug/Logger.h"
 #include <cstdint>
 #include <cstring>
 #include <filesystem>

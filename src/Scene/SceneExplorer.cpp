@@ -1,5 +1,5 @@
 #include "Scene/SceneExplorer.hpp"
-#include "Logger.h"
+#include "Debug/Logger.h"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"

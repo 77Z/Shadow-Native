@@ -2,6 +2,7 @@
 #define SHADOW_NATIVE_SCENE_COMPONENTS_HPP
 
 #include "bx/math.h"
+#include "shadow/Mesh.h"
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -32,7 +33,13 @@ struct TransformComponent {
 	// operator const glm::mat4&() const { return transform; }
 };
 
-struct MeshComponent { };
+struct MeshComponent {
+
+	Mesh mesh();
+
+	MeshComponent() = default;
+	MeshComponent(const MeshComponent&) = default;
+};
 
 struct ShapePusherComponent {
 	uint32_t abgr = 0xff0000ff;
