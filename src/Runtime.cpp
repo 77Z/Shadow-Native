@@ -140,8 +140,13 @@ int Shadow::StartRuntime() {
 
 	bgfx::Init init;
 
+#if BX_PLATFORM_WINDOWS
+	init.platformData.ndt = NULL;
+	init.platformData.nwh = (void*)(uintptr_t)glfwGetWin32Window(shadowWindow.window);
+#elif BX_PLATFORM_LINUX
 	init.platformData.ndt = glfwGetX11Display();
 	init.platformData.nwh = (void*)(uintptr_t)glfwGetX11Window(shadowWindow.window);
+#endif
 
 	auto bounds = shadowWindow.getExtent();
 	width = bounds.width;

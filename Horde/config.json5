@@ -1,0 +1,68 @@
+{
+
+    ProductName: "Shadow Engine",
+    Version: "0.6.2",
+
+    // Extra string appended to version number to help identify and
+    // differentiate builds from each other. If not empty, a "-" will be
+    // prefixed to the local version, so no need to add it yourself
+    LocalVersion: "",
+
+    CC: "gcc",
+    CXX: "g++",
+    AR: "ar",
+
+    // CC: "clang",
+    // CXX: "clang++",
+    
+    // You can use {version}, {cc}, and {cxx} in this string
+    BuildDir: "shadow-build-{version}-{cc}",
+
+    Debug: {
+        DebugBuild: true,
+
+        IncludeDebugSymbols: true,
+        EnableShadowProfiler: true,
+        VincesMoreVerboseDebugText: false,
+    },
+
+    targets: [
+        {
+            Name: "bx",
+            PrettyName: "BX",
+            Type: "StaticLib",
+            BaseDir: "../lib/bx",
+
+            std: "c++20",
+            Defines: [],
+            CXXFLAGS: [
+                "-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+                "-g", "-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
+                "-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
+                "-Wlogical-op", "-fPIC"],
+
+            IfDebug: {
+                Defines: [ "BX_CONFIG_DEBUG=1" ],
+                CXXFLAGS: []
+            },
+            IfRelease: {
+                Defines: [ "BX_CONFIG_DEBUG=0" ],
+                CXXFLAGS: ['-O3']
+            },
+
+            IncludeDirs: [ "include", "3rdparty", "include/compat/linux" ],
+            Sources: [ "src/*.cpp" ],
+            SrcExcludes: [ "src/amalgamated.*" ]
+        },
+        // {
+        //     Name: "shadow-engine",
+        //     PrettyName: "Shadow Engine",
+        //     Type: "Executable",
+        //     IfDebug: {
+        //         Defines: [ "SHADOW_DEBUG_BUILD" ]
+        //     },
+        //     IfRelease: {}
+        // }
+    ]
+
+}
