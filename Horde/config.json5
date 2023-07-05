@@ -128,7 +128,7 @@
                 "3rdparty/khronos/",
                 "../bx/include/compat/linux" ],
             Sources: [ "src/*.cpp" ],
-            SrcExcludes: []
+            SrcExcludes: [ "src/amalgamated.*" ]
         },
         {
             Name: "glfw",
@@ -191,12 +191,39 @@
                 "lib/entt",
                 "lib/imgui",
                 "lib/imgui/backends" ],
+
             Sources: [
-                "src/*.cpp", "src/**/*.cpp",
-                "lib/imgui/*.cpp", "lib/imgui/backends/imgui_impl_glfw.cpp",
-                "lib/imgui/backends/imgui_impl_vulkan.cpp" ],
+                "src/*.cpp",
+                "lib/imgui/imgui.cpp",
+                "lib/imgui/imgui_demo.cpp",
+                "lib/imgui/imgui_draw.cpp",
+                "lib/imgui/imgui_tables.cpp",
+                "lib/imgui/imgui_widgets.cpp",
+                "lib/imgui/backends/imgui_impl_glfw.cpp",
+                "lib/imgui/backends/imgui_impl_vulkan.cpp",
+            ],
+
+            // This should and will work in the future, buuuuut... it doesn't
+            // right now, and that's fine. I'll fix it later. The reason this
+            // doesn't work is because Horde recursively searches for files in
+            // the imgui directory, and this causes it to match the file:
+            // "lib/imgui/examples/example_win32_directx12/main.cpp"
+            // against the wildcard "lib/imgui/*.cpp" even though this isn't the
+            // intention of the wildcard.
+            // Sources: [
+            //     "src/*.cpp", "src/**/*.cpp",
+            //     "lib/imgui/*.cpp", "lib/imgui/backends/imgui_impl_glfw.cpp",
+            //     "lib/imgui/backends/imgui_impl_vulkan.cpp" ],
             SrcExcludes: [],
-            LinkerFlags: ["-lm", "-lGL", "-lX11", "-ldl", "-lpthread", "-lrt", "-lvulkan"],
+            LinkerFlags: [
+                "-lstdc++", "-lm", "-lGL", "-lX11", "-ldl", "-lpthread", "-lrt",
+                "-lvulkan" ],
+            
+            // InlineBuildLibs is a list of libraries that will be included in
+            // the build of the current target, but they must be built within
+            // the current Horde build chain
+            InlineBuildLibs: ["bgfx", "bimg", "bx", "glfw"],
+            // Libs is just a general list of libraries that will be linked
             Libs: ["../lib/snappy/libsnappy.a", "../lib/leveldb/libleveldb.a"],
         }
     ]

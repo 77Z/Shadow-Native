@@ -189,12 +189,23 @@ function linkStaticLib(outputLoc: string, objects: string[]): boolean {
 function linkExecutable(
 	outputLoc: string,
 	objects: string[],
-	libs: string[],
+	// deno-lint-ignore no-explicit-any
+	target: any,
 ): boolean {
-	const args = `-o ${outputLoc} ${objects.join(" ")} ${libs.join(" ")}`.split(
-		" ",
-	);
-	PRINT(args);
+	const LDFLAGS = [];
+	LDFLAGS.push(target.LDFLAGS);
+	for (const lib of target.InlineBuildLibs) {
+		LDFLAGS.push(`${buildDir}/${lib}/lib${lib}.a`);
+	}
+	for (const lib of target.Libs) {
+		LDFLAGS.push(lib);
+	}
+	LDFLAGS.push(target.LinkerFlags.join(" "));
+
+	const args = `-o ${outputLoc} ${objects.join(" ")} ${LDFLAGS.join(" ")}`
+		.split(" ");
+
+	PRINT(args.join(" "));
 	const linker = new Deno.Command(CXX, {
 		args: args,
 	});
@@ -259,9 +270,6 @@ for (let i = 0; i < conf.targets.length; i++) {
 			compile(target, `-o ${obj} -c ${src} ${CXXFLAGS.join(" ")}`.split(" "));
 		}
 		hasToLink = true;
-
-		// Linking
-		PRINT(`${AR} -rcs `);
 	}
 
 	if (!await exists(binaryLoc)) hasToLink = true;
@@ -277,7 +285,7 @@ for (let i = 0; i < conf.targets.length; i++) {
 				linkStaticLib(binaryLoc, objects);
 				break;
 			case "Executable":
-				linkExecutable(binaryLoc, objects, target.Libs);
+				linkExecutable(binaryLoc, objects, target);
 				break;
 			case "DynamicLib":
 				throw new Error("Not yet implemented!");
