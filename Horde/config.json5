@@ -15,8 +15,8 @@
     // CC: "clang",
     // CXX: "clang++",
     
-    // You can use {version}, {cc}, and {cxx} in this string
-    BuildDir: "shadow-build-{version}-{cc}",
+    // You can use {version}, {dbg}, {cc}, and {cxx} in this string
+    BuildDir: "shadow-{dbg}-{version}-{cc}",
 
     Debug: {
         DebugBuild: true,
@@ -31,7 +31,9 @@
             Name: "bx",
             PrettyName: "BX",
             Type: "StaticLib",
+            Language: "C++",
             BaseDir: "../lib/bx",
+            Target: "libbx.a",
 
             std: "c++20",
             Defines: [],
@@ -39,7 +41,7 @@
                 "-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
                 "-g", "-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
                 "-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
-                "-Wlogical-op", "-fPIC"],
+                "-Wlogical-op", "-fPIC" ],
 
             IfDebug: {
                 Defines: [ "BX_CONFIG_DEBUG=1" ],
@@ -47,22 +49,150 @@
             },
             IfRelease: {
                 Defines: [ "BX_CONFIG_DEBUG=0" ],
-                CXXFLAGS: ['-O3']
+                CXXFLAGS: [ '-O3' ]
             },
 
             IncludeDirs: [ "include", "3rdparty", "include/compat/linux" ],
             Sources: [ "src/*.cpp" ],
             SrcExcludes: [ "src/amalgamated.*" ]
         },
-        // {
-        //     Name: "shadow-engine",
-        //     PrettyName: "Shadow Engine",
-        //     Type: "Executable",
-        //     IfDebug: {
-        //         Defines: [ "SHADOW_DEBUG_BUILD" ]
-        //     },
-        //     IfRelease: {}
-        // }
+        {
+            Name: "bimg",
+            PrettyName: "BIMG",
+            Type: "StaticLib",
+            Language: "C++",
+            BaseDir: "../lib/bimg",
+            Target: "libbimg.a",
+
+            std: "c++20",
+            Defines: [],
+            //TODO: Move -g to debug only??
+            CXXFLAGS: [
+                "-Wall", "-Wextra", "-fomit-frame-pointer", "-g", "-m64",
+                "-fno-rtti", "-fno-exceptions", "-Wshadow","-mfpmath=sse",
+                "-msse4.2", "-Wunused-value", "-Wundef", "-Wlogical-op",
+                "-fPIC" ],
+
+            IfDebug: {
+                Defines: [ "BX_CONFIG_DEBUG=1" ],
+                CXXFLAGS: []
+            },
+            IfRelease: {
+                Defines: [ "BX_CONFIG_DEBUG=0" ],
+                CXXFLAGS: [ '-O3'] 
+            },
+
+            IncludeDirs: [
+                "include", "3rdparty", "3rdparty/astc-encoder/include",
+                "3rdparty/tinyexr/deps/miniz", "3rdparty/iqa/include",
+                "../bx/include" ],
+            Sources: [ "src/*.cpp", "3rdparty/astc-encoder/source/*.cpp" ],
+            SrcExcludes: []
+        },
+        {
+            Name: "bgfx",
+            PrettyName: "BGFX",
+            Type: "StaticLib",
+            Language: "C++",
+            BaseDir: "../lib/bgfx",
+            Target: "libbgfx.a",
+
+            std: "c++20",
+            Defines: [],
+            //TODO: Move -g to debug only??
+            CXXFLAGS: [
+                "-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+                "-g", "-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
+                "-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
+                "-Wlogical-op", "-fPIC" ],
+
+            IfDebug: {
+                Defines: [ "BX_CONFIG_DEBUG=1" ],
+                CXXFLAGS: []
+            },
+            IfRelease: {
+                Defines: [ "BX_CONFIG_DEBUG=0" ],
+                CXXFLAGS: [ '-O3' ]
+            },
+
+            IncludeDirs: [
+                "include", "3rdparty",
+                "../bimg/include", "../bx/include",
+                "3rdparty/directx-headers/include/directx",
+                "3rdparty/directx-headers/include",
+                "3rdparty/directx-headers/include/wsl/stubs",
+                "3rdparty/khronos/",
+                "../bx/include/compat/linux" ],
+            Sources: [ "src/*.cpp" ],
+            SrcExcludes: []
+        },
+        {
+            Name: "glfw",
+            PrettyName: "GLFW",
+            Type: "StaticLib",
+            Language: "C",
+            BaseDir: "../lib/glfw",
+            Target: "libglfw.a",
+
+            std: "c99",
+            Defines: [ "_DEFAULT_SOURCE", "_GLFW_X11" ],
+            CXXFLAGS: [ "-fPIC", "-Wall" ],
+
+            IfDebug: {
+                Defines: [],
+                CXXFLAGS: [ '-g' ]
+            },
+            IfRelease: {
+                Defines: [],
+                CXXFLAGS: ['-O3']
+            },
+
+            IncludeDirs: [
+                "include", "src" ],
+            Sources: [ "src/*.c" ],
+            SrcExcludes: []
+        },
+        {
+            Name: "shadow-engine",
+            PrettyName: "Shadow Engine",
+            Type: "Executable",
+            Language: "C++",
+            BaseDir: "..",
+            Target: "Shadow",
+
+            std: "c++20",
+            Defines: [],
+            CXXFLAGS: [ "-Wall", "-Wextra", "-ffast-math", "-m64",  ],
+
+            IfDebug: {
+                Defines: [ "BX_CONFIG_DEBUG=1", "SHADOW_DEBUG_BUILD" ],
+                CXXFLAGS: [ '-g' ]
+            },
+            IfRelease: {
+                Defines: [ "BX_CONFIG_DEBUG=0" ],
+                CXXFLAGS: [ '-O3' ]
+            },
+
+            IncludeDirs: [
+                "include",
+                "lib/bgfx/include",
+                "lib/bx/include",
+                "lib/bimg/include",
+                "lib/glfw/include",
+                "lib/modernjson",
+                "lib/miniaudio",
+                "lib/termcolor",
+                "lib/snappy/include",
+                "lib/leveldb/include",
+                "lib/entt",
+                "lib/imgui",
+                "lib/imgui/backends" ],
+            Sources: [
+                "src/*.cpp", "src/**/*.cpp",
+                "lib/imgui/*.cpp", "lib/imgui/backends/imgui_impl_glfw.cpp",
+                "lib/imgui/backends/imgui_impl_vulkan.cpp" ],
+            SrcExcludes: []
+        }
     ]
 
 }
