@@ -186,6 +186,28 @@ function linkStaticLib(outputLoc: string, objects: string[]): boolean {
 	return true;
 }
 
+function linkExecutable(
+	outputLoc: string,
+	objects: string[],
+	libs: string[],
+): boolean {
+	const args = `-o ${outputLoc} ${objects.join(" ")} ${libs.join(" ")}`.split(
+		" ",
+	);
+	PRINT(args);
+	const linker = new Deno.Command(CXX, {
+		args: args,
+	});
+
+	const { code, stdout, stderr } = linker.outputSync();
+
+	console.log(new TextDecoder().decode(stdout));
+	console.log(new TextDecoder().decode(stderr));
+
+	if (code !== 0) return false;
+	return true;
+}
+
 for (let i = 0; i < conf.targets.length; i++) {
 	const target = conf.targets[i];
 	const targetDir = buildDir + "/" + target.Name;
@@ -254,8 +276,10 @@ for (let i = 0; i < conf.targets.length; i++) {
 			case "StaticLib":
 				linkStaticLib(binaryLoc, objects);
 				break;
-			case "DynamicLib":
 			case "Executable":
+				linkExecutable(binaryLoc, objects, target.Libs);
+				break;
+			case "DynamicLib":
 				throw new Error("Not yet implemented!");
 			default:
 				throw new Error("Invalid target type!");
