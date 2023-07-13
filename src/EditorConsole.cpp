@@ -79,7 +79,7 @@ void EditorConsole::onUpdate(bool* p_open) {
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
 
 	for (int i = 0; i < items.size(); i++) {
-		const char* item = items[i];
+		// const char* item = items[i];
 		// TODO: Possibly filter here
 
 		const char* hello = "Hello";

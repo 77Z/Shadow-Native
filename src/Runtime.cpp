@@ -198,9 +198,9 @@ int Shadow::StartRuntime() {
 
 	// Yes, this causes a memory leak. Too bad!
 	Shadow::Mesh mesh("suzanne.mesh");
-	Shadow::EditorConsoleManager consoleManager;
-	consoleManager.createNewConsole("Mesh Debug Console");
-	consoleManager.createNewConsole("General Purpose Console");
+	// Shadow::EditorConsoleManager consoleManager;
+	// consoleManager.createNewConsole("Mesh Debug Console");
+	// consoleManager.createNewConsole("General Purpose Console");
 
 	// Shadow::UserCode userCode;
 
@@ -299,7 +299,7 @@ int Shadow::StartRuntime() {
 
 		sceneExplorer.onUpdate(eneenen);
 
-		consoleManager.onUpdate();
+		// consoleManager.onUpdate();
 
 		// chunkerDevUI.drawUI();
 
