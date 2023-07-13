@@ -4,6 +4,7 @@
 #include "Components/Camera.h"
 #include "Debug/Logger.h"
 #include "Debug/Profiler.hpp"
+#include "EditorConsole.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
@@ -64,7 +65,7 @@ static bool s_showStats = false;
 static bool s_showWarningText = true;
 static bool s_cameraFly = true;
 static bool s_showDemoWindow = false;
-static bool vsync = false;
+static bool vsync = true;
 
 float fov = 60.0f;
 
@@ -140,6 +141,8 @@ int Shadow::StartRuntime() {
 
 	bgfx::Init init;
 
+	init.type = bgfx::RendererType::OpenGL;
+
 #if BX_PLATFORM_WINDOWS
 	init.platformData.ndt = NULL;
 	init.platformData.nwh = (void*)(uintptr_t)glfwGetWin32Window(shadowWindow.window);
@@ -165,6 +168,7 @@ int Shadow::StartRuntime() {
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigDockingTransparentPayload = true;
 	// io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
@@ -194,6 +198,7 @@ int Shadow::StartRuntime() {
 
 	// Yes, this causes a memory leak. Too bad!
 	Shadow::Mesh mesh("suzanne.mesh");
+	Shadow::EditorConsole console;
 
 	// Shadow::UserCode userCode;
 
@@ -291,6 +296,8 @@ int Shadow::StartRuntime() {
 		// memedit.DrawWindow("Memory Editor", &memedit, sizeof(memedit));
 
 		sceneExplorer.onUpdate(eneenen);
+		bool open = true;
+		console.draw("Mesh Console", &open);
 
 		// chunkerDevUI.drawUI();
 
