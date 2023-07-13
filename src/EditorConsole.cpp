@@ -1,4 +1,5 @@
-#include "EditorConsole.hpp"
+#include "Debug/EditorConsole.hpp"
+#include "Debug/Logger.h"
 #include "imgui.h"
 #include "ppk_assert.h"
 #include "types.h"
@@ -49,9 +50,9 @@ void EditorConsole::addLog(const char* fmt, ...) {
 	items.push_back(Strdup(buf));
 }
 
-void EditorConsole::draw(std::string title, bool* p_open) {
+void EditorConsole::onUpdate(bool* p_open) {
 	ImGui::SetNextWindowSize(ImVec2(520, 600), ImGuiCond_FirstUseEver);
-	if (!ImGui::Begin(title.c_str(), p_open)) {
+	if (!ImGui::Begin(consoleName.c_str(), p_open)) {
 		ImGui::End();
 		return;
 	}
@@ -81,27 +82,48 @@ void EditorConsole::draw(std::string title, bool* p_open) {
 		const char* item = items[i];
 		// TODO: Possibly filter here
 
+		const char* hello = "Hello";
+		auto length = strlen(hello);
+		WARN("%i", length);
+
 		// Normally you would store more information in your item than just a string.
 		// (e.g. make Items[] an array of structure, store color/type etc.)
-		ImVec4 color;
-		bool has_color = false;
-		if (strstr(item, "[error]")) {
-			color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
-			has_color = true;
-		} else if (strncmp(item, "# ", 2) == 0) {
-			color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f);
-			has_color = true;
-		}
-		if (has_color)
-			ImGui::PushStyleColor(ImGuiCol_Text, color);
-		ImGui::TextUnformatted(item);
-		if (has_color)
-			ImGui::PopStyleColor();
+		// ImVec4 color;
+		// bool has_color = false;
+		// if (strstr(item, "[error]")) {
+		// 	color = ImVec4(1.0f, 0.4f, 0.4f, 1.0f);
+		// 	has_color = true;
+		// } else if (strncmp(item, "# ", 2) == 0) {
+		// 	color = ImVec4(1.0f, 0.8f, 0.6f, 1.0f);
+		// 	has_color = true;
+		// }
+		// if (has_color)
+		// 	ImGui::PushStyleColor(ImGuiCol_Text, color);
+		// ImGui::TextUnformatted(item);
+		ImGui::Text("Test");
+		// if (has_color)
+		// 	ImGui::PopStyleColor();
 	}
 
 	ImGui::PopStyleVar();
 
 	ImGui::End();
+}
+
+EditorConsoleManager::EditorConsoleManager() { }
+
+EditorConsoleManager::~EditorConsoleManager() { }
+
+void EditorConsoleManager::createNewConsole(std::string name) {
+	EditorConsole console;
+	console.consoleName = name;
+	consoles.push_back(console);
+}
+
+void EditorConsoleManager::onUpdate() {
+	for (int i = 0; i < consoles.size(); i++) {
+		consoles[i].get().onUpdate(&showConsoles);
+	}
 }
 
 }

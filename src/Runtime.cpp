@@ -2,9 +2,9 @@
 #include "Chunker/Chunker.hpp"
 // #include "Chunker/ChunkerDevUI.hpp"
 #include "Components/Camera.h"
+#include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.h"
 #include "Debug/Profiler.hpp"
-#include "EditorConsole.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
@@ -198,7 +198,9 @@ int Shadow::StartRuntime() {
 
 	// Yes, this causes a memory leak. Too bad!
 	Shadow::Mesh mesh("suzanne.mesh");
-	Shadow::EditorConsole console;
+	Shadow::EditorConsoleManager consoleManager;
+	consoleManager.createNewConsole("Mesh Debug Console");
+	consoleManager.createNewConsole("General Purpose Console");
 
 	// Shadow::UserCode userCode;
 
@@ -296,8 +298,8 @@ int Shadow::StartRuntime() {
 		// memedit.DrawWindow("Memory Editor", &memedit, sizeof(memedit));
 
 		sceneExplorer.onUpdate(eneenen);
-		bool open = true;
-		console.draw("Mesh Console", &open);
+
+		consoleManager.onUpdate();
 
 		// chunkerDevUI.drawUI();
 
