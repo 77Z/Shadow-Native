@@ -300,10 +300,10 @@ int Shadow::StartRuntime() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+
 		if (s_showDemoWindow)
 			ImGui::ShowDemoWindow();
-
-		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
 		// static MemoryEditor memedit;
 		// memedit.DrawWindow("Memory Editor", &memedit, sizeof(memedit));

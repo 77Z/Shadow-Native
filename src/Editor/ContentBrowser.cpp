@@ -1,4 +1,5 @@
 #include "Editor/ContentBrowser.hpp"
+#include "Debug/Logger.h"
 #include "Util.h"
 #include "bgfx/bgfx.h"
 #include "bx/bx.h"
@@ -72,24 +73,45 @@ ContentBrowser::ContentBrowser() {
 	// fileIcon = bgfx::createTexture2D(
 	// 	300, 300, false, 1, bgfx::TextureFormat::RGB8, BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem);
 
-	fileIcon = loadTexture("./fileIcon.png");
+	cppIcon = loadTexture("./fileIcon.png");
+	hppIcon = loadTexture("./hppIcon.png");
 }
 
 ContentBrowser::~ContentBrowser() { }
 
-void ContentBrowser::unload() { bgfx::destroy(fileIcon); }
+void ContentBrowser::unload() {
+	bgfx::destroy(cppIcon);
+	bgfx::destroy(hppIcon);
+}
 
 void ContentBrowser::onUpdate() {
 	ImGui::SetNextWindowSize(ImVec2(1600, 200), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Content Browser");
 
+	if (ImGui::BeginPopupContextItem("newfilepopup")) {
+		if (ImGui::Selectable("C++ Source File"))
+			PRINT("New C++ File");
+		if (ImGui::Selectable("C++ Header File"))
+			PRINT("New c++ Header");
+		ImGui::Separator();
+		if (ImGui::Selectable("C++ Class"))
+			PRINT("CLASS");
+		ImGui::Separator();
+		if (ImGui::Selectable("Prefab Actor"))
+			PRINT("PREFAB");
+		if (ImGui::Selectable("Texture"))
+			PRINT("Texture");
+		ImGui::EndPopup();
+	}
+
+	if (ImGui::Button("+ Add"))
+		ImGui::OpenPopup("newfilepopup");
+
 	// ImGui::Image(fileIcon, ImVec2(70, 70));
 
-	// ImGui::Button("Rawww");
-	ImGui::ContentBrowser::fileNode("File1.cppppppppp", ImGui::toId(fileIcon, 0, 0));
-	ImGui::ContentBrowser::fileNode("File2.cpp", ImGui::toId(fileIcon, 0, 0));
-	// ImGui::ContentBrowser::fileNode("File2.cpp");
-	// ImGui::Button("Bruh");
+	ImGui::ContentBrowser::fileNode("Main.cpp", ImGui::toId(cppIcon, 0, 0));
+	ImGui::ContentBrowser::fileNode("Other.cpp", ImGui::toId(cppIcon, 0, 0));
+	ImGui::ContentBrowser::fileNode("Other.hpp", ImGui::toId(hppIcon, 0, 0));
 
 	ImGui::End();
 }

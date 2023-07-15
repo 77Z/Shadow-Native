@@ -14,7 +14,8 @@ public:
 	void unload();
 
 private:
-	bgfx::TextureHandle fileIcon;
+	bgfx::TextureHandle cppIcon;
+	bgfx::TextureHandle hppIcon;
 };
 
 }
