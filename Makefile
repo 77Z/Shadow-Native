@@ -101,6 +101,7 @@ LDFLAGS += -Wl,-rpath,./
 
 LDFLAGS += -lstdc++ -lpthread -lm -ldl
 LDFLAGS += $(BGFX_BIN)/libbgfx$(BGFX_CONFIG).a
+LDFLAGS += $(BGFX_BIN)/libbimg_decode$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbimg$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbx$(BGFX_CONFIG).a
 LDFLAGS += lib/glfw/src/libglfw3.a

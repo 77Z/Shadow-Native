@@ -5,6 +5,7 @@
 #include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.h"
 #include "Debug/Profiler.hpp"
+#include "Editor/ContentBrowser.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
@@ -58,15 +59,17 @@
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif*/
 
-#define SCENE_VIEW_ID 10
 #define EDITOR_BG_VIEW_ID 0
-#define SHADOW_FLINGER_VIEW_ID 20
+#define IMGUI_VIEW_ID 10
+#define SCENE_VIEW_ID 50
+#define SHADOW_FLINGER_VIEW_ID 51
 
 static bool s_showStats = false;
 static bool s_showWarningText = true;
 static bool s_cameraFly = true;
 static bool s_showDemoWindow = false;
 static bool vsync = true;
+static bool mouseOverViewport = false;
 
 float fov = 60.0f;
 
@@ -186,11 +189,11 @@ int Shadow::StartRuntime() {
 	// io.Fonts->AddFontFromMemoryTTF(nerdFont.data(), nerdFont.size(), 16.0f);
 
 	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
-	// io.FontGlobalScale = 1.3f;
+	io.FontGlobalScale = 1.3f;
 
 	ImGui::SetupTheme();
 
-	ImGui_Implbgfx_Init(255);
+	ImGui_Implbgfx_Init(IMGUI_VIEW_ID);
 	ImGui_ImplGlfw_InitForVulkan(shadowWindow.window, true);
 
 	// Init stuffs
@@ -233,6 +236,7 @@ int Shadow::StartRuntime() {
 
 	Shadow::Scene activeScene;
 	Shadow::SceneExplorer sceneExplorer(activeScene);
+	Shadow::ContentBrowser contentBrowser;
 
 	auto dummyEntity = activeScene.createEntity("Dummy");
 	entt::entity eneenen = dummyEntity;
@@ -299,10 +303,13 @@ int Shadow::StartRuntime() {
 		if (s_showDemoWindow)
 			ImGui::ShowDemoWindow();
 
+		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+
 		// static MemoryEditor memedit;
 		// memedit.DrawWindow("Memory Editor", &memedit, sizeof(memedit));
 
 		sceneExplorer.onUpdate(eneenen);
+		contentBrowser.onUpdate();
 
 		// consoleManager.onUpdate();
 
@@ -314,6 +321,8 @@ int Shadow::StartRuntime() {
 			"Viewport", nullptr, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoBackground);
 		ImVec2 vMin = ImGui::GetWindowContentRegionMin();
 		ImVec2 vMax = ImGui::GetWindowContentRegionMax();
+
+		mouseOverViewport = ImGui::IsWindowHovered();
 
 		vMin.x += ImGui::GetWindowPos().x;
 		vMin.y += ImGui::GetWindowPos().y;
@@ -331,6 +340,7 @@ int Shadow::StartRuntime() {
 		ImGui::Checkbox("Show warning text (F1)", &s_showWarningText);
 		ImGui::Checkbox("Camera Fly", &s_cameraFly);
 		ImGui::Text("ImGui Wants Mouse: %s", ImGui::MouseOverArea() ? "true" : "false");
+		ImGui::Text("Mouse over viewport: %s", mouseOverViewport ? "true" : "false");
 		ImGui::Text("MOUSE X: %i Y: %i", (int)UserInput::getMouseX(), (int)UserInput::getMouseY());
 		ImGui::Text("Mouse Diff X: %i Y: %i", (int)UserInput::getMouseXDiff(),
 			(int)UserInput::getMouseYDiff());
@@ -438,10 +448,10 @@ int Shadow::StartRuntime() {
 		bx::mtxIdentity(orientation);
 		bgfx::setTransform(orientation);
 
-		if (Shadow::UserInput::isLeftMouseDown() && !ImGui::MouseOverArea())
+		if (Shadow::UserInput::isLeftMouseDown() && mouseOverViewport)
 			camera.orbit(UserInput::getMouseXDiff() / 1000, UserInput::getMouseYDiff() / 1000);
 
-		if (Shadow::UserInput::isRightMouseDown() && !ImGui::MouseOverArea())
+		if (Shadow::UserInput::isRightMouseDown() && mouseOverViewport)
 			camera.dolly(UserInput::getMouseYDiff() / 1000);
 
 		/*
@@ -487,6 +497,8 @@ int Shadow::StartRuntime() {
 	bgfx::destroy(u_time);
 
 	shadowFlinger.unload();
+
+	contentBrowser.unload();
 
 	mesh.unload();
 

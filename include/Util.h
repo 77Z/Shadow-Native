@@ -1,6 +1,7 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include "bimg/bimg.h"
 #include <bgfx/bgfx.h>
 
 #include <bx/allocator.h>
@@ -25,32 +26,8 @@ static bgfx::ShaderHandle loadShader(const char* name);
 bgfx::ProgramHandle loadProgram(bx::FileReaderI* reader, const char* vsName, const char* fsName);
 bgfx::ProgramHandle loadProgram(const char* vsName, const char* fsName);
 
-namespace Utilities {
-
-// struct MouseButton {
-// 	enum Enum {
-// 		None,
-// 		Left,
-// 		Middle,
-// 		Right,
-
-// 		Count
-// 	};
-// };
-
-// struct MouseState {
-// 	MouseState() : m_mx(0), m_my(0), m_mz(0) {
-// 		for (uint32_t i = 0; i < Utilities::MouseButton::Count; i++) {
-// 			m_buttons[i] = Utilities::MouseButton::None;
-// 		}
-// 	}
-
-// 	int32_t m_mx;
-// 	int32_t m_my;
-// 	int32_t m_mz;
-// 	uint8_t m_buttons[Utilities::MouseButton::Count];
-// };
-
-}
+bgfx::TextureHandle loadTexture(const char* _name,
+	uint64_t _flags = BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, uint8_t _skip = 0,
+	bgfx::TextureInfo* _info = NULL, bimg::Orientation::Enum* _orientation = NULL);
 
 #endif /* UTIL_H */
