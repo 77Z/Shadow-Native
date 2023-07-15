@@ -2,7 +2,9 @@
 #include "Chunker/Chunker.hpp"
 // #include "Chunker/ChunkerDevUI.hpp"
 #include "Components/Camera.h"
-#include "Logger.h"
+#include "Debug/EditorConsole.hpp"
+#include "Debug/Logger.h"
+#include "Debug/Profiler.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
@@ -64,7 +66,7 @@ static bool s_showStats = false;
 static bool s_showWarningText = true;
 static bool s_cameraFly = true;
 static bool s_showDemoWindow = false;
-static bool vsync = false;
+static bool vsync = true;
 
 float fov = 60.0f;
 
@@ -121,6 +123,8 @@ static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int acti
 
 int Shadow::StartRuntime() {
 	InitBXFilesystem();
+	RAPID_PROFILE_INIT();
+	INTERVAL(STARTUP);
 
 	// int width = 1280;
 	// int height = 720;
@@ -138,8 +142,15 @@ int Shadow::StartRuntime() {
 
 	bgfx::Init init;
 
+	init.type = bgfx::RendererType::OpenGL;
+
+#if BX_PLATFORM_WINDOWS
+	init.platformData.ndt = NULL;
+	init.platformData.nwh = (void*)(uintptr_t)glfwGetWin32Window(shadowWindow.window);
+#elif BX_PLATFORM_LINUX
 	init.platformData.ndt = glfwGetX11Display();
 	init.platformData.nwh = (void*)(uintptr_t)glfwGetX11Window(shadowWindow.window);
+#endif
 
 	auto bounds = shadowWindow.getExtent();
 	width = bounds.width;
@@ -154,13 +165,14 @@ int Shadow::StartRuntime() {
 	bgfx::setViewRect(EDITOR_BG_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	// Set view 0 to be the same dimensions as the window and to clear the color buffer
-	bgfx::setViewClear(SCENE_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0xFFFFFFFF, 1.0f, 0);
+	bgfx::setViewClear(SCENE_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x222222FF, 1.0f, 0);
 	bgfx::setViewRect(SCENE_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	// ImGui init
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io.ConfigDockingTransparentPayload = true;
 	// io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
@@ -174,7 +186,7 @@ int Shadow::StartRuntime() {
 	// io.Fonts->AddFontFromMemoryTTF(nerdFont.data(), nerdFont.size(), 16.0f);
 
 	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
-	io.FontGlobalScale = 1.3f;
+	// io.FontGlobalScale = 1.3f;
 
 	ImGui::SetupTheme();
 
@@ -189,7 +201,10 @@ int Shadow::StartRuntime() {
 	camera.distance(10.0f);
 
 	// Yes, this causes a memory leak. Too bad!
-	Shadow::Mesh mesh("bunny.bin");
+	Shadow::Mesh mesh("suzanne.mesh");
+	// Shadow::EditorConsoleManager consoleManager;
+	// consoleManager.createNewConsole("Mesh Debug Console");
+	// consoleManager.createNewConsole("General Purpose Console");
 
 	// Shadow::UserCode userCode;
 
@@ -252,8 +267,12 @@ int Shadow::StartRuntime() {
 	// activeScene.Reg().emplace<TransformComponent>(demoCube, cubeMtx);
 	// activeScene.Reg().emplace<ShapePusherComponent>(demoCube, 0xFF00FF00);
 
+	INTERVAL_END(STARTUP);
+
 	while (!shadowWindow.shouldClose()) {
 		glfwPollEvents();
+
+		INTERVAL(GAMELOOP);
 
 		if (shadowWindow.wasWindowResized()) {
 			auto bounds = shadowWindow.getExtent();
@@ -284,6 +303,8 @@ int Shadow::StartRuntime() {
 		// memedit.DrawWindow("Memory Editor", &memedit, sizeof(memedit));
 
 		sceneExplorer.onUpdate(eneenen);
+
+		// consoleManager.onUpdate();
 
 		// chunkerDevUI.drawUI();
 
@@ -452,6 +473,8 @@ int Shadow::StartRuntime() {
 		bgfx::submit(SCENE_VIEW_ID, program); */
 
 		bgfx::frame();
+
+		INTERVAL_END(GAMELOOP);
 	}
 
 	userSettingsDB.write("FOV", std::to_string(fov));

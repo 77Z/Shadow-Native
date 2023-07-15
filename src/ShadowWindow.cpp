@@ -1,5 +1,5 @@
 #include "ShadowWindow.h"
-#include "Logger.h"
+#include "Debug/Logger.h"
 #include "UserInput.h"
 #include <GLFW/glfw3.h>
 

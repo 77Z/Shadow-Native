@@ -1,11 +1,10 @@
-//
-// Created by Vince on 4/24/22.
-//
-
 #ifndef SHADOW_NATIVE_TYPES_H
 #define SHADOW_NATIVE_TYPES_H
 
 #include <cinttypes>
+
+// Size of a static C-style array. Don't use on pointers!
+#define SHADOW_ARRAYSIZE(ARR) ((int)(sizeof(ARR) / sizeof(*(ARR))))
 
 typedef uint8_t u8;
 typedef uint16_t u16;

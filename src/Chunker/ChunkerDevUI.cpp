@@ -1,6 +1,6 @@
 #include "Chunker/ChunkerDevUI.hpp"
 #include "Chunker/Chunker.hpp"
-#include "Logger.h"
+#include "Debug/Logger.h"
 #include "imgui.h"
 #include "imgui/imgui_memory_editor.h"
 #include "imgui/imgui_utils.h"

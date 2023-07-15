@@ -1,5 +1,5 @@
 #include "Scene/SceneExplorer.hpp"
-#include "Logger.h"
+#include "Debug/Logger.h"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
@@ -14,20 +14,27 @@ void ComponentEditorWidget<Shadow::TransformComponent>(
 	entt::registry& reg, entt::registry::entity_type e) {
 	auto& t = reg.get<Shadow::TransformComponent>(e);
 	ImGui::SeparatorText("Translation");
-	ImGui::SetNextItemWidth(100.0f);
+	ImGui::PushItemWidth(80);
 	ImGui::DragFloat("x##t", &t.translation.x, 0.05f);
+	ImGui::SameLine();
 	ImGui::DragFloat("y##t", &t.translation.y, 0.05f);
+	ImGui::SameLine();
 	ImGui::DragFloat("z##t", &t.translation.z, 0.05f);
 
 	ImGui::SeparatorText("Rotation");
 	ImGui::DragFloat("x##r", &t.rotation.x, 0.05f);
+	ImGui::SameLine();
 	ImGui::DragFloat("y##r", &t.rotation.y, 0.05f);
+	ImGui::SameLine();
 	ImGui::DragFloat("z##r", &t.rotation.z, 0.05f);
 
 	ImGui::SeparatorText("Scale");
 	ImGui::DragFloat("x##s", &t.scale.x, 0.05f);
+	ImGui::SameLine();
 	ImGui::DragFloat("y##s", &t.scale.y, 0.05f);
+	ImGui::SameLine();
 	ImGui::DragFloat("z##s", &t.scale.z, 0.05f);
+	ImGui::PopItemWidth();
 }
 
 template <>
