@@ -75,6 +75,20 @@ config DYNAMIC_USERCODE_LIBRARY_LOCATION
 	help
 	  Default location of the UserCode library
 
+config EDITOR_CONFIG_DIR_WINDOWS
+	string "Shadow Editor Configuration Location (Windows)"
+	default "%AppData%/ShadowEngine"
+	help
+	  Location of the config directory where useful info
+	  is stored
+
+config EDITOR_CONFIG_DIR_UNIX
+string "Shadow Editor Configuration Location (Unix)"
+default "~/.config/Shadow"
+	help
+	  Location of the config directory where useful info
+	  is stored
+
 choice
 	prompt "Platform"
 	default SHADOW_PLATFORM_LINUX_64

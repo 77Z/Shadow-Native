@@ -1,4 +1,5 @@
 #include "Editor/ProjectBrowser.hpp"
+#include "Debug/Logger.h"
 #include "Debug/Profiler.hpp"
 #include "Runtime.h"
 #include "ShadowWindow.h"
@@ -7,9 +8,12 @@
 #include "bgfx/defines.h"
 #include "bx/timer.h"
 #include "imgui.h"
+#include "imgui/imgui_utils.h"
 #include "imgui/theme.h"
 #include "imgui_impl_glfw.h"
+#include <cstring>
 #include <imgui/imgui_impl_bgfx.h>
+#include <string>
 
 #if BX_PLATFORM_LINUX
 #define GLFW_EXPOSE_NATIVE_X11
@@ -30,6 +34,26 @@ static Shadow::ShadowWindow* refWindow;
 static ImFont* mainFont;
 static ImFont* headingFont;
 
+static std::string projectName = "My Creation";
+static std::string packageID = "com.example.mycreation";
+static std::string projectLocation = "~/Desktop/ShadowProjects";
+
+static std::string issue = "";
+
+static int projectNameEditCallback(ImGuiInputTextCallbackData* data) {
+	PRINT("CALLBACK");
+	if (data->EventFlag == ImGuiInputTextFlags_CallbackEdit) {
+		PRINT("%s", data->Buf);
+		if (strcmp(data->Buf, "con")) {
+			issue = "Can't be nammed con becuase of Windows :P";
+		} else {
+			issue = "";
+		}
+	}
+
+	return 0;
+}
+
 static void drawProjectBrowser() {
 	ImGui::Begin("Project Browser");
 
@@ -47,6 +71,19 @@ static void drawProjectBrowser() {
 		ImGui::Text("New Project");
 		ImGui::Separator();
 		ImGui::PopFont();
+
+		ImGui::InputText("Project Name", &projectName, 0, projectNameEditCallback);
+		ImGui::InputText("Package ID", &packageID);
+		ImGui::InputText("Project Location", &projectLocation);
+		ImGui::Text(
+			"(Will create new directory %s)", (projectLocation + "/" + projectName).c_str());
+
+		if (ImGui::Button("Cancel"))
+			ImGui::CloseCurrentPopup();
+		ImGui::SameLine();
+		ImGui::BeginDisabled(issue != "");
+		ImGui::Button("Create");
+		ImGui::EndDisabled();
 		ImGui::EndPopup();
 	}
 
@@ -182,9 +219,8 @@ int Editor::startProjectBrowser() {
 	ImGui::DestroyContext();
 	bgfx::shutdown();
 
-	projectEditorWindow.~ShadowWindow();
-
 	if (openEditorAfterDeath) {
+		// projectEditorWindow.~ShadowWindow();
 		Shadow::StartRuntime();
 	}
 
