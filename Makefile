@@ -86,6 +86,8 @@ ifeq ($(CONFIG_SHADOW_DEBUG), y)
 	LDFLAGS += -Wl,--export-dynamic
 endif
 
+# CCFLAGS += -DSHADOW_PRODUCTION_BUILD
+
 # Binary embedding
 # Good resources:
 # https://stackoverflow.com/a/4158997
@@ -139,7 +141,7 @@ dirs:
 	mkdir -p ./$(BIN) ./include/generated ./include/config
 
 runtimeres:
-	cp res/runtimeres/* bin
+	cp -r res/runtimeres/* bin
 
 config:
 	$(MAKE) -C ./scripts/kconfig -f Makefile.mconf mconf

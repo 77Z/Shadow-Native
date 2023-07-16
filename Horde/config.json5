@@ -32,131 +32,6 @@
 
     targets: [
         {
-            Name: "bx",
-            PrettyName: "BX",
-            Type: "StaticLib",
-            Language: "C++",
-            BaseDir: "../lib/bx",
-            Target: "libbx.a",
-
-            std: "c++20",
-            Defines: [],
-            CXXFLAGS: [
-                "-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
-                "-g", "-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
-                "-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
-                "-Wlogical-op", "-fPIC" ],
-
-            IfDebug: {
-                Defines: [ "BX_CONFIG_DEBUG=1" ],
-                CXXFLAGS: []
-            },
-            IfRelease: {
-                Defines: [ "BX_CONFIG_DEBUG=0" ],
-                CXXFLAGS: [ '-O3' ]
-            },
-
-            IncludeDirs: [ "include", "3rdparty", "include/compat/linux" ],
-            Sources: [ "src/*.cpp" ],
-            SrcExcludes: [ "src/amalgamated.*" ]
-        },
-        {
-            Name: "bimg",
-            PrettyName: "BIMG",
-            Type: "StaticLib",
-            Language: "C++",
-            BaseDir: "../lib/bimg",
-            Target: "libbimg.a",
-
-            std: "c++20",
-            Defines: [],
-            //TODO: Move -g to debug only??
-            CXXFLAGS: [
-                "-Wall", "-Wextra", "-fomit-frame-pointer", "-g", "-m64",
-                "-fno-rtti", "-fno-exceptions", "-Wshadow","-mfpmath=sse",
-                "-msse4.2", "-Wunused-value", "-Wundef", "-Wlogical-op",
-                "-fPIC" ],
-
-            IfDebug: {
-                Defines: [ "BX_CONFIG_DEBUG=1" ],
-                CXXFLAGS: []
-            },
-            IfRelease: {
-                Defines: [ "BX_CONFIG_DEBUG=0" ],
-                CXXFLAGS: [ '-O3'] 
-            },
-
-            IncludeDirs: [
-                "include", "3rdparty", "3rdparty/astc-encoder/include",
-                "3rdparty/tinyexr/deps/miniz", "3rdparty/iqa/include",
-                "../bx/include" ],
-            Sources: [ "src/*.cpp", "3rdparty/astc-encoder/source/*.cpp" ],
-            SrcExcludes: []
-        },
-        {
-            Name: "bgfx",
-            PrettyName: "BGFX",
-            Type: "StaticLib",
-            Language: "C++",
-            BaseDir: "../lib/bgfx",
-            Target: "libbgfx.a",
-
-            std: "c++20",
-            Defines: [],
-            //TODO: Move -g to debug only??
-            CXXFLAGS: [
-                "-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
-                "-g", "-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
-                "-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
-                "-Wlogical-op", "-fPIC" ],
-
-            IfDebug: {
-                Defines: [ "BX_CONFIG_DEBUG=1" ],
-                CXXFLAGS: []
-            },
-            IfRelease: {
-                Defines: [ "BX_CONFIG_DEBUG=0" ],
-                CXXFLAGS: [ '-O3' ]
-            },
-
-            IncludeDirs: [
-                "include", "3rdparty",
-                "../bimg/include", "../bx/include",
-                "3rdparty/directx-headers/include/directx",
-                "3rdparty/directx-headers/include",
-                "3rdparty/directx-headers/include/wsl/stubs",
-                "3rdparty/khronos/",
-                "../bx/include/compat/linux" ],
-            Sources: [ "src/*.cpp" ],
-            SrcExcludes: [ "src/amalgamated.*" ]
-        },
-        {
-            Name: "glfw",
-            PrettyName: "GLFW",
-            Type: "StaticLib",
-            Language: "C",
-            BaseDir: "../lib/glfw",
-            Target: "libglfw.a",
-
-            std: "c99",
-            Defines: [ "_DEFAULT_SOURCE", "_GLFW_X11" ],
-            CXXFLAGS: [ "-fPIC", "-Wall" ],
-
-            IfDebug: {
-                Defines: [],
-                CXXFLAGS: [ '-g' ]
-            },
-            IfRelease: {
-                Defines: [],
-                CXXFLAGS: ['-O3']
-            },
-
-            IncludeDirs: [
-                "include", "src" ],
-            Sources: [ "src/*.c" ],
-            SrcExcludes: []
-        },
-        {
             Name: "shadow-engine",
             PrettyName: "Shadow Engine",
             Type: "Executable",
@@ -222,10 +97,24 @@
             // InlineBuildLibs is a list of libraries that will be included in
             // the build of the current target, but they must be built within
             // the current Horde build chain
-            InlineBuildLibs: ["bgfx", "bimg", "bx", "glfw"],
+            // InlineBuildLibs: ["bgfx", "bimg", "bx", "glfw"],
+            InlineBuildLibs: [],
             // Libs is just a general list of libraries that will be linked
-            Libs: ["../lib/snappy/libsnappy.a", "../lib/leveldb/libleveldb.a"],
-        }
+            Libs: [
+                "../lib/snappy/libsnappy.a",
+                "../lib/leveldb/libleveldb.a",
+                "../lib/bgfx/.build/linux64_gcc/bin/libbgfxDebug.a",
+                "../lib/bgfx/.build/linux64_gcc/bin/libbxDebug.a",
+                "../lib/bgfx/.build/linux64_gcc/bin/libbimg_decodeDebug.a",
+                "../lib/bgfx/.build/linux64_gcc/bin/libbimgDebug.a",
+                "../lib/glfw/src/libglfw3.a",
+                "../lib/leveldb/libleveldb.a",
+                "../lib/snappy/libsnappy.a"
+                ],
+        },
+        // {
+        //     Name: "chunker-cli"
+        // }
     ]
 
 }

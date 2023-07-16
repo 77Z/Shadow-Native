@@ -190,6 +190,7 @@ int Shadow::StartRuntime() {
 
 	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 	io.FontGlobalScale = 1.3f;
+	io.IniFilename = "devui.ini";
 
 	ImGui::SetupTheme();
 

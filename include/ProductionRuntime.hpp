@@ -1,0 +1,10 @@
+#ifndef SHADOW_NATIVE_PRODUCTION_RUNTIME_HPP
+#define SHADOW_NATIVE_PRODUCTION_RUNTIME_HPP
+
+namespace Shadow {
+
+int StartProductionRuntime();
+
+}
+
+#endif /* SHADOW_NATIVE_PRODUCTION_RUNTIME_HPP */

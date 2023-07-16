@@ -207,7 +207,7 @@ function linkExecutable(
 
 	PRINT(args.join(" "));
 	const linker = new Deno.Command(CXX, {
-		args: args,
+		args: [args.join(" ")],
 	});
 
 	const { code, stdout, stderr } = linker.outputSync();
