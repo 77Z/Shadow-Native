@@ -23,7 +23,7 @@ public:
 	bgfx::VertexBufferHandle vbh;
 	bgfx::IndexBufferHandle ibh;
 
-	void onUpdate(bgfx::ProgramHandle program);
+	void onUpdate(bgfx::ViewId view, bgfx::ProgramHandle program);
 
 private:
 	friend class Entity;

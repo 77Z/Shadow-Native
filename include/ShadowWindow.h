@@ -23,7 +23,11 @@ public:
 	WindowDimensions getExtent() { return { width, height }; };
 	bool wasWindowResized() { return framebufferResized; }
 	void resetWindowResizedFlag() { framebufferResized = false; }
+	void shutdown();
+	void* getNativeWindowHandle();
+	void* getNativeDisplayHandle();
 
+	// TODO: Make private
 	GLFWwindow* window;
 
 private:

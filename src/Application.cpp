@@ -1,15 +1,22 @@
+#include "Debug/Logger.h"
+#include "Editor/Editor.hpp"
 #include "Editor/ProjectBrowser.hpp"
 #include "ProductionRuntime.hpp"
 #include "Runtime.h"
 
 namespace Shadow {
 int Main(int argc, char** argv) {
+	int ret;
 #ifdef SHADOW_PRODUCTION_BUILD
 	return Shadow::StartProductionRuntime();
 #else
 	// return Shadow::StartRuntime();
-	return Editor::startProjectBrowser();
+	// return Editor::startProjectBrowser();
+	ret = Shadow::startEditor("~/Desktop/ShadowProjects/My Creation");
 #endif
+
+	PRINT("Goodbye from Shadow Engine");
+	return ret;
 }
 }
 

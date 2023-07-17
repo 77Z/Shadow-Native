@@ -145,7 +145,7 @@ int Shadow::StartRuntime() {
 
 	bgfx::Init init;
 
-	init.type = bgfx::RendererType::OpenGL;
+	init.type = bgfx::RendererType::Vulkan;
 
 #if BX_PLATFORM_WINDOWS
 	init.platformData.ndt = NULL;
@@ -470,7 +470,7 @@ int Shadow::StartRuntime() {
 			camZ -= 0.3f;
 		*/
 
-		activeScene.onUpdate(program);
+		activeScene.onUpdate(SCENE_VIEW_ID, program);
 
 		shadowFlinger.draw(program, width, height);
 
@@ -507,17 +507,11 @@ int Shadow::StartRuntime() {
 	ImGui_Implbgfx_Shutdown();
 
 	ShutdownBXFilesytem();
-
-	Shadow::ShutdownRuntime();
-
-	return 0;
-}
-
-void Shadow::ShutdownRuntime() {
-	// * Most of the classes shut themselves down at
-	// * this point, which happens after this step
 	ImGui::DestroyContext();
 	bgfx::shutdown();
 
+	shadowWindow.shutdown();
+
 	PRINT("Goodbye from Shadow Engine");
+	return 0;
 }

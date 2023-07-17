@@ -66,6 +66,9 @@ static const uint16_t cubeTriList[] = {
 	7,
 };
 
+// TODO: GET RID OF ME
+static unsigned int counter = 0;
+
 namespace Shadow {
 
 Scene::Scene() {
@@ -117,7 +120,7 @@ Entity Scene::createEntity(const std::string& name) {
 	return entity;
 }
 
-void Scene::onUpdate(bgfx::ProgramHandle program) {
+void Scene::onUpdate(bgfx::ViewId viewid, bgfx::ProgramHandle program) {
 
 	auto view = m_Registry.view<CubeComponent>();
 	for (auto entity : view) {
@@ -129,14 +132,15 @@ void Scene::onUpdate(bgfx::ProgramHandle program) {
 
 		float tfMtx[16];
 		bx::mtxSRT(tfMtx, transform.scale.x, transform.scale.y, transform.scale.z,
-			transform.rotation.x, transform.rotation.y, transform.rotation.z,
+			transform.rotation.x, transform.rotation.y + (counter / 50.0f), transform.rotation.z,
 			transform.translation.x, transform.translation.y, transform.translation.z);
 
 		bgfx::setTransform(tfMtx, 1);
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
 
-		bgfx::submit(50, program);
+		counter++;
+		bgfx::submit(viewid, program);
 	}
 }
 

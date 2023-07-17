@@ -127,7 +127,7 @@ SHADERS		= $(shell find $(SHADERS_PATH)/* -maxdepth 1 | grep -E ".*/(vs|fs).*.sc
 SHADERS_OUT	= $(SHADERS:.sc=.$(SHADER_TARGET).bin)
 SHADERC		= lib/bgfx/.build/$(BGFX_DEPS_TARGET)/bin/shaderc$(BGFX_CONFIG)
 
-.PHONY: all clean runtimeres config conftool confgen
+.PHONY: all clean runtimeres config conftool confgen cleanshaders
 
 all: dirs libs shaders build
 
@@ -163,6 +163,7 @@ confgen: conftool
 			-i lib/bgfx/src \
 			--platform $(SHADER_PLATFORM) \
 			--varyingdef $(dir $@)varying.def.sc \
+			-p spirv \
 			-f $< \
 			-o $@
 
@@ -189,3 +190,6 @@ clean:
 	rm -rf lib/glfw/CMakeCache.txt
 	$(MAKE) -C ./scripts/kconfig -f Makefile.mconf clean
 	$(MAKE) -C ./scripts/kconfig -f Makefile.conf clean
+
+cleanshaders:
+	find res/shaders -name "*.bin" -delete

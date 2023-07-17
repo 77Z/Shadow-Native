@@ -1,6 +1,7 @@
 #include "Editor/ProjectBrowser.hpp"
 #include "Debug/Logger.h"
 #include "Debug/Profiler.hpp"
+#include "Editor/Editor.hpp"
 #include "Runtime.h"
 #include "ShadowWindow.h"
 #include "Util.h"
@@ -107,7 +108,7 @@ int Editor::startProjectBrowser() {
 	refWindow = &projectEditorWindow;
 
 	bgfx::Init init;
-	init.type = bgfx::RendererType::OpenGL;
+	init.type = bgfx::RendererType::Vulkan;
 
 #if BX_PLATFORM_WINDOWS
 	init.platformData.ndt = NULL;
@@ -139,7 +140,8 @@ int Editor::startProjectBrowser() {
 	// TODO: in the future make this one file load into two fonts
 	mainFont = io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 	headingFont = io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 40.0f);
-	io.FontGlobalScale = 1.3f;
+	io.Fonts->AddFontDefault();
+	// io.FontGlobalScale = 1.3f;
 	io.IniFilename = "projectBrowser.ini";
 
 	ImGui::SetupTheme();
@@ -218,10 +220,10 @@ int Editor::startProjectBrowser() {
 
 	ImGui::DestroyContext();
 	bgfx::shutdown();
+	projectEditorWindow.shutdown();
 
 	if (openEditorAfterDeath) {
-		// projectEditorWindow.~ShadowWindow();
-		Shadow::StartRuntime();
+		Shadow::startEditor(projectLocation + "/" + projectName);
 	}
 
 	return 0;

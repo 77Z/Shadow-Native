@@ -2,8 +2,9 @@
 #define RUNTIME_H
 
 namespace Shadow {
-	int StartRuntime();
-	void ShutdownRuntime();
+
+int StartRuntime();
+
 }
 
 #endif /* RUNTIME_H */

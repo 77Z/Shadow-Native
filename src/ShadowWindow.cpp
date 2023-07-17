@@ -1,7 +1,24 @@
 #include "ShadowWindow.h"
 #include "Debug/Logger.h"
 #include "UserInput.h"
+#include "bx/platform.h"
+
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+#define GLFW_EXPOSE_NATIVE_X11
+#define GLFW_EXPOSE_NATIVE_GLX
+
+#elif BX_PLATFORM_WINDOWS
+#define GLFW_EXPOSE_NATIVE_WIN32
+#define GLFW_EXPOSE_NATIVE_WGL
+
+#elif BX_PLATFORM_OSX
+#define GLFW_EXPOSE_NATIVE_COCOA
+#define GLFW_EXPOSE_NATIVE_NSGL
+
+#endif
+
 #include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 
 static void mouseInputPassthrough(GLFWwindow* window, int button, int action, int mods) {
 	Shadow::UserInput::mouseCallback(window, button, action, mods);
@@ -16,9 +33,29 @@ ShadowWindow::ShadowWindow(int width, int height, std::string title)
 	initWindow();
 }
 
-ShadowWindow::~ShadowWindow() {
+ShadowWindow::~ShadowWindow() { }
+
+void ShadowWindow::shutdown() {
 	glfwDestroyWindow(window);
 	glfwTerminate();
+}
+
+void* ShadowWindow::getNativeWindowHandle() {
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+	return (void*)(uintptr_t)glfwGetX11Window(window);
+#elif BX_PLATFORM_WINDOWS
+	return glfwGetWin32Window(window);
+#elif BX_PLATFORM_OSX
+	return glfwGetCocoaWindow(window);
+#endif
+}
+
+void* ShadowWindow::getNativeDisplayHandle() {
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+	return glfwGetX11Display();
+#else
+	return NULL;
+#endif
 }
 
 void ShadowWindow::initWindow() {
