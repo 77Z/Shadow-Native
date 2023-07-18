@@ -7,7 +7,7 @@ SHADOW_CODE
 // extern "C" void register_function(void (*callmeplz)()) { callback = callmeplz; }
 
 void Start() {
-	std::cout << "Hello from USER LAND" << std::endl;
+	std::cout << "WE LOVE WYATT!" << std::endl;
 	// callback();
 }
 

@@ -14,22 +14,12 @@
 #include "imgui/imgui_utils.h"
 #include "imgui/theme.h"
 #include "imgui_impl_glfw.h"
+#include <GLFW/glfw3.h>
 #include <cstring>
 #include <filesystem>
 #include <imgui/imgui_impl_bgfx.h>
 #include <string>
 #include <vector>
-
-#if BX_PLATFORM_LINUX
-#define GLFW_EXPOSE_NATIVE_X11
-#elif BX_PLATFORM_WINDOWS
-#define GLFW_EXPOSE_NATIVE_WIN32
-#elif BX_PLATFORM_OSX
-#define GLFW_EXPOSE_NATIVE_COCOA
-#endif
-
-#include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
 
 struct ProjectEntry {
 	std::string name;
@@ -189,13 +179,8 @@ int Editor::startProjectBrowser() {
 	bgfx::Init init;
 	init.type = bgfx::RendererType::Vulkan;
 
-#if BX_PLATFORM_WINDOWS
-	init.platformData.ndt = NULL;
-	init.platformData.nwh = (void*)(uintptr_t)glfwGetWin32Window(projectEditorWindow.window);
-#elif BX_PLATFORM_LINUX
-	init.platformData.ndt = glfwGetX11Display();
-	init.platformData.nwh = (void*)(uintptr_t)glfwGetX11Window(projectEditorWindow.window);
-#endif
+	init.platformData.ndt = projectEditorWindow.getNativeDisplayHandle();
+	init.platformData.nwh = projectEditorWindow.getNativeWindowHandle();
 
 	auto bounds = projectEditorWindow.getExtent();
 	width = bounds.width;

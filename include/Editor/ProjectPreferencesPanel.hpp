@@ -13,6 +13,7 @@ namespace Editor {
 
 		void onUpdate();
 		void unload();
+		void open();
 
 	private:
 		bgfx::TextureHandle cppIcon;

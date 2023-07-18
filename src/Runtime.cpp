@@ -474,8 +474,8 @@ int Shadow::StartRuntime() {
 
 		shadowFlinger.draw(program, width, height);
 
-		// float meshMtx[16];
-		// mesh.submit(SCENE_VIEW_ID, meshProgram, meshMtx);
+		float meshMtx[16];
+		mesh.submit(SCENE_VIEW_ID, meshProgram, meshMtx);
 
 		/* bgfx::setTransform(cubeMtx, 1);
 		bgfx::setVertexBuffer(0, vbh);

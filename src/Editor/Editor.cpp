@@ -1,10 +1,13 @@
 #include "Editor/Editor.hpp"
 #include "Debug/Logger.h"
 #include "Editor/ContentBrowser.hpp"
+#include "Editor/ProjectBrowser.hpp"
+#include "Editor/ProjectPreferencesPanel.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
 #include "ShadowWindow.h"
+#include "UserCode.h"
 #include "Util.h"
 #include "bgfx/bgfx.h"
 #include "bgfx/defines.h"
@@ -65,7 +68,10 @@ static void drawMainMenuBar() {
 			if (ImGui::MenuItem("Copy", "CTRL + C")) { }
 			if (ImGui::MenuItem("Paste", "CTRL + V")) { }
 			ImGui::Separator();
-			if (ImGui::MenuItem("Project Preferences", "CTRL + SHIFT + ,")) { }
+			if (ImGui::MenuItem("Project Preferences", "CTRL + SHIFT + ,")) {
+				PRINT("PROJECT PREFERENCES");
+				ImGui::OpenPopup("ProjectPreferencesPanel");
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("View")) {
@@ -209,6 +215,7 @@ int startEditor(std::string projectDir) {
 	cube.addComponent<CubeComponent>(0.0f);
 
 	ContentBrowser contentBrowser;
+	Editor::ProjectPreferencesPanel projectPreferencesPanel;
 
 	while (!editorWindow.shouldClose()) {
 		glfwPollEvents();
@@ -225,7 +232,7 @@ int startEditor(std::string projectDir) {
 		}
 
 		if (wasViewportResized) {
-			// Resize texture here???
+			// Resize viewport texture here???
 		}
 
 		ImGui_Implbgfx_NewFrame();
@@ -235,10 +242,21 @@ int startEditor(std::string projectDir) {
 		// You don't need to manually make a view for the background if you use this
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
+		projectPreferencesPanel.onUpdate();
 		drawMainMenuBar();
-
 		drawEditorWindows();
 		contentBrowser.onUpdate();
+
+		ImGui::Begin("AHHHHH");
+
+		if (ImGui::Button("Open modal"))
+			projectPreferencesPanel.open();
+
+		if (ImGui::Button("LOAD USERCODE BRAZAA")) {
+			UserCode::loadUserCode();
+		}
+
+		ImGui::End();
 
 		ImGui::Render();
 		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
@@ -284,6 +302,7 @@ int startEditor(std::string projectDir) {
 	bgfx::destroy(program);
 
 	contentBrowser.unload();
+	projectPreferencesPanel.unload();
 
 	ImGui_ImplGlfw_Shutdown();
 	ImGui_Implbgfx_Shutdown();
@@ -293,6 +312,11 @@ int startEditor(std::string projectDir) {
 	ImGui::DestroyContext();
 	bgfx::shutdown();
 	editorWindow.shutdown();
+
+	// TODO: Causes loop of opening windows...
+	if (openProjectBrowserOnDeath) {
+		Editor::startProjectBrowser();
+	}
 
 	return 0;
 }
