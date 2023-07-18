@@ -26,6 +26,7 @@ static Shadow::ShadowWindow* refWindow;
 static std::string gblProjectDir;
 
 static bool vsync = true;
+static bool openProjectBrowserOnDeath = false;
 
 // Dummy values to be written over later
 static ImVec2 vportMin(0, 0);
@@ -38,6 +39,54 @@ static float vportWidth = vportMax.x - vportMin.x;
 static float vportHeight = vportMax.y - vportMin.y;
 static bool mouseOverVport = false;
 static bool wasViewportResized = false;
+
+static void drawMainMenuBar() {
+	if (ImGui::BeginMainMenuBar()) {
+
+		if (ImGui::BeginMenu("File")) {
+			if (ImGui::MenuItem("New Asset", "CTRL + N")) { }
+			ImGui::Separator();
+			if (ImGui::MenuItem("Engine Preferences", "CTRL + ,")) { }
+			ImGui::Separator();
+			if (ImGui::MenuItem("Close Project")) {
+				openProjectBrowserOnDeath = true;
+				refWindow->close();
+			}
+			if (ImGui::MenuItem("Exit", "CTRL + SHIFT + Q")) {
+				refWindow->close();
+			}
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Edit")) {
+			if (ImGui::MenuItem("Undo", "CTRL + Z")) { }
+			if (ImGui::MenuItem("Redo", "CTRL + Y", false, false)) { }
+			ImGui::Separator();
+			if (ImGui::MenuItem("Cut", "CTRL + X")) { }
+			if (ImGui::MenuItem("Copy", "CTRL + C")) { }
+			if (ImGui::MenuItem("Paste", "CTRL + V")) { }
+			ImGui::Separator();
+			if (ImGui::MenuItem("Project Preferences", "CTRL + SHIFT + ,")) { }
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("View")) {
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Build")) {
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Run")) {
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Tools")) {
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Help")) {
+			ImGui::EndMenu();
+		}
+
+		ImGui::EndMainMenuBar();
+	}
+}
 
 static void drawViewportWindow() {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -185,6 +234,8 @@ int startEditor(std::string projectDir) {
 
 		// You don't need to manually make a view for the background if you use this
 		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+
+		drawMainMenuBar();
 
 		drawEditorWindows();
 		contentBrowser.onUpdate();
