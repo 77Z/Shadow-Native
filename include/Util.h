@@ -18,6 +18,7 @@ bx::FileWriterI* getFileWriter();
 void InitBXFilesystem();
 void ShutdownBXFilesytem();
 
+// TODO: New API for all of this in the future?
 static const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath);
 
 static bgfx::ShaderHandle loadShader(bx::FileReaderI* reader, const char* name);

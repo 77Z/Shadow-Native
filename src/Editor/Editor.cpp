@@ -41,6 +41,7 @@ static bool wasViewportResized = false;
 
 static void drawViewportWindow() {
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 	ImGui::SetNextWindowSize(ImVec2(900, 500), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Viewport", nullptr, ImGuiWindowFlags_NoCollapse);
 	{
@@ -74,7 +75,7 @@ static void drawViewportWindow() {
 	ImGui::Image(vportTex, ImVec2(vportWidth, vportHeight));
 
 	ImGui::End();
-	ImGui::PopStyleVar();
+	ImGui::PopStyleVar(2);
 }
 
 static void drawDebugWindow() {

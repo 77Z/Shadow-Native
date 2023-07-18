@@ -1,4 +1,7 @@
 #include "Configuration/EngineConfiguration.hpp"
+#include "Configuration/engineConfig.sec.hpp"
+#include <cstring>
+#include <filesystem>
 #include <fstream>
 #include <string>
 
@@ -33,6 +36,22 @@ namespace EngineConfiguration {
 
 		input.close();
 		return confFile;
+	}
+
+	int initializeEngineConfig() {
+		const std::string configDir = getConfigDir();
+
+		if (std::filesystem::exists(configDir))
+			return 0;
+
+		std::filesystem::create_directory(configDir);
+		std::filesystem::create_directory(configDir + "/Projects");
+
+		std::ofstream engineConfigFile(configDir + "/engineConfig.sec");
+		engineConfigFile.write(engineConfigSecData, strlen(engineConfigSecData));
+		engineConfigFile.close();
+
+		return 0;
 	}
 
 }

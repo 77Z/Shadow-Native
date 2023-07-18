@@ -1,4 +1,6 @@
 #include "Editor/ProjectBrowser.hpp"
+#include "Configuration/EngineConfiguration.hpp"
+#include "Configuration/SECBuilder.hpp"
 #include "Debug/Logger.h"
 #include "Debug/Profiler.hpp"
 #include "Editor/Editor.hpp"
@@ -13,8 +15,10 @@
 #include "imgui/theme.h"
 #include "imgui_impl_glfw.h"
 #include <cstring>
+#include <filesystem>
 #include <imgui/imgui_impl_bgfx.h>
 #include <string>
+#include <vector>
 
 #if BX_PLATFORM_LINUX
 #define GLFW_EXPOSE_NATIVE_X11
@@ -27,8 +31,17 @@
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 
+struct ProjectEntry {
+	std::string name;
+	std::string path;
+	bgfx::TextureHandle icon;
+};
+
 static bool vsync = true;
 static bool openEditorAfterDeath = false;
+static bool openLegacyEditorAfterDeath = false;
+
+std::vector<ProjectEntry> gblProjects;
 
 static Shadow::ShadowWindow* refWindow;
 
@@ -37,10 +50,18 @@ static ImFont* headingFont;
 
 static std::string projectName = "My Creation";
 static std::string packageID = "com.example.mycreation";
-static std::string projectLocation = "~/Desktop/ShadowProjects";
+// static std::string projectLocation = "~/Desktop/ShadowProjects";
 
 static std::string issue = "";
 
+static std::string editorNowProjectPath;
+static void openEditorNow(std::string projectPath) {
+	editorNowProjectPath = projectPath;
+	openEditorAfterDeath = true;
+	refWindow->close();
+}
+
+// TODO: Does not work :/
 static int projectNameEditCallback(ImGuiInputTextCallbackData* data) {
 	PRINT("CALLBACK");
 	if (data->EventFlag == ImGuiInputTextFlags_CallbackEdit) {
@@ -55,6 +76,46 @@ static int projectNameEditCallback(ImGuiInputTextCallbackData* data) {
 	return 0;
 }
 
+static void createProject() {
+	PRINT("Making new project %s", projectName.c_str());
+
+	const std::string projDir
+		= Shadow::EngineConfiguration::getConfigDir() + "/Projects/" + projectName;
+
+	if (std::filesystem::exists(projDir)) {
+		ERROUT("Project already exists! [%s]", projectName.c_str());
+		return;
+	}
+
+	std::filesystem::create_directory(projDir);
+
+	Shadow::Configuration::SECBuilder projSec(projDir + "/project.sec");
+	projSec.add("name", projectName);
+	projSec.add("pkgId", packageID);
+	projSec.add("engineVer", "0.1.0");
+	projSec.write();
+
+	openEditorNow(projDir);
+}
+
+static std::vector<ProjectEntry> getProjects() {
+	std::vector<ProjectEntry> projects;
+	std::string projectsDir = Shadow::EngineConfiguration::getConfigDir() + "/Projects";
+
+	for (const auto& file : std::filesystem::directory_iterator(projectsDir)) {
+		ProjectEntry project;
+		project.path = file.path().string();
+		project.name = project.path.substr(project.path.find_last_of("/"), project.path.length());
+		std::string iconPath = project.path + "/icon.png";
+		PRINT("%s", iconPath.c_str());
+		project.icon = loadTexture(iconPath.c_str());
+
+		projects.push_back(project);
+	}
+
+	return projects;
+}
+
 static void drawProjectBrowser() {
 	ImGui::Begin("Project Browser");
 
@@ -62,6 +123,19 @@ static void drawProjectBrowser() {
 	ImGui::Text("Projects");
 	ImGui::Separator();
 	ImGui::PopFont();
+
+	for (int i = 0; i < gblProjects.size(); i++) {
+		ProjectEntry project = gblProjects[i];
+		ImGui::Image(ImGui::toId(project.icon, 0, 0), ImVec2(70, 70));
+		ImGui::SameLine();
+		if (ImGui::Button(project.name.c_str())) {
+			openEditorNow(project.path);
+		}
+		if (ImGui::IsItemHovered() && ImGui::BeginTooltip()) {
+			ImGui::Text("%s", project.path.c_str());
+			ImGui::EndTooltip();
+		}
+	}
 
 	if (ImGui::Button("New Project"))
 		ImGui::OpenPopup("New Project");
@@ -75,21 +149,26 @@ static void drawProjectBrowser() {
 
 		ImGui::InputText("Project Name", &projectName, 0, projectNameEditCallback);
 		ImGui::InputText("Package ID", &packageID);
-		ImGui::InputText("Project Location", &projectLocation);
-		ImGui::Text(
-			"(Will create new directory %s)", (projectLocation + "/" + projectName).c_str());
+		// ImGui::InputText("Project Location", &projectLocation);
+		ImGui::Text("(Will create new directory %s)",
+			(Shadow::EngineConfiguration::getConfigDir() + "/Projects/" + projectName).c_str());
 
 		if (ImGui::Button("Cancel"))
 			ImGui::CloseCurrentPopup();
 		ImGui::SameLine();
 		ImGui::BeginDisabled(issue != "");
-		ImGui::Button("Create");
+		if (ImGui::Button("Create"))
+			createProject();
 		ImGui::EndDisabled();
 		ImGui::EndPopup();
 	}
 
 	if (ImGui::Button("Force open editor")) {
-		openEditorAfterDeath = true;
+		openEditorNow("");
+	}
+
+	if (ImGui::Button("Force open legacy editor")) {
+		openLegacyEditorAfterDeath = true;
 		refWindow->close();
 	}
 
@@ -154,6 +233,8 @@ int Editor::startProjectBrowser() {
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 	float speed = 0.37f;
 	float time = 0.0f;
+
+	gblProjects = getProjects();
 
 	while (!projectEditorWindow.shouldClose()) {
 		glfwPollEvents();
@@ -223,7 +304,11 @@ int Editor::startProjectBrowser() {
 	projectEditorWindow.shutdown();
 
 	if (openEditorAfterDeath) {
-		Shadow::startEditor(projectLocation + "/" + projectName);
+		Shadow::startEditor(editorNowProjectPath);
+	}
+
+	if (openLegacyEditorAfterDeath) {
+		Shadow::StartRuntime();
 	}
 
 	return 0;

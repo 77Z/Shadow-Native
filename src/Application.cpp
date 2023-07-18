@@ -1,3 +1,4 @@
+#include "Configuration/EngineConfiguration.hpp"
 #include "Debug/Logger.h"
 #include "Editor/Editor.hpp"
 #include "Editor/ProjectBrowser.hpp"
@@ -7,12 +8,16 @@
 namespace Shadow {
 int Main(int argc, char** argv) {
 	int ret;
+
+	if (EngineConfiguration::initializeEngineConfig() != 0)
+		return 1;
+
 #ifdef SHADOW_PRODUCTION_BUILD
 	return Shadow::StartProductionRuntime();
 #else
 	// return Shadow::StartRuntime();
-	// return Editor::startProjectBrowser();
-	ret = Shadow::startEditor("~/Desktop/ShadowProjects/My Creation");
+	ret = Editor::startProjectBrowser();
+	// ret = Shadow::startEditor("~/Desktop/ShadowProjects/My Creation");
 #endif
 
 	PRINT("Goodbye from Shadow Engine");
