@@ -1,5 +1,6 @@
 #include "Configuration/EngineConfiguration.hpp"
 #include "Configuration/engineConfig.sec.hpp"
+#include "Debug/Logger.h"
 #include <cstring>
 #include <filesystem>
 #include <fstream>
@@ -40,6 +41,8 @@ namespace EngineConfiguration {
 
 	int initializeEngineConfig() {
 		const std::string configDir = getConfigDir();
+
+		PRINT("Initializing engine configuration directory: %s", configDir.c_str());
 
 		if (std::filesystem::exists(configDir))
 			return 0;

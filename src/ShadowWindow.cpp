@@ -26,10 +26,11 @@ static void mouseInputPassthrough(GLFWwindow* window, int button, int action, in
 
 namespace Shadow {
 
-ShadowWindow::ShadowWindow(int width, int height, std::string title)
+ShadowWindow::ShadowWindow(int width, int height, std::string title, bool decorations)
 	: width(width)
 	, height(height)
-	, windowTitle(title) {
+	, windowTitle(title)
+	, decorations(decorations) {
 	initWindow();
 }
 
@@ -64,6 +65,7 @@ void ShadowWindow::initWindow() {
 	glfwInit();
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+	glfwWindowHint(GLFW_DECORATED, (int)decorations);
 
 	window = glfwCreateWindow(width, height, windowTitle.c_str(), nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);

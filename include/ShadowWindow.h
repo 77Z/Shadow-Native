@@ -7,7 +7,7 @@
 namespace Shadow {
 class ShadowWindow {
 public:
-	ShadowWindow(int width, int height, std::string title);
+	ShadowWindow(int width, int height, std::string title, bool decorations = true);
 	~ShadowWindow();
 
 	ShadowWindow(const ShadowWindow&) = delete;
@@ -18,14 +18,30 @@ public:
 		int height;
 	};
 
+	bool isMaximized() { return (bool)glfwGetWindowAttrib(window, GLFW_MAXIMIZED); }
+	void maximize() { glfwMaximizeWindow(window); }
+	void restore() { glfwRestoreWindow(window); }
+	void toggleMaximized() {
+		if (isMaximized()) {
+			restore();
+		} else {
+			maximize();
+		}
+	}
+
+	void minimize() { glfwIconifyWindow(window); }
+
 	bool shouldClose() { return glfwWindowShouldClose(window); }
 	void close() { glfwSetWindowShouldClose(window, GLFW_TRUE); }
+
 	WindowDimensions getExtent() { return { width, height }; };
 	bool wasWindowResized() { return framebufferResized; }
 	void resetWindowResizedFlag() { framebufferResized = false; }
 	void shutdown();
 	void* getNativeWindowHandle();
 	void* getNativeDisplayHandle();
+
+	std::string windowTitle;
 
 	// TODO: Make private
 	GLFWwindow* window;
@@ -39,8 +55,7 @@ private:
 	int width;
 	int height;
 	bool framebufferResized = false;
-
-	std::string windowTitle;
+	bool decorations = true;
 };
 }
 

@@ -16,8 +16,11 @@ int Main(int argc, char** argv) {
 	return Shadow::StartProductionRuntime();
 #else
 	// return Shadow::StartRuntime();
-	ret = Editor::startProjectBrowser();
-	// ret = Shadow::startEditor("~/Desktop/ShadowProjects/My Creation");
+	// ret = Editor::startProjectBrowser();
+	Editor::ProjectEntry project;
+	project.path = "/home/vince/.config/Shadow/Projects/WIS";
+	project.name = "WIS";
+	ret = Shadow::startEditor(project);
 #endif
 
 	PRINT("Goodbye from Shadow Engine");

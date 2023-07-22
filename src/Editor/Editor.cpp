@@ -17,6 +17,7 @@
 #include "imgui/imgui_utils.h"
 #include "imgui/theme.h"
 #include "imgui_impl_glfw.h"
+#include "imgui_internal.h"
 #include <GLFW/glfw3.h>
 #include <csignal>
 #include <cstdint>
@@ -26,7 +27,7 @@
 
 static Shadow::ShadowWindow* refWindow;
 
-static std::string gblProjectDir;
+static Shadow::Editor::ProjectEntry gblProject;
 
 static bool vsync = true;
 static bool openProjectBrowserOnDeath = false;
@@ -43,8 +44,11 @@ static float vportHeight = vportMax.y - vportMin.y;
 static bool mouseOverVport = false;
 static bool wasViewportResized = false;
 
+static bgfx::TextureHandle shadowLogo;
+
 static void drawMainMenuBar() {
-	if (ImGui::BeginMainMenuBar()) {
+	if (ImGui::myBeginMenuBar()) {
+		ImGui::SetCursorPosX(100);
 
 		if (ImGui::BeginMenu("File")) {
 			if (ImGui::MenuItem("New Asset", "CTRL + N")) { }
@@ -90,8 +94,87 @@ static void drawMainMenuBar() {
 			ImGui::EndMenu();
 		}
 
-		ImGui::EndMainMenuBar();
+		ImGui::EndMenuBar();
 	}
+}
+
+static void drawTitlebar(float& outBarHeight) {
+	const float titlebarHeight = 58.0f;
+	outBarHeight = titlebarHeight;
+	const bool isMaximized = refWindow->isMaximized();
+	float titlebarVerticalOffset = isMaximized ? -6.0f : 0.0f;
+	const ImVec2 windowPadding = ImGui::GetCurrentWindow()->WindowPadding;
+	ImGui::SetCursorPos(ImVec2(windowPadding.x, windowPadding.y + titlebarVerticalOffset));
+	const ImVec2 titlebarMin = ImGui::GetCursorScreenPos();
+	const ImVec2 titlebarMax
+		= { ImGui::GetCursorScreenPos().x + ImGui::GetWindowWidth() - windowPadding.y * 2.0f,
+			  ImGui::GetCursorScreenPos().y + titlebarHeight };
+	auto* bgDrawList = ImGui::GetBackgroundDrawList();
+	auto* fgDrawList = ImGui::GetForegroundDrawList();
+	bgDrawList->AddRectFilled(titlebarMin, titlebarMax, IM_COL32(255, 0, 0, 255));
+	// DEBUG TITLEBAR BOUNDS
+	// fgDrawList->AddRect(titlebarMin, titlebarMax, IM_COL32(255, 255, 0, 255));
+
+	// Logo
+	{
+		const int logoWidth = 48;
+		const int logoHeight = 48;
+		const ImVec2 logoOffset(
+			16.0f + windowPadding.x, 5.0f + windowPadding.y + titlebarVerticalOffset);
+		const ImVec2 logoRectStart = { ImGui::GetItemRectMin().x + logoOffset.x,
+			ImGui::GetItemRectMin().y + logoOffset.y };
+		const ImVec2 logoRectMax = { logoRectStart.x + logoWidth, logoRectStart.y + logoHeight };
+		fgDrawList->AddImage(ImGui::toId(shadowLogo, 0, 0), logoRectStart, logoRectMax);
+	}
+
+	// Menubar
+	drawMainMenuBar();
+
+	// Window title
+	{
+		const char* title = refWindow->windowTitle.c_str();
+		ImVec2 currentCursorPos = ImGui::GetCursorPos();
+		ImVec2 textSize = ImGui::CalcTextSize(title);
+		ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() * 0.5f - textSize.x * 0.5f,
+			2.0f + windowPadding.y + 6.0f + 15.0f));
+		ImGui::Text("%s", title); // Draw title
+		ImGui::SetCursorPos(currentCursorPos);
+	}
+}
+
+static void drawRootWindow() {
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+
+	const bool isMaximized = refWindow->isMaximized();
+
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->Pos);
+	ImGui::SetNextWindowSize(viewport->Size);
+	ImGui::SetNextWindowViewport(viewport->ID);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	ImGui::PushStyleVar(
+		ImGuiStyleVar_WindowPadding, isMaximized ? ImVec2(6.0f, 6.0f) : ImVec2(1.0f, 1.0f));
+	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
+		| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
+		| ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus
+		| ImGuiWindowFlags_MenuBar;
+
+	ImGui::PushStyleColor(ImGuiCol_MenuBarBg, IM_COL32(0, 0, 0, 255));
+
+	ImGui::Begin("RootWindow", nullptr, window_flags);
+
+	ImGui::PopStyleColor();
+
+	ImGui::PopStyleVar(3);
+
+	float titlebarHeight;
+	drawTitlebar(titlebarHeight);
+	ImGui::SetCursorPosY(titlebarHeight);
+
+	ImGui::DockSpace(ImGui::GetID("MyDockspace"));
+
+	ImGui::End();
 }
 
 static void drawViewportWindow() {
@@ -136,15 +219,31 @@ static void drawViewportWindow() {
 static void drawDebugWindow() {
 	ImGui::Begin("Dbg");
 
-	ImGui::Text("%s", gblProjectDir.c_str());
+	ImGui::Text("%s", gblProject.name.c_str());
+	ImGui::Text("%s", gblProject.path.c_str());
 	ImGui::Text("Mouse over viewport: %s", mouseOverVport ? "true" : "false");
 
 	ImGui::Text("vportWidth: %f vportHeight: %f", vportWidth, vportHeight);
+
+	ImGui::Separator();
+
+	if (ImGui::Button("Minimize")) {
+		refWindow->minimize();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Maximize")) {
+		refWindow->toggleMaximized();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Close")) {
+		refWindow->close();
+	}
 
 	ImGui::End();
 }
 
 static void drawEditorWindows() {
+	drawRootWindow();
 	ImGui::ShowDemoWindow();
 	drawViewportWindow();
 	drawDebugWindow();
@@ -154,16 +253,16 @@ static void sigintHandler(int signal) { refWindow->close(); }
 
 namespace Shadow {
 
-int startEditor(std::string projectDir) {
+int startEditor(Shadow::Editor::ProjectEntry project) {
 
 	InitBXFilesystem();
 	IMGUI_CHECKVERSION();
 
-	gblProjectDir = projectDir;
+	gblProject = project;
 
 	int width = 1800, height = 1000;
 
-	ShadowWindow editorWindow(width, height, "Shadow Editor");
+	ShadowWindow editorWindow(width, height, "Shadow Editor", false);
 	refWindow = &editorWindow;
 
 	signal(SIGINT, sigintHandler);
@@ -190,6 +289,7 @@ int startEditor(std::string projectDir) {
 
 	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 	io.Fonts->AddFontDefault();
+	io.FontGlobalScale = 1.3f;
 	io.IniFilename = "editor.ini";
 
 	ImGui::SetupTheme();
@@ -206,6 +306,8 @@ int startEditor(std::string projectDir) {
 		bgfx::TextureFormat::BGRA8,
 		BGFX_TEXTURE_RT | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT);
 	vportBuf = bgfx::createFrameBuffer(1, &vportTex, true);
+
+	shadowLogo = loadTexture("./logo.png");
 
 	/////////////////////////////////////////////
 
@@ -240,11 +342,11 @@ int startEditor(std::string projectDir) {
 		ImGui::NewFrame();
 
 		// You don't need to manually make a view for the background if you use this
-		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+		// ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+
+		drawEditorWindows();
 
 		projectPreferencesPanel.onUpdate();
-		drawMainMenuBar();
-		drawEditorWindows();
 		contentBrowser.onUpdate();
 
 		ImGui::Begin("AHHHHH");
@@ -252,7 +354,7 @@ int startEditor(std::string projectDir) {
 		if (ImGui::Button("Open modal"))
 			projectPreferencesPanel.open();
 
-		if (ImGui::Button("LOAD USERCODE BRAZAA")) {
+		if (ImGui::Button("LOAD USERCODE")) {
 			UserCode::loadUserCode();
 		}
 
@@ -300,6 +402,7 @@ int startEditor(std::string projectDir) {
 	bgfx::destroy(u_time);
 	bgfx::destroy(vportBuf);
 	bgfx::destroy(program);
+	bgfx::destroy(shadowLogo);
 
 	contentBrowser.unload();
 	projectPreferencesPanel.unload();

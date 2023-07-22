@@ -10,6 +10,8 @@ namespace ImGui {
 #define IMGUI_FLAGS_NONE UINT8_C(0x00)
 #define IMGUI_FLAGS_ALPHA_BLEND UINT8_C(0x01)
 
+bool myBeginMenuBar();
+
 inline bool MouseOverArea() {
 	return false || ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered()
 		|| ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);

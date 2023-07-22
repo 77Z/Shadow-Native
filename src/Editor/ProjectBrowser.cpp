@@ -14,6 +14,7 @@
 #include "imgui/imgui_utils.h"
 #include "imgui/theme.h"
 #include "imgui_impl_glfw.h"
+#include "imgui_internal.h"
 #include <GLFW/glfw3.h>
 #include <cstring>
 #include <filesystem>
@@ -21,11 +22,7 @@
 #include <string>
 #include <vector>
 
-struct ProjectEntry {
-	std::string name;
-	std::string path;
-	bgfx::TextureHandle icon;
-};
+using ProjectEntry = Shadow::Editor::ProjectEntry;
 
 static bool vsync = true;
 static bool openEditorAfterDeath = false;
@@ -44,9 +41,9 @@ static std::string packageID = "com.example.mycreation";
 
 static std::string issue = "";
 
-static std::string editorNowProjectPath;
-static void openEditorNow(std::string projectPath) {
-	editorNowProjectPath = projectPath;
+static ProjectEntry editorNowProject;
+static void openEditorNow(ProjectEntry project) {
+	editorNowProject = project;
 	openEditorAfterDeath = true;
 	refWindow->close();
 }
@@ -78,14 +75,69 @@ static void createProject() {
 	}
 
 	std::filesystem::create_directory(projDir);
+	std::filesystem::create_directory(projDir + "/Content");
 
 	Shadow::Configuration::SECBuilder projSec(projDir + "/project.sec");
 	projSec.add("name", projectName);
 	projSec.add("pkgId", packageID);
 	projSec.add("engineVer", "0.1.0");
+	projSec.add("default-scene", "default.scene");
 	projSec.write();
 
-	openEditorNow(projDir);
+	// openEditorNow(projDir);
+}
+
+static bool projectNode(ProjectEntry project) {
+	const char* label = project.name.c_str();
+	ImGuiWindow* window = ImGui::GetCurrentWindow();
+	if (window->SkipItems)
+		return false;
+
+	ImVec2 pos = window->DC.CursorPos;
+	ImVec2 size(100, 130);
+	ImRect boundingBox(pos, ImVec2(pos.x + size.x, pos.y + size.y));
+
+	const ImGuiID id = window->GetID(label);
+	const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+
+	ImGui::ItemSize(size);
+	if (!ImGui::ItemAdd(boundingBox, id))
+		return false;
+
+	// Render
+	bool hovered, held;
+	bool pressed = ImGui::ButtonBehavior(boundingBox, id, &hovered, &held);
+
+	if (hovered && ImGui::BeginTooltip()) {
+		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(56, 76, 255, 255));
+		ImGui::TextUnformatted(label);
+		ImGui::PopStyleColor();
+		ImGui::Separator();
+		ImGui::Text("%s", project.path.c_str());
+		ImGui::EndTooltip();
+	}
+
+	const ImU32 color
+		= ImGui::GetColorU32(hovered ? IM_COL32(34, 34, 34, 255) : IM_COL32(20, 20, 20, 255));
+	ImGui::RenderNavHighlight(boundingBox, id);
+	ImGui::RenderFrame(boundingBox.Min, boundingBox.Max, color, true, 3.0f);
+
+	ImGui::RenderTextClipped(ImVec2(boundingBox.Min.x, boundingBox.Min.y + 100),
+		ImVec2(boundingBox.Max.x, boundingBox.Max.y + 100), label, NULL, &label_size, ImVec2(0, 0),
+		&boundingBox);
+
+	window->DrawList->AddImage(ImGui::toId(project.icon, 0, 0), boundingBox.Min,
+		ImVec2(boundingBox.Max.x, boundingBox.Max.y - 30));
+
+	// GetForegroundDrawList()->AddRect(
+	// 	boundingBox.Min, boundingBox.Max, IM_COL32(255, 0, 0, 255));
+
+	if (pressed) {
+		openEditorNow(project);
+	}
+
+	ImGui::SameLine();
+	return pressed;
 }
 
 static std::vector<ProjectEntry> getProjects() {
@@ -93,9 +145,12 @@ static std::vector<ProjectEntry> getProjects() {
 	std::string projectsDir = Shadow::EngineConfiguration::getConfigDir() + "/Projects";
 
 	for (const auto& file : std::filesystem::directory_iterator(projectsDir)) {
+		if (!file.is_directory())
+			continue;
 		ProjectEntry project;
 		project.path = file.path().string();
-		project.name = project.path.substr(project.path.find_last_of("/"), project.path.length());
+		project.name
+			= project.path.substr(project.path.find_last_of("/") + 1, project.path.length());
 		std::string iconPath = project.path + "/icon.png";
 		PRINT("%s", iconPath.c_str());
 		project.icon = loadTexture(iconPath.c_str());
@@ -116,16 +171,9 @@ static void drawProjectBrowser() {
 
 	for (int i = 0; i < gblProjects.size(); i++) {
 		ProjectEntry project = gblProjects[i];
-		ImGui::Image(ImGui::toId(project.icon, 0, 0), ImVec2(70, 70));
-		ImGui::SameLine();
-		if (ImGui::Button(project.name.c_str())) {
-			openEditorNow(project.path);
-		}
-		if (ImGui::IsItemHovered() && ImGui::BeginTooltip()) {
-			ImGui::Text("%s", project.path.c_str());
-			ImGui::EndTooltip();
-		}
+		projectNode(project);
 	}
+	ImGui::InvisibleButton("i am here to stop the imgui::sameline", ImVec2(1, 1));
 
 	if (ImGui::Button("New Project"))
 		ImGui::OpenPopup("New Project");
@@ -154,7 +202,8 @@ static void drawProjectBrowser() {
 	}
 
 	if (ImGui::Button("Force open editor")) {
-		openEditorNow("");
+		ProjectEntry proj;
+		openEditorNow(proj);
 	}
 
 	if (ImGui::Button("Force open legacy editor")) {
@@ -205,7 +254,7 @@ int Editor::startProjectBrowser() {
 	mainFont = io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 	headingFont = io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 40.0f);
 	io.Fonts->AddFontDefault();
-	// io.FontGlobalScale = 1.3f;
+	io.FontGlobalScale = 1.3f;
 	io.IniFilename = "projectBrowser.ini";
 
 	ImGui::SetupTheme();
@@ -279,6 +328,10 @@ int Editor::startProjectBrowser() {
 
 	bgfx::destroy(u_time);
 
+	for (int i = 0; i < gblProjects.size(); i++) {
+		bgfx::destroy(gblProjects[i].icon);
+	}
+
 	ImGui_ImplGlfw_Shutdown();
 	ImGui_Implbgfx_Shutdown();
 
@@ -289,7 +342,7 @@ int Editor::startProjectBrowser() {
 	projectEditorWindow.shutdown();
 
 	if (openEditorAfterDeath) {
-		Shadow::startEditor(editorNowProjectPath);
+		Shadow::startEditor(editorNowProject);
 	}
 
 	if (openLegacyEditorAfterDeath) {
