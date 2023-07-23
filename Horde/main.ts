@@ -3,6 +3,7 @@ const VERSION = "0.1.0";
 import JSON5 from "https://deno.land/x/json5@v1.0.0/mod.ts";
 import { parse } from "https://deno.land/std@0.192.0/flags/mod.ts";
 import { recursiveReaddir } from "https://deno.land/x/recursive_readdir@v2.0.0/mod.ts";
+import { resolve } from "https://deno.land/std@0.192.0/path/win32.ts";
 
 interface SrcDestCombo {
 	source: string;
@@ -148,7 +149,7 @@ function shouldRebuild(combined: SrcDestCombo): boolean {
 }
 
 // deno-lint-ignore no-explicit-any
-function compile(target: any, args: string[]): boolean {
+/* function compile(target: any, args: string[]): boolean {
 	// TODO: Make this multithreaded
 	// By that, I mean create up to navigator.hardwareConcurrency number of
 	// compiler processes and pop a source off the stack until it's all gone.
@@ -168,6 +169,40 @@ function compile(target: any, args: string[]): boolean {
 
 	if (code !== 0) return false;
 	return true;
+} */
+
+// deno-lint-ignore no-explicit-any
+async function compile(target: any, source: SrcDestCombo) {
+	const src = source.source;
+	const obj = source.dest;
+
+	// Make sure compiler doesn't run into any issues with non-existant
+	// directories at this point.
+	Deno.mkdirSync(obj.substring(obj.lastIndexOf("/"), 0), {
+		recursive: true,
+	});
+
+	const CXXFLAGS = gatherCflags(target);
+	// PRINT(` -o ${obj} -c ${src} ${CXXFLAGS.join(" ")}`);
+
+	const cmd = `${CXX} -o ${obj} -c ${src} ${CXXFLAGS.join(" ")}`.split(" ");
+
+	const proc = Deno.run({ cmd, stderr: "piped", stdout: "piped" });
+	const [stderr, stdout, status] = await Promise.all([
+		proc.stderrOutput(),
+		proc.output(),
+		proc.status(),
+	]);
+	const ret = {
+		cmd: cmd,
+		code: status.code,
+		stdout: new TextDecoder().decode(stdout).trim(),
+		stderr: new TextDecoder().decode(stderr).trim(),
+	};
+
+	proc.close();
+
+	return ret;
 }
 
 function linkStaticLib(outputLoc: string, objects: string[]): boolean {
@@ -252,7 +287,43 @@ for (let i = 0; i < conf.targets.length; i++) {
 		}
 	}
 
-	if (sourcesToBuild.length > 0) {
+	// PRINT("SOURCES TO REBUILD:");
+	// PRINT(sourcesToBuild);
+
+	//Batching
+	const batches: SrcDestCombo[][] = [];
+
+	while (sourcesToBuild.length > 0) {
+		batches.push(sourcesToBuild.splice(0, navigator.hardwareConcurrency));
+	}
+
+	PRINT("BATCHES:");
+	PRINT(batches);
+
+	for (const batch of batches) {
+		PRINT("Compiling batch " + batches.indexOf(batch));
+		const promises: Promise<void>[] = [];
+		for (const source of batch) {
+			promises.push((async () => {
+				/* const artificialDelay = Math.floor(Math.random() * (7000 - 2000 + 1)) +
+					2000;
+				await new Promise((resolve) => setTimeout(resolve, artificialDelay));
+				PRINT(`Compiled source ${source.source} in ${artificialDelay}ms`); */
+
+				const startTime = performance.now();
+				await compile(target, source);
+				PRINT(
+					`Compiled source ${source.source} in ${
+						performance.now() - startTime
+					}ms`,
+				);
+			})());
+		}
+
+		await Promise.allSettled(promises);
+	}
+
+	/* if (sourcesToBuild.length > 0) {
 		//Priming for the build step
 		for (let l = 0; l < sourcesToBuild.length; l++) {
 			const src = sourcesToBuild[l].source;
@@ -270,9 +341,9 @@ for (let i = 0; i < conf.targets.length; i++) {
 			compile(target, `-o ${obj} -c ${src} ${CXXFLAGS.join(" ")}`.split(" "));
 		}
 		hasToLink = true;
-	}
+	} */
 
-	if (!await exists(binaryLoc)) hasToLink = true;
+	/* if (!await exists(binaryLoc)) hasToLink = true;
 
 	if (hasToLink) {
 		const objects: string[] = [];
@@ -294,5 +365,5 @@ for (let i = 0; i < conf.targets.length; i++) {
 		}
 	} else {
 		PRINT("Nothing to do in target " + target.PrettyName);
-	}
+	} */
 }
