@@ -7,9 +7,9 @@ Add to vscode settings for syntax highlighting on shaders
 
 # TODO
 
-- Different build system maybe? I'm pretty happy with Make right now, but maybe
-  premake, or a custom solution that generates Ninja build files, probably not
-  Meson or CMake tho
+- Horde Build system
+  - Shaders
+  - HDoc
 - Hot Reloading with jet-live or custom solution -
   https://slembcke.github.io/HotLoadC
 - Physics
