@@ -1,13 +1,17 @@
-const VERSION = "0.1.0";
+const VERSION = "0.2.0";
 
 import JSON5 from "https://deno.land/x/json5@v1.0.0/mod.ts";
 import { parse } from "https://deno.land/std@0.192.0/flags/mod.ts";
 import { recursiveReaddir } from "https://deno.land/x/recursive_readdir@v2.0.0/mod.ts";
-import { resolve } from "https://deno.land/std@0.192.0/path/win32.ts";
+import { writeAllSync } from "https://deno.land/std@v0.190.0/streams/mod.ts";
 
 interface SrcDestCombo {
 	source: string;
 	dest: string;
+}
+
+function printVersion() {
+	console.log("Horde Build System version " + VERSION);
 }
 
 function formatUnicorn(input: string, args: Record<string, string>) {
@@ -20,9 +24,11 @@ function formatUnicorn(input: string, args: Record<string, string>) {
 const exists = async (filename: string): Promise<boolean> => {
 	try {
 		await Deno.stat(filename);
+		PRINT(`FILE ${filename} EXISTS`);
 		return true;
 	} catch (error) {
 		if (error instanceof Deno.errors.NotFound) {
+			PRINT(`FILE ${filename} DOES NOT EXIST`);
 			return false;
 		} else {
 			throw error;
@@ -31,7 +37,7 @@ const exists = async (filename: string): Promise<boolean> => {
 };
 
 async function mkIfNotExist(path: string) {
-	if (!await exists(path)) Deno.mkdirSync(path);
+	if (!await exists(path)) Deno.mkdirSync(path, { recursive: true });
 }
 
 function wildcardMatch(str: string, rule: string) {
@@ -42,14 +48,37 @@ function wildcardMatch(str: string, rule: string) {
 }
 
 const cliFlags = parse(Deno.args, {
-	boolean: ["help", "verbose", "version"],
-	string: ["config"],
+	boolean: ["help", "verbose", "version", "v", "clean", "confgen"],
+	string: ["config", "threads"],
 });
 
-if (cliFlags.version) {
-	console.log("Horde Build System version " + VERSION);
+if (cliFlags.help) {
+	printVersion();
+	console.log("\n---- HELP ----");
+	console.log(
+		`
+Options:
+--help                : Show this message and exit
+--version | -v        : Print the version string and exit
+--config [file.json5] : Path to a json5 file that contains the Horde
+                        configuration you'd like to use for compiling
+--threads [int]       : Number of concurrent compilations you'd like to 
+                        happen at once, defaults to the number of threads 
+                        your CPU reports, in your case: ${navigator.hardwareConcurrency}
+--clean               : Deletes BuildDir
+--confgen             : Generate engine configuration only`,
+	);
 	Deno.exit();
 }
+
+if (cliFlags.version || cliFlags.v) {
+	printVersion();
+	Deno.exit();
+}
+
+const totalPromises = cliFlags.threads
+	? Number(cliFlags.threads)
+	: navigator.hardwareConcurrency;
 
 let configFileLoc = "./config.json5";
 if (cliFlags.config) configFileLoc = cliFlags.config;
@@ -78,6 +107,12 @@ const buildDir = formatUnicorn(`../bin/${conf.BuildDir}`, {
 	cxx: conf.CXX,
 	dbg: debugBuild ? "debug" : "release",
 });
+
+if (cliFlags.clean) {
+	Deno.removeSync(buildDir, { recursive: true });
+	console.log("Deleted BuildDir: " + buildDir);
+	Deno.exit();
+}
 
 await mkIfNotExist(buildDir);
 
@@ -202,6 +237,9 @@ async function compile(target: any, source: SrcDestCombo) {
 
 	proc.close();
 
+	writeAllSync(Deno.stdout, stdout);
+	writeAllSync(Deno.stdout, stderr);
+
 	return ret;
 }
 
@@ -240,18 +278,73 @@ function linkExecutable(
 	const args = `-o ${outputLoc} ${objects.join(" ")} ${LDFLAGS.join(" ")}`
 		.split(" ");
 
-	PRINT(args.join(" "));
 	const linker = new Deno.Command(CXX, {
-		args: [args.join(" ")],
+		args: args.filter((i) => i),
 	});
 
 	const { code, stdout, stderr } = linker.outputSync();
 
-	console.log(new TextDecoder().decode(stdout));
-	console.log(new TextDecoder().decode(stderr));
+	writeAllSync(Deno.stdout, stdout);
+	writeAllSync(Deno.stdout, stderr);
 
 	if (code !== 0) return false;
 	return true;
+}
+
+// Config file generation
+{
+	await mkIfNotExist("../include/generated");
+
+	let output = "";
+	output += `/*
+*
+* Horde automatically generated file
+* Shadow Engine Build Configuration
+*
+*/
+`;
+
+	for (const entry of conf.EngineConfiguration) {
+		const key = entry[0];
+		const val = entry[1];
+
+		if (key.toUpperCase() != key) {
+			console.log(
+				`%cWARNING: configuration key "${key}" breaks the all uppercase convention`,
+				"color: yellow",
+			);
+		}
+
+		output += `#define CONFIG_${key} `;
+
+		switch (typeof val) {
+			case "boolean":
+				output += val ? "1" : "0";
+				break;
+			case "string":
+				output += `"${val}"`;
+				break;
+			case "number":
+			case "bigint":
+			case "symbol":
+			case "undefined":
+			case "object":
+			case "function":
+			default:
+				output += val;
+		}
+
+		output += "\n";
+	}
+
+	Deno.removeSync("../include/generated/autoconf.h");
+	Deno.writeFileSync(
+		"../include/generated/autoconf.h",
+		new TextEncoder().encode(output),
+	);
+	console.log("Generated engine configuration file");
+
+	if (cliFlags.confgen) Deno.exit();
 }
 
 for (let i = 0; i < conf.targets.length; i++) {
@@ -261,7 +354,11 @@ for (let i = 0; i < conf.targets.length; i++) {
 
 	await mkIfNotExist(targetDir);
 
-	PRINT(`Compiling ${target.PrettyName}`);
+	console.log(
+		`Building target ${target.PrettyName} in ${
+			debugBuild ? "DEBUG" : "RELEASE"
+		} mode`,
+	);
 	// for (const item of Deno.readDirSync(target.BaseDir)) {
 	// 	PRINT(item);
 	// }
@@ -290,60 +387,39 @@ for (let i = 0; i < conf.targets.length; i++) {
 	// PRINT("SOURCES TO REBUILD:");
 	// PRINT(sourcesToBuild);
 
-	//Batching
-	const batches: SrcDestCombo[][] = [];
+	// Dynamic load balancing for compilation
 
-	while (sourcesToBuild.length > 0) {
-		batches.push(sourcesToBuild.splice(0, navigator.hardwareConcurrency));
-	}
+	if (sourcesToBuild.length != 0) {
+		hasToLink = true;
 
-	PRINT("BATCHES:");
-	PRINT(batches);
+		const promises = new Array(totalPromises);
 
-	for (const batch of batches) {
-		PRINT("Compiling batch " + batches.indexOf(batch));
-		const promises: Promise<void>[] = [];
-		for (const source of batch) {
-			promises.push((async () => {
-				/* const artificialDelay = Math.floor(Math.random() * (7000 - 2000 + 1)) +
-					2000;
-				await new Promise((resolve) => setTimeout(resolve, artificialDelay));
-				PRINT(`Compiled source ${source.source} in ${artificialDelay}ms`); */
+		for (let i = 0; i < totalPromises; i++) {
+			promises[i] = (async () => {
+				let nextIndex = i;
 
-				const startTime = performance.now();
-				await compile(target, source);
-				PRINT(
-					`Compiled source ${source.source} in ${
-						performance.now() - startTime
-					}ms`,
-				);
-			})());
+				while (nextIndex < sourcesToBuild.length) {
+					const source = sourcesToBuild[nextIndex];
+					const start = performance.now();
+					await compile(target, source);
+					console.log(
+						`Thread ${i} finished ${source.source} in ${
+							performance.now() - start
+						}ms`,
+					);
+
+					// Choose the next index based on the number of promises available
+					nextIndex += totalPromises;
+				}
+
+				PRINT(`Thread ${i} finished its work`);
+			})();
 		}
 
 		await Promise.allSettled(promises);
 	}
 
-	/* if (sourcesToBuild.length > 0) {
-		//Priming for the build step
-		for (let l = 0; l < sourcesToBuild.length; l++) {
-			const src = sourcesToBuild[l].source;
-			const obj = sourcesToBuild[l].dest;
-
-			// Make sure compiler doesn't run into any issues with non-existant
-			// directories at this point.
-			Deno.mkdirSync(obj.substring(obj.lastIndexOf("/"), 0), {
-				recursive: true,
-			});
-			PRINT(`Building ${src}`);
-			const CXXFLAGS = gatherCflags(target);
-			PRINT(` -o ${obj} -c ${src} ${CXXFLAGS.join(" ")}`);
-
-			compile(target, `-o ${obj} -c ${src} ${CXXFLAGS.join(" ")}`.split(" "));
-		}
-		hasToLink = true;
-	} */
-
-	/* if (!await exists(binaryLoc)) hasToLink = true;
+	if (!await exists(binaryLoc)) hasToLink = true;
 
 	if (hasToLink) {
 		const objects: string[] = [];
@@ -351,11 +427,15 @@ for (let i = 0; i < conf.targets.length; i++) {
 			objects.push(sourcesAndObjects[l].dest);
 		}
 
+		/* PRINT("OBJECTS to link");
+		PRINT(objects); */
+
 		switch (target.Type) {
 			case "StaticLib":
 				linkStaticLib(binaryLoc, objects);
 				break;
 			case "Executable":
+				console.log("Linking executable " + binaryLoc);
 				linkExecutable(binaryLoc, objects, target);
 				break;
 			case "DynamicLib":
@@ -364,6 +444,29 @@ for (let i = 0; i < conf.targets.length; i++) {
 				throw new Error("Invalid target type!");
 		}
 	} else {
-		PRINT("Nothing to do in target " + target.PrettyName);
-	} */
+		console.log("Nothing to do in target " + target.PrettyName);
+	}
+
+	PRINT("Post-install routines");
+	if (target.PostInstall) {
+		const PI = target.PostInstall;
+		if (PI.Symlinks) {
+			for (const link of PI.Symlinks) {
+				const dest = formatUnicorn(link[1], {
+					targetDir: targetDir,
+					cwd: Deno.cwd(),
+				});
+
+				if (await exists(dest)) continue;
+
+				Deno.symlinkSync(
+					formatUnicorn(link[0], {
+						targetDir: targetDir,
+						cwd: Deno.cwd(),
+					}),
+					dest,
+				);
+			}
+		}
+	}
 }

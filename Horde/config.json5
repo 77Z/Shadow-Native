@@ -24,11 +24,29 @@
 
     Debug: {
         DebugBuild: true,
-
-        IncludeDebugSymbols: true,
-        EnableShadowProfiler: true,
-        VincesMoreVerboseDebugText: false,
     },
+
+    EngineConfiguration: [
+            
+        // Might remove this in the future. For now, you can change this to
+        // replace the name of the engine in some locations
+        ["PRETTY_NAME", "Shadow Engine"],
+
+        // Enables the time profiler built into Shadow, useful internally while
+        // developing the engine
+        ["ENABLE_SHADOW_PROFILER", true],
+
+        // Prints more somewhat useful garbage on the screen for me
+        ["VINCES_MORE_VERBOSE_DEBUG_TEXT", false],
+
+        // Default location of the UserCode library
+        ["DYNAMIC_USERCODE_LIBRARY_LOCATION", "./usercode/libusercode.so"],
+
+        // Location of the config directory where everything Shadow related is
+        // stored
+        ["EDITOR_CONFIG_DIR_UNIX", "~/.config/Shadow"],
+        ["EDITOR_CONFIG_DIR_WINDOWS", "%AppData%/ShadowEngine"],
+    ],
 
     targets: [
         {
@@ -111,6 +129,14 @@
                 "../lib/leveldb/libleveldb.a",
                 "../lib/snappy/libsnappy.a"
                 ],
+            PostInstall: {
+                Symlinks: [
+                    // You can use the following to format these strings:
+                    // {cwd} - Current working directory (from Horde dir)
+                    // {targetDir} - directory your binary will be built to
+                    ["{cwd}/../res/runtimeres", "{targetDir}/Resources"]
+                ]
+            }
         },
         // {
         //     Name: "chunker-cli"
