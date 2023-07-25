@@ -10,6 +10,7 @@ Add to vscode settings for syntax highlighting on shaders
 - Horde Build system
   - Shaders
   - HDoc
+  - compile_commands.json generation
 - Hot Reloading with jet-live or custom solution -
   https://slembcke.github.io/HotLoadC
 - Physics
