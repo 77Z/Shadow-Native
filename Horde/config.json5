@@ -48,6 +48,20 @@
         ["EDITOR_CONFIG_DIR_WINDOWS", "%AppData%/ShadowEngine"],
     ],
 
+    Shaders: {
+        // Disabling this will most likely cause the build to fail
+        Enabled: true,
+
+        // Compile all shaders directly into engine binary
+        EmbedShaders: true,
+
+        ShadersLocation: "../Shaders",
+
+        Compiler: "../lib/bgfx/.build/linux64_gcc/bin/shadercRelease",
+
+        IncludeDirs: [ "../lib/bgfx/src" ]
+    },
+
     targets: [
         {
             Name: "shadow-engine",

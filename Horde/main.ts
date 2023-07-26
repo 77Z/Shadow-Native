@@ -184,29 +184,6 @@ function shouldRebuild(combined: SrcDestCombo): boolean {
 }
 
 // deno-lint-ignore no-explicit-any
-/* function compile(target: any, args: string[]): boolean {
-	// TODO: Make this multithreaded
-	// By that, I mean create up to navigator.hardwareConcurrency number of
-	// compiler processes and pop a source off the stack until it's all gone.
-	// Keep spawning new compiler processes as previous ones finish, but make
-	// sure there are no more than navigator.hardwareConcurrency processes
-
-	const programName = target.Language == "C++" ? CXX : CC;
-
-	const compiler = new Deno.Command(programName, {
-		args: args,
-	});
-
-	const { code, stdout, stderr } = compiler.outputSync();
-
-	console.log(new TextDecoder().decode(stdout));
-	console.log(new TextDecoder().decode(stderr));
-
-	if (code !== 0) return false;
-	return true;
-} */
-
-// deno-lint-ignore no-explicit-any
 async function compile(target: any, source: SrcDestCombo) {
 	const src = source.source;
 	const obj = source.dest;
@@ -346,6 +323,226 @@ function linkExecutable(
 
 	if (cliFlags.confgen) Deno.exit();
 }
+
+type shaderPlatform =
+	| "android"
+	| "asm.js"
+	| "ios"
+	| "linux"
+	| "orbis"
+	| "osx"
+	| "windows";
+
+type shaderProfile =
+	| "100_es" // OpenGL ES Shading Language / WebGL (ESSL)
+	| "300_es"
+	| "310_es"
+	| "320_es"
+	| "s_3_0" // High-Level Shading Language (HLSL)
+	| "s_4_0"
+	| "s_5_0"
+	| "metal" // Metal Shading Language (MSL)
+	| "pssl" // PlayStation Shader Language (PSSL)
+	| "spirv" // Standard Portable Intermediate Representation - V (SPIR-V)
+	| "spirv10-10"
+	| "spirv13-11"
+	| "spirv14-11"
+	| "spirv15-12"
+	| "spirv16-13"
+	| "120" // OpenGL Shading Language (GLSL)
+	| "130"
+	| "140"
+	| "150"
+	| "330"
+	| "400"
+	| "410"
+	| "420"
+	| "430"
+	| "440";
+
+type shaderType = "vertex" | "fragment" | "compute";
+
+type shaderOptimization = 0 | 1 | 2 | 3;
+
+// Shader compilation
+await (async () => {
+	if (!conf.Shaders.Enabled) return;
+	console.log("Compiling Shaders");
+
+	const shaderOutDir = buildDir + "/Shaders";
+	const shaderInDir = conf.Shaders.ShadersLocation;
+	const shaderc = conf.Shaders.Compiler;
+
+	function compileShader(
+		input: string,
+		output: string,
+		platform: shaderPlatform,
+		profile: shaderProfile,
+		type: shaderType,
+		optimization: shaderOptimization = 0,
+		generateHeaders = false,
+	): boolean {
+		if (!shouldRebuild({ source: input, dest: output })) {
+			PRINT("Already built");
+			return true;
+		}
+
+		console.log(
+			`${input.substring(input.lastIndexOf("/") + 1)} -> ${
+				output.substring(output.lastIndexOf("/") + 1)
+			} : ${platform} ${profile} ${type} ${optimization}`,
+		);
+
+		Deno.mkdirSync(output.substring(output.lastIndexOf("/"), 0), {
+			recursive: true,
+		});
+
+		const defaultArgs: string[] = [
+			"--platform",
+			platform,
+			"-p",
+			profile,
+			"--varyingdef",
+			input.substring(input.lastIndexOf("/"), 0) + "/varying.def.sc",
+			"--type",
+			type,
+			"-f",
+			input,
+			"-O",
+			String(optimization),
+		];
+
+		for (const include of conf.Shaders.IncludeDirs) {
+			defaultArgs.push("-i");
+			defaultArgs.push(include);
+		}
+
+		const standardCompArgs = defaultArgs.slice().concat(["-o", output]);
+		const headerCompArgs = defaultArgs.slice().concat([
+			"-o",
+			output + ".h",
+			"--bin2c",
+			output.substring(output.lastIndexOf("/") + 1),
+		]);
+
+		const shaderCompiler = new Deno.Command(shaderc, {
+			args: standardCompArgs,
+		});
+
+		const { code, stdout, stderr } = shaderCompiler.outputSync();
+
+		writeAllSync(Deno.stdout, stdout);
+		writeAllSync(Deno.stderr, stderr);
+
+		let code_i = 0;
+
+		if (generateHeaders) {
+			const shaderHeaderCompiler = new Deno.Command(shaderc, {
+				args: headerCompArgs,
+			});
+
+			const { code, stdout, stderr } = shaderHeaderCompiler.outputSync();
+			code_i = code;
+
+			writeAllSync(Deno.stdout, stdout);
+			writeAllSync(Deno.stderr, stderr);
+		}
+
+		if (code !== 0 || code_i !== 0) return false;
+		return true;
+	}
+
+	await mkIfNotExist(shaderOutDir);
+
+	const dirItems = await recursiveReaddir(shaderInDir);
+	const shaders = dirItems.filter((file) => {
+		return (file.includes("vs_") || file.includes("fs_")) &&
+			file.endsWith(".sc");
+	});
+
+	for (const shader of shaders) {
+		const blankDest = shaderOutDir + "/" + shader.substring(
+			`${shaderInDir}/`.length,
+			shader.lastIndexOf("."),
+		);
+		// console.log(`Compiling ${shader} to ${blankDest}`);
+
+		const type: shaderType = shader.includes("vs_") ? "vertex" : "fragment";
+		const genHeaders = conf.Shaders.EmbedShaders;
+		const optimization = debugBuild ? 0 : 3;
+
+		compileShader(
+			shader,
+			blankDest + "_glsl",
+			"linux",
+			"120",
+			type,
+			optimization,
+			genHeaders,
+		);
+		compileShader(
+			shader,
+			blankDest + "_essl",
+			"android",
+			"100_es",
+			type,
+			optimization,
+			genHeaders,
+		);
+		compileShader(
+			shader,
+			blankDest + "_spv",
+			"linux",
+			"spirv",
+			type,
+			optimization,
+			genHeaders,
+		);
+		// compileShader(shader, blankDest + "_dx9", "windows", "s_3_0", type, optimization, genHeaders);
+		// compileShader(shader, blankDest + "_dx11", "windows", "s_5_0", type, optimization, genHeaders);
+		compileShader(
+			shader,
+			blankDest + "_mtl",
+			"ios",
+			"metal",
+			type,
+			optimization,
+			genHeaders,
+		);
+
+		if (conf.Shaders.EmbedShaders) {
+			// Cat headers
+
+			const shaderID = blankDest.substring(blankDest.lastIndexOf("/") + 1);
+			const folder = blankDest.substring(0, blankDest.lastIndexOf("/"));
+			const content: string[] = [];
+
+			for (const item of Deno.readDirSync(folder)) {
+				if (
+					item.isFile && item.name.endsWith(".h") &&
+					item.name.includes(shaderID)
+				) {
+					content.push(
+						new TextDecoder().decode(
+							Deno.readFileSync(folder + "/" + item.name),
+						),
+					);
+				}
+			}
+
+			const outfile = `${folder}/${shaderID}.bin.h`;
+			if (await exists(outfile)) Deno.removeSync(outfile, { recursive: true });
+			Deno.writeTextFileSync(
+				outfile,
+				content.join("\n"),
+				{ create: true, append: false },
+			);
+
+			//TODO: Generate header file that #includes all the .bin.h files
+		}
+		console.log();
+	}
+})();
 
 for (let i = 0; i < conf.targets.length; i++) {
 	const target = conf.targets[i];
