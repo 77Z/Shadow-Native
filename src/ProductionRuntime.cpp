@@ -3,7 +3,7 @@
 #include "ProductConfiguration.hpp"
 
 #include <iostream>
-#include <json.hpp>
+#include <json_impl.hpp>
 #include <sstream>
 #include <string>
 

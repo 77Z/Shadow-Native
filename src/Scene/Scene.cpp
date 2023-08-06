@@ -8,6 +8,7 @@
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "bx/math.h"
+#include "uuid_impl.hpp"
 
 struct PosColorVertex {
 	float x;
@@ -71,7 +72,16 @@ static unsigned int counter = 0;
 
 namespace Shadow {
 
-Scene::Scene() {
+Scene::Scene(std::string name)
+	: sceneName(name) {
+	init();
+}
+
+Scene::Scene() { init(); }
+
+Scene::~Scene() { }
+
+void Scene::init() {
 
 	pcvDecl.begin()
 		.add(bgfx::Attrib::Position, 3, bgfx::AttribType::Float)
@@ -109,15 +119,25 @@ Scene::Scene() {
 	} */
 }
 
-Scene::~Scene() { }
-
 Entity Scene::createEntity(const std::string& name) {
+	return createEntityWithUUID(generateUUID(), name);
+}
+
+Entity Scene::createEntityWithUUID(uuids::uuid uuid, const std::string& name) {
 	Entity entity = { m_Registry.create(), this };
-	entity.addComponent<TransformComponent>();
+
+	entity.addComponent<IDComponent>(uuid);
+	// TODO: Maybe transforms should come with entities by default in the future
+	// entity.addComponent<TransformComponent>();
 	auto& tag = entity.addComponent<TagComponent>();
 	tag.tag = name.empty() ? "Unnamed Actor" : name;
 
 	return entity;
+}
+
+void Scene::destroyEntity(Entity entity) {
+	entityMap.erase(entity.getUUID());
+	m_Registry.destroy(entity);
 }
 
 void Scene::onUpdate(bgfx::ViewId viewid, bgfx::ProgramHandle program) {

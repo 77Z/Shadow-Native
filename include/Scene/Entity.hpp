@@ -1,8 +1,10 @@
 #ifndef SHADOW_NATIVE_SCENE_ENTITY_HPP
 #define SHADOW_NATIVE_SCENE_ENTITY_HPP
 
+#include "Scene/Components.hpp"
 #include "Scene/Scene.hpp"
 #include "ppk_assert.h"
+#include "uuid_impl.hpp"
 #include <cstdint>
 #include <entt.hpp>
 #include <utility>
@@ -31,6 +33,8 @@ public:
 		PPK_ASSERT(hasComponent<T>(), "Entity has no such component");
 		scene->m_Registry.remove<T>(entityHandle);
 	}
+
+	uuids::uuid getUUID() { return GetComponent<IDComponent>().ID; }
 
 	operator bool() const { return entityHandle != entt::null; }
 	operator entt::entity() const { return entityHandle; }

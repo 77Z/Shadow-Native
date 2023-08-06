@@ -2,9 +2,7 @@
 #include "DataReader.hpp"
 #include "Debug/Logger.h"
 #include <fstream>
-#include <json.hpp>
-
-using json = nlohmann::json;
+#include <json_impl.hpp>
 
 namespace Shadow {
 

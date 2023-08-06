@@ -27,6 +27,7 @@ INCFLAGS += -Ilib/snappy/include
 INCFLAGS += -Ilib/leveldb/include
 INCFLAGS += -Ilib/lz4/include
 INCFLAGS += -Ilib/entt
+INCFLAGS += -Ilib/stduuid
 #INCFLAGS += -Ilib/steamaudio/include
 INCFLAGS += -I$(IMGUI_DIR)
 INCFLAGS += -I$(IMGUI_DIR)/backends
@@ -72,9 +73,7 @@ BGFX_BIN = lib/bgfx/.build/$(BGFX_DEPS_TARGET)/bin
 BGFX_CONFIG = Debug
 #BGFX_CONFIG = Release
 
-# For some reason this has to be defined even in Release builds??
-# Probably something I don't yet understand.
-CCFLAGS += -DBX_CONFIG_DEBUG
+# CCFLAGS += -DUUID_SYSTEM_GENERATOR
 
 # ifeq ($(BGFX_CONFIG), Debug)
 # 	CCFLAGS += -DSHADOW_DEBUG_BUILD -g
@@ -82,8 +81,11 @@ CCFLAGS += -DBX_CONFIG_DEBUG
 # endif
 
 ifeq ($(CONFIG_SHADOW_DEBUG), y)
+	CCFLAGS += -DBX_CONFIG_DEBUG
 	CCFLAGS += -DSHADOW_DEBUG_BUILD -g
 	LDFLAGS += -Wl,--export-dynamic
+else
+	CCFLAGS += -DBX_CONFIG_RELEASE
 endif
 
 # CCFLAGS += -DSHADOW_PRODUCTION_BUILD

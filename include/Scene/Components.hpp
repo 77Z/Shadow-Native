@@ -3,6 +3,7 @@
 
 #include "bx/math.h"
 #include "shadow/Mesh.h"
+#include "uuid_impl.hpp"
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
@@ -10,6 +11,15 @@
 #include <string>
 
 namespace Shadow {
+
+struct IDComponent {
+	uuids::uuid ID;
+
+	IDComponent() = default;
+	IDComponent(const IDComponent&) = default;
+	IDComponent(const uuids::uuid& id)
+		: ID(id) { }
+};
 
 struct TagComponent {
 	std::string tag;

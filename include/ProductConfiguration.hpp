@@ -2,9 +2,7 @@
 #define SHADOW_NATIVE_PRODUCT_CONFIGURATION_HPP
 
 #include "DataReader.hpp"
-#include <json.hpp>
-
-using json = nlohmann::json;
+#include <json_impl.hpp>
 
 namespace Shadow {
 namespace ProductConfiguration {

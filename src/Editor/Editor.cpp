@@ -262,7 +262,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 	int width = 1800, height = 1000;
 
-	ShadowWindow editorWindow(width, height, "Shadow Editor", false);
+	ShadowWindow editorWindow(width, height, "Shadow Editor");
 	refWindow = &editorWindow;
 
 	signal(SIGINT, sigintHandler);
