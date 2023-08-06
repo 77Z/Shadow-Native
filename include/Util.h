@@ -8,6 +8,8 @@
 #include <bx/bx.h>
 #include <bx/file.h>
 #include <cstdint>
+#include <memory>
+#include <utility>
 
 bx::AllocatorI* getDefaultAllocator();
 bx::AllocatorI* getAllocator();
@@ -30,5 +32,14 @@ bgfx::ProgramHandle loadProgram(const char* vsName, const char* fsName);
 bgfx::TextureHandle loadTexture(const char* _name,
 	uint64_t _flags = BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, uint8_t _skip = 0,
 	bgfx::TextureInfo* _info = NULL, bimg::Orientation::Enum* _orientation = NULL);
+
+namespace Shadow {
+
+template <typename T> using Reference = std::shared_ptr<T>;
+template <typename T, typename... Args> constexpr Reference<T> CreateRef(Args&&... args) {
+	return std::make_shared<T>(std::forward<Args>(args)...);
+}
+
+}
 
 #endif /* UTIL_H */
