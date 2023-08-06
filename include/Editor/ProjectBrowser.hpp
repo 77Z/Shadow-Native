@@ -6,12 +6,6 @@
 
 namespace Shadow::Editor {
 
-struct ProjectEntry {
-	std::string name;
-	std::string path;
-	bgfx::TextureHandle icon;
-};
-
 int startProjectBrowser();
 
 }

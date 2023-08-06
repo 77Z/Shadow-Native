@@ -2,6 +2,7 @@
 #define SHADOW_NATIVE_EDITOR_CONTENT_BROWSER
 
 #include <bgfx/bgfx.h>
+#include <string>
 
 namespace Shadow {
 
@@ -16,6 +17,8 @@ public:
 private:
 	bgfx::TextureHandle cppIcon;
 	bgfx::TextureHandle hppIcon;
+
+	std::string currentDirectory;
 };
 
 }
