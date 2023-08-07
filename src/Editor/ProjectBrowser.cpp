@@ -19,6 +19,7 @@
 #include <cstring>
 #include <filesystem>
 #include <imgui/imgui_impl_bgfx.h>
+#include <regex>
 #include <string>
 #include <vector>
 
@@ -48,18 +49,43 @@ static void openEditorNow(ProjectEntry project) {
 	refWindow->close();
 }
 
-// TODO: Does not work :/
-static int projectNameEditCallback(ImGuiInputTextCallbackData* data) {
-	PRINT("CALLBACK");
-	if (data->EventFlag == ImGuiInputTextFlags_CallbackEdit) {
-		PRINT("%s", data->Buf);
-		if (strcmp(data->Buf, "con")) {
-			issue = "Can't be nammed con becuase of Windows :P";
-		} else {
-			issue = "";
-		}
-	}
+static std::string projectNameChecker(std::string inp) {
 
+	if (inp.empty())
+		return "Name can't be blank";
+	if (inp.ends_with("."))
+		return "Windows doesn't allow '.' ending";
+	if (inp.ends_with(" "))
+		return "Windows doesn't allow ' ' ending";
+	if (inp.starts_with("."))
+		return "Don't start with a '.'";
+	if (inp.starts_with(" "))
+		return "Don't start with a ' '";
+	if (inp == "CON")
+		return "Windows doesn't allow this name";
+	if (inp == "PRN")
+		return "Windows doesn't allow this name";
+	if (inp == "AUX")
+		return "Windows doesn't allow this name";
+	if (inp == "NUL")
+		return "Windows doesn't allow this name";
+	if (inp == "COM")
+		return "Windows doesn't allow this name";
+	if (inp == "LPT")
+		return "Windows doesn't allow this name";
+
+	// TODO: This does not match lol
+	std::regex pattern("[/\\<>:\"|?* ]");
+	if (std::regex_match(inp, pattern))
+		return "Don't include any of the following characters: / \\ < > : \" | ? * space";
+
+	return "";
+}
+
+static int projectNameEditCallback(ImGuiInputTextCallbackData* data) {
+	if (data->EventFlag == ImGuiInputTextFlags_CallbackEdit) {
+		issue = projectNameChecker((std::string)data->Buf);
+	}
 	return 0;
 }
 
@@ -185,16 +211,21 @@ static void drawProjectBrowser() {
 		ImGui::Separator();
 		ImGui::PopFont();
 
-		ImGui::InputText("Project Name", &projectName, 0, projectNameEditCallback);
+		ImGui::InputText("Project Name", &projectName, ImGuiInputTextFlags_CallbackEdit,
+			projectNameEditCallback);
 		ImGui::InputText("Package ID", &packageID);
 		// ImGui::InputText("Project Location", &projectLocation);
 		ImGui::Text("(Will create new directory %s)",
 			(Shadow::EngineConfiguration::getConfigDir() + "/Projects/" + projectName).c_str());
 
+		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+		ImGui::Text("%s", issue.c_str());
+		ImGui::PopStyleColor();
+
 		if (ImGui::Button("Cancel"))
 			ImGui::CloseCurrentPopup();
 		ImGui::SameLine();
-		ImGui::BeginDisabled(issue != "");
+		ImGui::BeginDisabled(!issue.empty());
 		if (ImGui::Button("Create"))
 			createProject();
 		ImGui::EndDisabled();

@@ -1,6 +1,7 @@
 #include "Editor/Editor.hpp"
 #include "Debug/Logger.h"
 #include "Editor/ContentBrowser.hpp"
+#include "Editor/Notification.hpp"
 #include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
 #include "Editor/ProjectPreferencesPanel.hpp"
@@ -244,6 +245,7 @@ static void drawDebugWindow() {
 static void drawEditorWindows() {
 	drawRootWindow();
 	ImGui::ShowDemoWindow();
+	ImGui::ShowMetricsWindow();
 	drawViewportWindow();
 	drawDebugWindow();
 }
@@ -349,6 +351,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 		projectPreferencesPanel.onUpdate();
 		contentBrowser.onUpdate();
+		Editor::notificationUpdate();
 
 		ImGui::Begin("AHHHHH");
 

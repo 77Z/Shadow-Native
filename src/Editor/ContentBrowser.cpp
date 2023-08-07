@@ -139,10 +139,11 @@ void ContentBrowser::drawPathNavigationRail() {
 			once = true;
 		}
 		ImGui::InputText("##manualpathinput", &userinputPath);
-		ImGui::SameLine();
-		if (ImGui::Button("OK")) {
+		// ImGui::SameLine();
+		if (ImGui::IsItemDeactivatedAfterEdit()) {
 			userinputtingPath = false;
-			if (std::filesystem::exists(userinputPath))
+			if (std::filesystem::exists(
+					Editor::getCurrentProjectPath() + "/Content/" + userinputPath))
 				loadDir(&activeFileIndex, userinputPath);
 			else
 				PRINT("Notification");
