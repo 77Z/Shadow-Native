@@ -22,3 +22,9 @@
 [submodule "lib/miniaudio"]
 	path = lib/miniaudio
 	url = https://github.com/mackron/miniaudio
+[submodule "lib/snappy-lib"]
+	path = lib/snappy-lib
+	url = https://github.com/google/snappy.git
+[submodule "lib/leveldb-lib"]
+	path = lib/leveldb-lib
+	url = https://github.com/google/leveldb.git

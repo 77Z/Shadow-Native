@@ -23,8 +23,8 @@ INCFLAGS += -Ilib/glfw/include
 INCFLAGS += -Ilib/modernjson
 INCFLAGS += -Ilib/miniaudio
 INCFLAGS += -Ilib/termcolor
-INCFLAGS += -Ilib/snappy/include
-INCFLAGS += -Ilib/leveldb/include
+INCFLAGS += -Ilib/snappy-lib
+INCFLAGS += -Ilib/leveldb-lib/include
 INCFLAGS += -Ilib/lz4/include
 INCFLAGS += -Ilib/entt
 INCFLAGS += -Ilib/stduuid
@@ -109,8 +109,8 @@ LDFLAGS += $(BGFX_BIN)/libbimg_decode$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbimg$(BGFX_CONFIG).a
 LDFLAGS += $(BGFX_BIN)/libbx$(BGFX_CONFIG).a
 LDFLAGS += lib/glfw/src/libglfw3.a
-LDFLAGS += lib/leveldb/libleveldb.a
-LDFLAGS += lib/snappy/libsnappy.a
+LDFLAGS += lib/leveldb-lib/libleveldb.a
+LDFLAGS += lib/snappy-lib/libsnappy.a
 LDFLAGS += lib/lz4/liblz4.a
 #LDFLAGS += -Llib/steamaudio/lib/linux-x64
 #LDFLAGS += -lphonon
@@ -138,6 +138,8 @@ all: dirs libs shaders build
 libs:
 	cd lib/bgfx && make -j$(PROCESSER_COUNT) $(BGFX_TARGET)
 	cd lib/glfw && cmake . && make -j $(PROCESSER_COUNT)
+	cd lib/snappy-lib && cmake . && make -j $(PROCESSER_COUNT)
+	cd lib/leveldb-lib && cmake . && make -j $(PROCESSER_COUNT)
 
 dirs:
 	mkdir -p ./$(BIN) ./include/generated ./include/config

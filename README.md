@@ -48,3 +48,4 @@ instead deserialize a scene file and go through that.
 - LevelDB - Google
 - EnTT - Michele Caini
 - meshoptimizer - Arseny Kapoulkine
+- stduuid - Marius Băncilă
