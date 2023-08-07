@@ -13,6 +13,9 @@
 
 #include <bimg/bimg.h>
 #include <bimg/decode.h>
+#include <sstream>
+#include <string>
+#include <vector>
 
 bx::AllocatorI* getDefaultAllocator() {
 	static bx::DefaultAllocator s_allocator;
@@ -181,4 +184,27 @@ bgfx::TextureHandle loadTexture(bx::FileReaderI* _reader, const char* _filePath,
 bgfx::TextureHandle loadTexture(const char* _name, uint64_t _flags, uint8_t _skip,
 	bgfx::TextureInfo* _info, bimg::Orientation::Enum* _orientation) {
 	return loadTexture(getFileReader(), _name, _flags, _skip, _info, _orientation);
+}
+
+namespace Shadow::Util {
+
+std::string removeDupeSlashes(std::string input) {
+	while (input.find("//") != std::string::npos) {
+		input = input.replace(input.find("//"), 2, "/");
+	}
+	return input;
+}
+
+std::vector<std::string> splitString(const std::string& str, char delimeter) {
+	std::vector<std::string> tokens;
+	std::istringstream iss(str);
+	std::string token;
+
+	while (std::getline(iss, token, delimeter)) {
+		tokens.push_back(token);
+	}
+
+	return tokens;
+}
+
 }

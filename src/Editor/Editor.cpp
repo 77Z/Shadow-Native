@@ -1,6 +1,7 @@
 #include "Editor/Editor.hpp"
 #include "Debug/Logger.h"
 #include "Editor/ContentBrowser.hpp"
+#include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
 #include "Editor/ProjectPreferencesPanel.hpp"
 #include "Scene/Components.hpp"
@@ -26,8 +27,6 @@
 #define VIEWPORT_VIEW_ID 10
 
 static Shadow::ShadowWindow* refWindow;
-
-static Shadow::Editor::ProjectEntry gblProject;
 
 static bool vsync = true;
 static bool openProjectBrowserOnDeath = false;
@@ -135,9 +134,9 @@ static void drawTitlebar(float& outBarHeight) {
 		const char* title = refWindow->windowTitle.c_str();
 		ImVec2 currentCursorPos = ImGui::GetCursorPos();
 		ImVec2 textSize = ImGui::CalcTextSize(title);
-		ImGui::SetCursorPos(ImVec2(ImGui::GetWindowWidth() * 0.5f - textSize.x * 0.5f,
-			2.0f + windowPadding.y + 6.0f + 15.0f));
-		ImGui::Text("%s", title); // Draw title
+		fgDrawList->AddText(ImVec2(ImGui::GetWindowWidth() * 0.5f - textSize.x * 0.5f,
+								2.0f + windowPadding.y + 6.0f),
+			IM_COL32(255, 255, 255, 255), title);
 		ImGui::SetCursorPos(currentCursorPos);
 	}
 }
@@ -219,8 +218,8 @@ static void drawViewportWindow() {
 static void drawDebugWindow() {
 	ImGui::Begin("Dbg");
 
-	ImGui::Text("%s", gblProject.name.c_str());
-	ImGui::Text("%s", gblProject.path.c_str());
+	ImGui::Text("%s", Shadow::Editor::getCurrentProjectName().c_str());
+	ImGui::Text("%s", Shadow::Editor::getCurrentProjectPath().c_str());
 	ImGui::Text("Mouse over viewport: %s", mouseOverVport ? "true" : "false");
 
 	ImGui::Text("vportWidth: %f vportHeight: %f", vportWidth, vportHeight);
@@ -258,7 +257,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	InitBXFilesystem();
 	IMGUI_CHECKVERSION();
 
-	gblProject = project;
+	Editor::setCurrentProjectName(project.name);
+	Editor::setCurrentProjectPath(project.path);
 
 	int width = 1800, height = 1000;
 
@@ -289,7 +289,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 	io.Fonts->AddFontDefault();
-	io.FontGlobalScale = 1.3f;
+	// io.FontGlobalScale = 1.3f;
 	io.IniFilename = "editor.ini";
 
 	ImGui::SetupTheme();
@@ -315,6 +315,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	Scene scene;
 	auto cube = scene.createEntity("Cube");
 	cube.addComponent<CubeComponent>(0.0f);
+	cube.addComponent<TransformComponent>();
 
 	ContentBrowser contentBrowser;
 	Editor::ProjectPreferencesPanel projectPreferencesPanel;
