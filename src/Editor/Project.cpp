@@ -2,11 +2,13 @@
 
 namespace Shadow::Editor {
 
-static std::string projectName = nullptr;
-static std::string projectPath = nullptr;
+static std::string projectName;
+static std::string projectPath;
 
-std::string getCurrentProjectName() { }
+std::string getCurrentProjectName() { return projectName; }
+std::string getCurrentProjectPath() { return projectPath; }
 
-std::string getCurrentProjectPath() { }
+void setCurrentProjectName(std::string name) { projectName = name; }
+void setCurrentProjectPath(std::string path) { projectPath = path; }
 
 }

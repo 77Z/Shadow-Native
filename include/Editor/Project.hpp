@@ -12,10 +12,10 @@ struct ProjectEntry {
 	bgfx::TextureHandle icon;
 };
 
-// Can be null if no project is open, CHECK FOR IT!
+// Can be empty if no project is open, CHECK FOR IT!
 std::string getCurrentProjectName();
 
-// Can be null if no project is open, CHECK FOR IT!
+// Can be empty if no project is open, CHECK FOR IT!
 std::string getCurrentProjectPath();
 
 void setCurrentProjectName(std::string name);

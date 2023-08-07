@@ -2,6 +2,7 @@
 #define SHADOW_NATIVE_EDITOR_EDITOR_HPP
 
 #include "Editor/ProjectBrowser.hpp"
+#include "Editor/Project.hpp"
 #include <string>
 
 namespace Shadow {

@@ -2,13 +2,17 @@
 #include "Debug/Logger.h"
 #include "DevEntryPoint.hpp"
 #include "Editor/Editor.hpp"
+#include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
 #include "ProductionRuntime.hpp"
 #include "Runtime.h"
+#include "ppk_assert.h"
 
 namespace Shadow {
 int Main(int argc, char** argv) {
 	int ret;
+
+	PPK_ASSERT(Editor::getCurrentProjectName().empty());
 
 	if (EngineConfiguration::initializeEngineConfig() != 0)
 		return 1;
