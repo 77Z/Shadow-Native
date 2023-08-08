@@ -230,7 +230,7 @@ static void drawProjectBrowser() {
 		ProjectEntry project = gblProjects[i];
 		projectNode(project);
 	}
-	ImGui::InvisibleButton("i am here to stop the imgui::sameline", ImVec2(1, 1));
+	ImGui::NewLine();
 
 	if (ImGui::Button("New Project"))
 		ImGui::OpenPopup("New Project");

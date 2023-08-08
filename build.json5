@@ -1,0 +1,261 @@
+{
+
+	ProductName: "Shadow Engine",
+	Version: "0.7.0",
+
+	// Extra string appended to version number to help identify and
+	// differentiate builds from each other. If not empty, a "-" will be
+	// prefixed to the local version, so no need to add it yourself
+	LocalVersion: "vince",
+
+	CC: "gcc",
+	CXX: "g++",
+	AR: "ar",
+
+	// CC: "clang",
+	// CXX: "clang++",
+	
+	// You can use the following to format this string:
+	// {dbg} - Debug or Release
+	// {version} - Version number + Local Version
+	// {cc} - Compiler name
+	// {cxx} - Compiler name
+	BuildDir: "shadow-{dbg}-{version}-{cc}",
+
+	DebugBuild: false,
+
+	EngineConfiguration: [
+			
+		// Might remove this in the future. For now, you can change this to
+		// replace the name of the engine in some locations
+		["PRETTY_NAME", "Shadow Engine"],
+
+		// Enables the time profiler built into Shadow, useful internally while
+		// developing the engine
+		["ENABLE_SHADOW_PROFILER", true],
+
+		// Prints more somewhat useful garbage on the screen for me
+		["VINCES_MORE_VERBOSE_DEBUG_TEXT", false],
+
+		// Default location of the UserCode library
+		["DYNAMIC_USERCODE_LIBRARY_LOCATION", "./usercode/libusercode.so"],
+
+		// Location of the config directory where everything Shadow related is
+		// stored
+		["EDITOR_CONFIG_DIR_UNIX", "~/.config/Shadow"],
+		["EDITOR_CONFIG_DIR_WINDOWS", "%AppData%/ShadowEngine"],
+	],
+
+	Shaders: {
+		// Disabling this will most likely cause the build to fail
+		Enabled: true,
+
+		// Compile all shaders directly into engine binary
+		EmbedShaders: true,
+
+		ShadersLocation: "../Shaders",
+
+		Compiler: "../lib/bgfx/.build/linux64_gcc/bin/shadercRelease",
+
+		IncludeDirs: [ "../lib/bgfx/src" ]
+	},
+
+	Targets: [
+		{
+			Name: "bx",
+			PrettyName: "BX",
+			Type: "StaticLib",
+			Language: "C++",
+			BaseDir: "lib/bx",
+			Artifact: "libbx.a",
+
+			std: "c++20",
+			Defines: [],
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+				"-g", "-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
+				"-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
+				"-Wlogical-op", "-fPIC" ],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1" ],
+				CXXFLAGS: []
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [ "include", "3rdparty", "include/compat/linux" ],
+			Sources: [ "src/*.cpp" ],
+			SrcExcludes: [ "src/amalgamated.*" ]
+		},
+		{
+			Name: "bimg",
+			PrettyName: "BIMG",
+			Type: "StaticLib",
+			Language: "C++",
+			BaseDir: "lib/bimg",
+			Artifact: "libbimg.a",
+
+			std: "c++20",
+			Defines: [],
+			//TODO: Move -g to debug only??
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-fomit-frame-pointer", "-g", "-m64",
+				"-fno-rtti", "-fno-exceptions", "-Wshadow","-mfpmath=sse",
+				"-msse4.2", "-Wunused-value", "-Wundef", "-Wlogical-op",
+				"-fPIC" ],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1" ],
+				CXXFLAGS: []
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0" ],
+				CXXFLAGS: [ '-O3'] 
+			},
+
+			IncludeDirs: [
+				"include", "3rdparty", "3rdparty/astc-encoder/include",
+				"3rdparty/tinyexr/deps/miniz", "3rdparty/iqa/include",
+				"../bx/include" ],
+			Sources: [ "src/*.cpp", "3rdparty/astc-encoder/source/*.cpp" ],
+			SrcExcludes: []
+		},
+		{
+			Name: "bgfx",
+			PrettyName: "BGFX",
+			Type: "StaticLib",
+			Language: "C++",
+			BaseDir: "lib/bgfx",
+			Artifact: "libbgfx.a",
+
+			std: "c++20",
+			Defines: [],
+			//TODO: Move -g to debug only??
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+				"-g", "-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
+				"-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
+				"-Wlogical-op", "-fPIC" ],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1" ],
+				CXXFLAGS: []
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"include", "3rdparty",
+				"../bimg/include", "../bx/include",
+				"3rdparty/directx-headers/include/directx",
+				"3rdparty/directx-headers/include",
+				"3rdparty/directx-headers/include/wsl/stubs",
+				"3rdparty/khronos/",
+				"../bx/include/compat/linux" ],
+			Sources: [ "src/*.cpp" ],
+			SrcExcludes: [ "src/amalgamated.*" ]
+		},
+		{
+			// Directories and ninja files will use the Name so don't set it to
+			// anything that would trip up your filesystem and probably leave\
+			// spaces out of it for the sake of simplicity
+			Name: "shadow-engine",
+			PrettyName: "Shadow Engine",
+			Type: "Executable",
+			Language: "C++",
+			BaseDir: ".",
+			Artifact: "Shadow",
+
+			std: "c++20",
+			Defines: [],
+			CXXFLAGS: [ "-Wall", "-Wextra", "-ffast-math", "-m64",  ],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1", "SHADOW_DEBUG_BUILD" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"include",
+				"lib/bgfx/include",
+				"lib/bx/include",
+				"lib/bimg/include",
+				"lib/glfw/include",
+				"lib/modernjson",
+				"lib/miniaudio",
+				"lib/termcolor",
+				"lib/snappy-lib/include",
+				"lib/leveldb-lib/include",
+				"lib/entt",
+				"lib/stduuid",
+				"lib/imgui",
+				"lib/imgui/backends" ],
+
+			Sources: [
+				"src/*.cpp",
+				"lib/imgui/imgui.cpp",
+				"lib/imgui/imgui_demo.cpp",
+				"lib/imgui/imgui_draw.cpp",
+				"lib/imgui/imgui_tables.cpp",
+				"lib/imgui/imgui_widgets.cpp",
+				"lib/imgui/backends/imgui_impl_glfw.cpp",
+				"lib/imgui/backends/imgui_impl_vulkan.cpp",
+			],
+
+			// This should and will work in the future, buuuuut... it doesn't
+			// right now, and that's fine. I'll fix it later. The reason this
+			// doesn't work is because Horde recursively searches for files in
+			// the imgui directory, and this causes it to match the file:
+			// "lib/imgui/examples/example_win32_directx12/main.cpp"
+			// against the wildcard "lib/imgui/*.cpp" even though this isn't the
+			// intention of the wildcard.
+			// Sources: [
+			//     "src/*.cpp", "src/**/*.cpp",
+			//     "lib/imgui/*.cpp", "lib/imgui/backends/imgui_impl_glfw.cpp",
+			//     "lib/imgui/backends/imgui_impl_vulkan.cpp" ],
+			SrcExcludes: [],
+			LinkerFlags: [
+				"-lstdc++", "-lm", "-lGL", "-lX11", "-ldl", "-lpthread", "-lrt",
+				"-lvulkan" ],
+			
+			// InlineBuildLibs is a list of libraries that will be included in
+			// the build of the current target, but they must be built within
+			// the current Horde build chain
+			// InlineBuildLibs: ["bgfx", "bimg", "bx", "glfw"],
+			InlineBuildLibs: [],
+			// Libs is just a general list of libraries that will be linked
+			Libs: [
+				"../lib/snappy/libsnappy.a",
+				"../lib/leveldb/libleveldb.a",
+				"../lib/bgfx/.build/linux64_gcc/bin/libbgfxDebug.a",
+				"../lib/bgfx/.build/linux64_gcc/bin/libbxDebug.a",
+				"../lib/bgfx/.build/linux64_gcc/bin/libbimg_decodeDebug.a",
+				"../lib/bgfx/.build/linux64_gcc/bin/libbimgDebug.a",
+				"../lib/glfw/src/libglfw3.a",
+				"../lib/leveldb/libleveldb.a",
+				"../lib/snappy/libsnappy.a"
+				],
+			PostBuild: {
+				Symlinks: [
+					// You can use the following to format these strings:
+					// {cwd} - Current working directory (from Horde dir)
+					// {targetDir} - directory your binary will be built to
+					["{cwd}/../res/runtimeres", "{targetDir}/Resources"]
+				]
+			}
+		},
+		// {
+		//     Name: "chunker-cli"
+		// }
+	]
+
+}
