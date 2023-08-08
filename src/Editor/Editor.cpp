@@ -1,4 +1,5 @@
 #include "Editor/Editor.hpp"
+#include "Core.hpp"
 #include "Debug/Logger.h"
 #include "Editor/ContentBrowser.hpp"
 #include "Editor/Notification.hpp"
@@ -8,6 +9,7 @@
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
+#include "Scene/SceneSerializer.hpp"
 #include "ShadowWindow.h"
 #include "UserCode.h"
 #include "Util.h"
@@ -20,9 +22,11 @@
 #include "imgui/theme.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_internal.h"
+#include "json_impl.hpp"
 #include <GLFW/glfw3.h>
 #include <csignal>
 #include <cstdint>
+#include <fstream>
 #include <imgui/imgui_impl_bgfx.h>
 
 #define VIEWPORT_VIEW_ID 10
@@ -314,13 +318,21 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	/////////////////////////////////////////////
 
 	bgfx::ProgramHandle program = loadProgram("test/vs_test.vulkan", "test/fs_test.vulkan");
-	Scene scene;
-	auto cube = scene.createEntity("Cube");
-	cube.addComponent<CubeComponent>(0.0f);
-	cube.addComponent<TransformComponent>();
 
 	ContentBrowser contentBrowser;
 	Editor::ProjectPreferencesPanel projectPreferencesPanel;
+
+	Reference<Scene> editorScene = CreateReference<Scene>();
+	{
+		// Load Project information
+		PRINT("Loading project %s", project.name.c_str());
+
+		json projectSec = JSON::readBsonFile(project.path + "/project.sec");
+		PRINT("Decoded project.sec file: %s", projectSec.dump(4).c_str());
+
+		SceneSerializer ss(editorScene);
+		ss.deserialize(project.path + "/Content/" + (std::string)projectSec["default-scene"]);
+	}
 
 	while (!editorWindow.shouldClose()) {
 		glfwPollEvents();
@@ -398,7 +410,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			bgfx::touch(VIEWPORT_VIEW_ID);
 		}
 
-		scene.onUpdate(VIEWPORT_VIEW_ID, program);
+		editorScene->onUpdate(VIEWPORT_VIEW_ID, program);
 
 		bgfx::frame();
 	}

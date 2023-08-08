@@ -1,10 +1,15 @@
 #include "Editor/ProjectBrowser.hpp"
 #include "Configuration/EngineConfiguration.hpp"
 #include "Configuration/SECBuilder.hpp"
+#include "Core.hpp"
 #include "Debug/Logger.h"
 #include "Debug/Profiler.hpp"
 #include "Editor/Editor.hpp"
 #include "Runtime.h"
+#include "Scene/Components.hpp"
+#include "Scene/Entity.hpp"
+#include "Scene/Scene.hpp"
+#include "Scene/SceneSerializer.hpp"
 #include "ShadowWindow.h"
 #include "Util.h"
 #include "bgfx/bgfx.h"
@@ -15,6 +20,7 @@
 #include "imgui/theme.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_internal.h"
+#include "json_impl.hpp"
 #include <GLFW/glfw3.h>
 #include <cstring>
 #include <filesystem>
@@ -103,12 +109,37 @@ static void createProject() {
 	std::filesystem::create_directory(projDir);
 	std::filesystem::create_directory(projDir + "/Content");
 
+	json projectCfg = {
+		{ "name", projectName },
+		{ "pkgId", packageID },
+		{ "engineVer", "0.1.0" },
+		{ "default-scene", "default.scene" },
+	};
+
+	Shadow::JSON::dumpJsonToBson(projectCfg, projDir + "/project.sec");
+
+	Shadow::Reference<Shadow::Scene> defaultScene
+		= Shadow::CreateReference<Shadow::Scene>("Default Scene");
+	Shadow::SceneSerializer ss(defaultScene);
+
+	Shadow::Entity floor = defaultScene->createEntity("Floor");
+	auto& t = floor.addComponent<Shadow::TransformComponent>();
+	t.scale.x = 5.0f;
+	t.scale.y = 0.2f;
+	t.scale.z = 5.0f;
+	t.translation.y = -1.5f;
+	floor.addComponent<Shadow::CubeComponent>(1.0f);
+
+	ss.serialize(projDir + "/Content/default.scene");
+
+#if 0
 	Shadow::Configuration::SECBuilder projSec(projDir + "/project.sec");
 	projSec.add("name", projectName);
 	projSec.add("pkgId", packageID);
 	projSec.add("engineVer", "0.1.0");
 	projSec.add("default-scene", "default.scene");
 	projSec.write();
+#endif
 
 	// openEditorNow(projDir);
 }

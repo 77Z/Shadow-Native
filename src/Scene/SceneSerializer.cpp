@@ -35,12 +35,7 @@ void SceneSerializer::serialize(const std::string filepath) {
 	PRINT("Serializing scene to %s", filepath.c_str());
 	PRINT("Data: %s", sceneJson.dump(4).c_str());
 
-	std::vector<uint8_t> bson = json::to_bson(sceneJson);
-	std::ofstream outfile(filepath);
-	for (int i = 0; i < bson.size(); i++) {
-		outfile << bson[i];
-	}
-	outfile.close();
+	JSON::dumpJsonToBson(sceneJson, filepath);
 
 	/* Snappy Compression : Yeah this is pretty rough
 	std::vector<uint8_t> bson = json::to_bson(sceneJson);
@@ -108,6 +103,8 @@ bool SceneSerializer::deserialize(const std::string filepath) {
 		return false;
 
 	json deserializedScene = json::from_bson(infile);
+
+	infile.close();
 
 	scene->sceneName = deserializedScene["SceneName"];
 
