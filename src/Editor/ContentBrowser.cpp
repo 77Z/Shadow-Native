@@ -4,6 +4,7 @@
 #include "Util.h"
 #include "bgfx/bgfx.h"
 #include "bx/bx.h"
+#include "bx/platform.h"
 #include "imgui.h"
 #include "imgui/imgui_utils.h"
 #include "imgui_internal.h"
@@ -99,8 +100,13 @@ std::string ContentBrowser::getCurrentDir() { return currentDir; }
 
 void ContentBrowser::loadDir(std::vector<fileEntry>* indexToWrite, std::string dir) {
 	std::string dirToRead = Editor::getCurrentProjectPath() + "/Content/" + dir;
+#if __cplusplus > BX_LANGUAGE_CPP17
 	if (dir.ends_with("/") && dir.length() > 1)
 		dir.pop_back();
+#else
+	if (dir[dir.length() - 1] == '/' && dir.length() > 1)
+		dir.pop_back();
+#endif
 	currentDir = Util::removeDupeSlashes(dir);
 
 	indexToWrite->clear();

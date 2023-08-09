@@ -1,0 +1,6 @@
+   10  sudo apt update
+   40  sudo apt upgrade
+
+libgl1-mesa-dev x11proto-core-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev glm-dev libglm-dev libboost-all-dev libvulkan-dev
+
+INCFLAGS += -I/workspaces/vcpkg/packages/ms-gsl_x64-linux/include

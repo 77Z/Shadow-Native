@@ -58,7 +58,7 @@ static void openEditorNow(ProjectEntry project) {
 
 static std::string projectNameChecker(std::string inp) {
 
-#if __cplusplus < BX_LANGUAGE_CPP23
+#if __cplusplus > BX_LANGUAGE_CPP17
 	if (inp.empty())
 		return "Name can't be blank";
 	if (inp.ends_with("."))
@@ -254,7 +254,7 @@ static void drawProjectBrowser() {
 		ImGui::Text("(Will create new directory %s)",
 			(Shadow::EngineConfiguration::getConfigDir() + "/Projects/" + projectName).c_str());
 
-#if __cplusplus < BX_LANGUAGE_CPP23
+#if __cplusplus > BX_LANGUAGE_CPP17
 		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
 		ImGui::Text("%s", issue.c_str());
 		ImGui::PopStyleColor();

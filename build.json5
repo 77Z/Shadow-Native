@@ -69,7 +69,7 @@
 			BaseDir: "lib/bx",
 			Artifact: "libbx.a",
 
-			std: "c++20",
+			std: "c++17",
 			Defines: [],
 			CXXFLAGS: [
 				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
@@ -98,7 +98,7 @@
 			BaseDir: "lib/bimg",
 			Artifact: "libbimg.a",
 
-			std: "c++20",
+			std: "c++17",
 			Defines: [],
 			//TODO: Move -g to debug only??
 			CXXFLAGS: [
@@ -131,7 +131,7 @@
 			BaseDir: "lib/bgfx",
 			Artifact: "libbgfx.a",
 
-			std: "c++20",
+			std: "c++17",
 			Defines: [],
 			//TODO: Move -g to debug only??
 			CXXFLAGS: [
@@ -171,7 +171,7 @@
 			BaseDir: ".",
 			Artifact: "Shadow",
 
-			std: "c++20",
+			std: "c++17",
 			Defines: [],
 			CXXFLAGS: [ "-Wall", "-Wextra", "-ffast-math", "-m64",  ],
 
@@ -193,12 +193,13 @@
 				"lib/modernjson",
 				"lib/miniaudio",
 				"lib/termcolor",
-				"lib/snappy-lib/include",
+				"lib/snappy-lib",
 				"lib/leveldb-lib/include",
 				"lib/entt",
 				"lib/stduuid",
 				"lib/imgui",
-				"lib/imgui/backends" ],
+				"lib/imgui/backends",
+				"../vcpkg/packages/ms-gsl_x64-linux/include" ],
 
 			Sources: [
 				"src/*.cpp",
