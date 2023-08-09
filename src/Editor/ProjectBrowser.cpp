@@ -14,6 +14,7 @@
 #include "Util.h"
 #include "bgfx/bgfx.h"
 #include "bgfx/defines.h"
+#include "bx/platform.h"
 #include "bx/timer.h"
 #include "imgui.h"
 #include "imgui/imgui_utils.h"
@@ -57,6 +58,7 @@ static void openEditorNow(ProjectEntry project) {
 
 static std::string projectNameChecker(std::string inp) {
 
+#if __cplusplus < BX_LANGUAGE_CPP23
 	if (inp.empty())
 		return "Name can't be blank";
 	if (inp.ends_with("."))
@@ -86,6 +88,9 @@ static std::string projectNameChecker(std::string inp) {
 		return "Don't include any of the following characters: / \\ < > : \" | ? * space";
 
 	return "";
+#else
+	return "";
+#endif
 }
 
 static int projectNameEditCallback(ImGuiInputTextCallbackData* data) {
@@ -249,9 +254,16 @@ static void drawProjectBrowser() {
 		ImGui::Text("(Will create new directory %s)",
 			(Shadow::EngineConfiguration::getConfigDir() + "/Projects/" + projectName).c_str());
 
+#if __cplusplus < BX_LANGUAGE_CPP23
 		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
 		ImGui::Text("%s", issue.c_str());
 		ImGui::PopStyleColor();
+#else
+		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 153, 43, 255));
+		ImGui::Text("* Project name checking isn't supported in builds of Shadow using a standard "
+					"lower than C++20");
+		ImGui::PopStyleColor();
+#endif
 
 		if (ImGui::Button("Cancel"))
 			ImGui::CloseCurrentPopup();

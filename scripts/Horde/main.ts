@@ -13,7 +13,6 @@ import {
 import JSON5 from "https://deno.land/x/json5@v1.0.0/mod.ts";
 import { BuildFile } from "./Interfaces.ts";
 import { HORDE_VERSION } from "./Product.ts";
-import { Target } from "./old/build.ts";
 
 export const cliFlags = parse(Deno.args, {
 	boolean: ["help", "verbose", "version", "v", "clean"],

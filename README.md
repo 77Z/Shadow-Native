@@ -5,6 +5,13 @@ C++ Shadow Engine
 Add to vscode settings for syntax highlighting on shaders
 `"files.associations": { "*.sc": "hlsl" }`
 
+# Building
+
+You need Deno, Ninja, and optionally Make in order to build Shadow
+
+Running `./Horde` in the root of the project directory will generate the build
+files needed for compilation. Then run `make` somewhere in "bin/shadow..."
+
 # TODO
 
 - Horde Build system
