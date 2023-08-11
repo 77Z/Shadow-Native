@@ -49,7 +49,8 @@ export interface BuildFile {
 	AR: string;
 	BuildDir: string;
 	DebugBuild: boolean;
-	EngineConfiguration: [][];
+	// deno-lint-ignore no-explicit-any
+	EngineConfiguration: Array<Array<any>>;
 	Shaders: ShadersConfig;
 	Targets: Target[];
 }
