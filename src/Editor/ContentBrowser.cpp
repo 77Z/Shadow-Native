@@ -1,12 +1,12 @@
 #include "Editor/ContentBrowser.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include "Editor/Project.hpp"
-#include "Util.h"
+#include "Util.hpp"
 #include "bgfx/bgfx.h"
 #include "bx/bx.h"
 #include "bx/platform.h"
 #include "imgui.h"
-#include "imgui/imgui_utils.h"
+#include "imgui/imgui_utils.hpp"
 #include "imgui_internal.h"
 #include <filesystem>
 #include <string>

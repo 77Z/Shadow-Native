@@ -3,24 +3,22 @@
 
 #include <string>
 
-namespace Shadow {
-namespace Configuration {
+namespace Shadow::Configuration {
 
-	class SECBuilder {
-	public:
-		SECBuilder(std::string fileName);
-		~SECBuilder();
+class SECBuilder {
+public:
+	SECBuilder(std::string fileName);
+	~SECBuilder();
 
-		void add(std::string key, std::string value);
-		void write();
+	void add(std::string key, std::string value);
+	void write();
 
-	private:
-		std::string fileName;
-		std::string out;
-		bool closed = false;
-	};
+private:
+	std::string fileName;
+	std::string out;
+	bool closed = false;
+};
 
-}
 }
 
 #endif /* SHADOW_NATIVE_CONFIGURATION_SEC_BUILDER_HPP */

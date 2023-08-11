@@ -1,7 +1,8 @@
-#ifndef SHADOW_NATIVE_IMGUI_THEME_H
-#define SHADOW_NATIVE_IMGUI_THEME_H
+#ifndef SHADOW_NATIVE_IMGUI_THEME_HPP
+#define SHADOW_NATIVE_IMGUI_THEME_HPP
 
 #include "imgui.h"
+
 namespace ImGui {
 
 inline void SetupTheme() {
@@ -68,4 +69,4 @@ inline void SetupTheme() {
 
 }
 
-#endif /* SHADOW_NATIVE_IMGUI_THEME_H */
+#endif /* SHADOW_NATIVE_IMGUI_THEME_HPP */

@@ -1,9 +1,9 @@
 #include "Chunker/ChunkerDevUI.hpp"
 #include "Chunker/Chunker.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include "imgui.h"
 #include "imgui/imgui_memory_editor.h"
-#include "imgui/imgui_utils.h"
+#include "imgui/imgui_utils.hpp"
 #include <cstring>
 #include <string>
 

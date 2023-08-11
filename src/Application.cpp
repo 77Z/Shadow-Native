@@ -1,11 +1,11 @@
 #include "Configuration/EngineConfiguration.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include "DevEntryPoint.hpp"
 #include "Editor/Editor.hpp"
 #include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
 #include "ProductionRuntime.hpp"
-#include "Runtime.h"
+#include "Runtime.hpp"
 #include "ppk_assert.h"
 
 namespace Shadow {

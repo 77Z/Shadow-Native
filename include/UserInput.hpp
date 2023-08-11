@@ -1,5 +1,5 @@
-#ifndef SHADOW_NATIVE_USER_INPUT_H
-#define SHADOW_NATIVE_USER_INPUT_H
+#ifndef SHADOW_NATIVE_USER_INPUT_HPP
+#define SHADOW_NATIVE_USER_INPUT_HPP
 
 #include <GLFW/glfw3.h>
 
@@ -33,4 +33,4 @@ public:
 
 }
 
-#endif /* SHADOW_NATIVE_USER_INPUT_H */
+#endif /* SHADOW_NATIVE_USER_INPUT_HPP */

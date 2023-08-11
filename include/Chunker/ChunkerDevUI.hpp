@@ -6,24 +6,22 @@
 #include "imgui/imgui_memory_editor.h"
 #include <string>
 
-namespace Shadow {
-namespace Chunker {
+namespace Shadow::Chunker {
 
-	class ChunkerDevUI {
-	public:
-		void drawUI();
+class ChunkerDevUI {
+public:
+	void drawUI();
 
-	private:
-		std::string chunkLocation = "menu.chunk";
-		std::string fileToReadFrom = "menu.chunk/fileA.txt";
+private:
+	std::string chunkLocation = "menu.chunk";
+	std::string fileToReadFrom = "menu.chunk/fileA.txt";
 
-		Shadow::Chunker::FileIndex fileIndex;
-		MemoryEditor memEdit;
+	Shadow::Chunker::FileIndex fileIndex;
+	MemoryEditor memEdit;
 
-		char openFileData[1024];
-	};
+	char openFileData[1024];
+};
 
-}
 }
 
 #endif /* SHADOW_NATIVE_CHUNKER_CHUNKER_DEVUI_HPP */

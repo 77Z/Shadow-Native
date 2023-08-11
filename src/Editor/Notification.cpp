@@ -1,7 +1,7 @@
 #include "Editor/Notification.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include "imgui.h"
-#include "imgui/imgui_utils.h"
+#include "imgui/imgui_utils.hpp"
 #include <string>
 
 namespace Shadow::Editor {

@@ -1,8 +1,8 @@
 #ifndef SHADOW_NATIVE_SCENE_COMPONENTS_HPP
 #define SHADOW_NATIVE_SCENE_COMPONENTS_HPP
 
+#include "Mesh.hpp"
 #include "bx/math.h"
-#include "shadow/Mesh.h"
 #include "uuid_impl.hpp"
 #include <cstddef>
 #include <cstdint>

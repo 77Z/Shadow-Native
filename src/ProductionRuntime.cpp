@@ -1,5 +1,5 @@
 #include "ProductionRuntime.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include "ProductConfiguration.hpp"
 
 #include <iostream>

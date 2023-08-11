@@ -23,6 +23,7 @@ files needed for compilation. Then run `make` somewhere in "bin/shadow..."
 - Physics
 - PBR Rendering
 - Proper Editor Interface (seems like a pain to write)
+- Script files to run static analysis, valgrind, etc.
 
 Should have the ability to load any kind of resource (shader, model, texture,
 font, etc.) from a Chunker file, embedded header file, or raw file. During

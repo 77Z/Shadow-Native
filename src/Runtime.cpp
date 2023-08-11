@@ -1,30 +1,30 @@
-#include "Runtime.h"
+#include "Runtime.hpp"
 #include "Chunker/Chunker.hpp"
 // #include "Chunker/ChunkerDevUI.hpp"
+#include "Audio.hpp"
 #include "Components/Camera.h"
 #include "Debug/EditorConsole.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include "Debug/Profiler.hpp"
 #include "Editor/ContentBrowser.hpp"
+#include "Mesh.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
 #include "Scene/SceneExplorer.hpp"
-#include "ShadowWindow.h"
-#include "UI/Font.h"
+#include "ShadowWindow.hpp"
+#include "UI/Font.hpp"
 #include "UI/ShadowFlinger.hpp"
-#include "UserCode.h"
-#include "UserInput.h"
+#include "UserCode.hpp"
+#include "UserInput.hpp"
+#include "Util.hpp"
 #include "bgfx/defines.h"
 #include "bx/platform.h"
 #include "bx/timer.h"
-#include "db.h"
-#include "imgui/imgui_utils.h"
-#include "imgui/theme.h"
-#include "shadow/Mesh.h"
-#include "shadow/audio.h"
-#include "types.h"
-#include <Util.h>
+#include "db.hpp"
+#include "imgui/imgui_utils.hpp"
+#include "imgui/theme.hpp"
+#include "types.hpp"
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/case_conv.hpp>
 #include <bx/math.h>
@@ -399,7 +399,7 @@ int Shadow::StartRuntime() {
 
 #endif
 
-			bgfx::dbgTextPrintf(3, line++, 0xf0, "%i", stats->numViews);
+			// bgfx::dbgTextPrintf(3, line++, 0xf0, "%i", stats->numViews);
 
 #endif
 		}

@@ -1,6 +1,6 @@
-#include "ShadowWindow.h"
-#include "Debug/Logger.h"
-#include "UserInput.h"
+#include "ShadowWindow.hpp"
+#include "Debug/Logger.hpp"
+#include "UserInput.hpp"
 #include "bx/platform.h"
 
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD

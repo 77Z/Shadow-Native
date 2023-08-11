@@ -1,9 +1,5 @@
-//
-// Created by Vince on 6/11/22.
-//
-
-#include "Debug/Logger.h"
-#include "Util.h"
+#include "Debug/Logger.hpp"
+#include "Util.hpp"
 #include "bx/bx.h"
 #include "bx/constants.h"
 #include <Components/Camera.h>

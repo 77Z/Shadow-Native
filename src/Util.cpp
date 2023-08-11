@@ -1,6 +1,6 @@
-#include <Util.h>
+#include "Util.hpp"
 
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include "bx/readerwriter.h"
 
 #include <bgfx/bgfx.h>

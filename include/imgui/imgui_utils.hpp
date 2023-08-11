@@ -1,5 +1,5 @@
-#ifndef IMGUI_UTILS_H
-#define IMGUI_UTILS_H
+#ifndef SHADOW_NATIVE_IMGUI_UTILS_HPP
+#define SHADOW_NATIVE_IMGUI_UTILS_HPP
 
 #include <bgfx/bgfx.h>
 #include <imgui.h>
@@ -69,4 +69,4 @@ inline bool ImageButton(bgfx::TextureHandle _handle, const ImVec2& _size,
 
 }
 
-#endif /* IMGUI_UTILS_H */
+#endif /* SHADOW_NATIVE_IMGUI_UTILS_HPP */

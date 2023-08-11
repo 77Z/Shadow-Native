@@ -9,6 +9,7 @@ imgui.ini
 .config.old
 include/config
 include/generated
+scripts/deno
 
 # Rust
 debug/

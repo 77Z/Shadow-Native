@@ -1,7 +1,7 @@
 #ifndef SHADOW_NATIVE_CAMERA_H
 #define SHADOW_NATIVE_CAMERA_H
 
-#include "Util.h"
+#include "Util.hpp"
 #include <bx/math.h>
 
 namespace Shadow {

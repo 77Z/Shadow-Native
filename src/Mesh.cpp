@@ -1,6 +1,6 @@
-#include "shadow/Mesh.h"
-#include "Debug/Logger.h"
-#include "Util.h"
+#include "Mesh.hpp"
+#include "Debug/Logger.hpp"
+#include "Util.hpp"
 #include "meshoptimizer/meshoptimizer.h"
 #include <bgfx/bgfx.h>
 #include <bx/math.h>

@@ -1,6 +1,6 @@
 #include "ProductConfiguration.hpp"
 #include "DataReader.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include <fstream>
 #include <json_impl.hpp>
 

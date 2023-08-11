@@ -3,24 +3,22 @@
 
 #include <bgfx/bgfx.h>
 
-namespace Shadow {
-namespace Editor {
+namespace Shadow::Editor {
 
-	class ProjectPreferencesPanel {
-	public:
-		ProjectPreferencesPanel();
-		~ProjectPreferencesPanel();
+class ProjectPreferencesPanel {
+public:
+	ProjectPreferencesPanel();
+	~ProjectPreferencesPanel();
 
-		void onUpdate();
-		void unload();
-		void open();
+	void onUpdate();
+	void unload();
+	void open();
 
-	private:
-		bgfx::TextureHandle cppIcon;
-		bgfx::TextureHandle hppIcon;
-	};
+private:
+	bgfx::TextureHandle cppIcon;
+	bgfx::TextureHandle hppIcon;
+};
 
-}
 }
 
 #endif /* SHADOW_NATIVE_EDITOR_PROJECT_PREFERENCES_PANEL_HPP */

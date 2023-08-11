@@ -1,5 +1,5 @@
-#include "db.h"
-#include "Debug/Logger.h"
+#include "db.hpp"
+#include "Debug/Logger.hpp"
 #include "leveldb/options.h"
 #include <leveldb/db.h>
 #include <string>

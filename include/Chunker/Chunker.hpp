@@ -6,36 +6,34 @@
 #include <unordered_map>
 #include <vector>
 
-namespace Shadow {
-namespace Chunker {
+namespace Shadow::Chunker {
 
-	enum CompressionType : uint8_t { None = 0, LZ4 = 1, Snappy = 2 };
+enum CompressionType : uint8_t { None = 0, LZ4 = 1, Snappy = 2 };
 
-	inline std::string CompressionTypeToString(CompressionType compressionType) {
-		switch (compressionType) {
-		case None:
-			return "None";
-		case LZ4:
-			return "LZ4";
-		case Snappy:
-			return "Snappy";
-		default:
-			return "WHAT";
-		}
+inline std::string CompressionTypeToString(CompressionType compressionType) {
+	switch (compressionType) {
+	case None:
+		return "None";
+	case LZ4:
+		return "LZ4";
+	case Snappy:
+		return "Snappy";
+	default:
+		return "WHAT";
 	}
-
-	struct FileIndex {
-		const char* filename;
-		Chunker::CompressionType compression;
-		uint32_t internalFilesize;
-		std::unordered_map<std::string, uint32_t> offsetMap;
-		std::unordered_map<std::string, uint32_t> sizeMap;
-	};
-
-	Chunker::FileIndex indexChunk(const char* inputfile);
-	std::string readFile(Chunker::FileIndex index, const char* innerFile);
-
 }
+
+struct FileIndex {
+	const char* filename;
+	Chunker::CompressionType compression;
+	uint32_t internalFilesize;
+	std::unordered_map<std::string, uint32_t> offsetMap;
+	std::unordered_map<std::string, uint32_t> sizeMap;
+};
+
+Chunker::FileIndex indexChunk(const char* inputfile);
+std::string readFile(Chunker::FileIndex index, const char* innerFile);
+
 }
 
 #endif /* SHADOW_NATIVE_CHUNKER_CHUNKER_HPP */

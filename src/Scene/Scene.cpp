@@ -1,5 +1,5 @@
 #include "Scene/Scene.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include <bgfx/bgfx.h>
 #include <cstdint>
 #include <glm/fwd.hpp>

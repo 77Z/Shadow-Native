@@ -1,5 +1,5 @@
-#include "UI/Font.h"
-#include "Debug/Logger.h"
+#include "UI/Font.hpp"
+#include "Debug/Logger.hpp"
 
 namespace Shadow {
 

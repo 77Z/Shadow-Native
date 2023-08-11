@@ -1,6 +1,6 @@
 #include "Configuration/EngineConfiguration.hpp"
 #include "Configuration/engineConfig.sec.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include <cstring>
 #include <filesystem>
 #include <fstream>

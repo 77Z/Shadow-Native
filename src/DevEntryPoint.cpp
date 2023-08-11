@@ -1,6 +1,6 @@
 #include "DevEntryPoint.hpp"
 #include "Core.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"

@@ -1,5 +1,5 @@
-#ifndef SHADOW_NATIVE_UI_FONT_H
-#define SHADOW_NATIVE_UI_FONT_H
+#ifndef SHADOW_NATIVE_UI_FONT_HPP
+#define SHADOW_NATIVE_UI_FONT_HPP
 
 namespace Shadow {
 
@@ -16,4 +16,4 @@ public:
 
 }
 
-#endif /* SHADOW_NATIVE_UI_FONT_H */
+#endif /* SHADOW_NATIVE_UI_FONT_HPP */

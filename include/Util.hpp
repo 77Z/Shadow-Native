@@ -1,5 +1,5 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef SHADOW_NATIVE_UTIL_HPP
+#define SHADOW_NATIVE_UTIL_HPP
 
 #include "bimg/bimg.h"
 #include <bgfx/bgfx.h>
@@ -40,4 +40,4 @@ std::vector<std::string> splitString(const std::string& str, char delimeter);
 
 }
 
-#endif /* UTIL_H */
+#endif /* SHADOW_NATIVE_UTIL_HPP */

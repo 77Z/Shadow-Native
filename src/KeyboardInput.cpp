@@ -1,5 +1,5 @@
 #include "KeyboardInput.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include <GLFW/glfw3.h>
 
 /* void Shadow::KeyboardInput::glfw_keyCallback(GLFWwindow *window, int key, int scancode, int

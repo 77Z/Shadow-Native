@@ -1,11 +1,11 @@
 #include "Scene/SceneExplorer.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
 #include "imgui.h"
 #include "imgui/imgui_entt_entity_editor.hpp"
-#include "imgui/imgui_utils.h"
+#include "imgui/imgui_utils.hpp"
 #include <string>
 
 namespace MM {

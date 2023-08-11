@@ -1,5 +1,5 @@
-#ifndef SHADOW_NATIVE_DB_H
-#define SHADOW_NATIVE_DB_H
+#ifndef SHADOW_NATIVE_DB_HPP
+#define SHADOW_NATIVE_DB_HPP
 
 #include <leveldb/db.h>
 #include <string>
@@ -25,4 +25,4 @@ private:
 
 }
 
-#endif
+#endif /* SHADOW_NATIVE_DB_HPP */

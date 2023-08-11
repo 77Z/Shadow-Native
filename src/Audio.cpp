@@ -3,8 +3,8 @@
 // TODO:  3D/Atmos Support
 
 #define MINIAUDIO_IMPLEMENTATION
-#include "shadow/audio.h"
-#include "Debug/Logger.h"
+#include "Audio.hpp"
+#include "Debug/Logger.hpp"
 #include "miniaudio.h"
 
 namespace Shadow {

@@ -1,5 +1,5 @@
-#include "UserCode.h"
-#include "Debug/Logger.h"
+#include "UserCode.hpp"
+#include "Debug/Logger.hpp"
 #include <fstream>
 #include <generated/autoconf.h>
 #include <string>
@@ -23,7 +23,7 @@ int Shadow::UserCode::loadUserCode(void) {
 		// UserCode doesn't exist, throw warning
 		WARN("UserCode Library doesn't exist! Shadow will continue without it");
 		libFile.close();
-		return USER_CODE_FAILURE;
+		return UserCodeReturnStatus_Failure;
 	}
 	libFile.close();
 
@@ -34,7 +34,7 @@ int Shadow::UserCode::loadUserCode(void) {
 
 	if (!handle) {
 		ERROUT("Failed to get handle on UserCode library ... %s", dlerror());
-		return USER_CODE_FAILURE;
+		return UserCodeReturnStatus_Failure;
 	}
 	/*
 	 Return type           Argument Types
@@ -46,7 +46,7 @@ int Shadow::UserCode::loadUserCode(void) {
 		// Symbol doesn't exist
 		ERROUT("Symbol doesn't exist in UserCode ... %s", dlerror());
 		dlclose(handle);
-		return USER_CODE_FAILURE;
+		return UserCodeReturnStatus_Failure;
 	}
 
 	/* *(void**)(&register_function) = dlsym(handle, "register_function");
@@ -63,5 +63,5 @@ int Shadow::UserCode::loadUserCode(void) {
 
 	dlclose(handle);
 
-	return USER_CODE_SUCCESS;
+	return UserCodeReturnStatus_Success;
 }

@@ -1,5 +1,5 @@
-#ifndef SHADOW_NATIVE_SHADOW_WINDOW_H
-#define SHADOW_NATIVE_SHADOW_WINDOW_H
+#ifndef SHADOW_NATIVE_SHADOW_WINDOW_HPP
+#define SHADOW_NATIVE_SHADOW_WINDOW_HPP
 
 #include <GLFW/glfw3.h>
 #include <string>
@@ -59,4 +59,4 @@ private:
 };
 }
 
-#endif
+#endif /* SHADOW_NATIVE_SHADOW_WINDOW_HPP */

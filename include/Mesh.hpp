@@ -1,5 +1,5 @@
-#ifndef SHADOW_NATIVE_SHADOW_MESH_H
-#define SHADOW_NATIVE_SHADOW_MESH_H
+#ifndef SHADOW_NATIVE_MESH_HPP
+#define SHADOW_NATIVE_MESH_HPP
 
 #include <bgfx/bgfx.h>
 #include <bx/bounds.h>
@@ -75,4 +75,4 @@ private:
 
 }
 
-#endif /* SHADOW_NATIVE_SHADOW_MESH_H */
+#endif /* SHADOW_NATIVE_MESH_HPP */

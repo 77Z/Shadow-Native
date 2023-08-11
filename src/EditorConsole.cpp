@@ -1,8 +1,8 @@
 #include "Debug/EditorConsole.hpp"
-#include "Debug/Logger.h"
+#include "Debug/Logger.hpp"
 #include "imgui.h"
 #include "ppk_assert.h"
-#include "types.h"
+#include "types.hpp"
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
