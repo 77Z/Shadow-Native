@@ -202,6 +202,11 @@ build ../../../${artifactDest}: link ${objs.join(" ")}
 	}
 }
 
+makefileTargets.push({
+	name: "Shaders",
+	prettyName: "Shaders",
+});
+
 const namesOnly: string[] = [];
 for (const mkTarget of makefileTargets) namesOnly.push(mkTarget.name);
 

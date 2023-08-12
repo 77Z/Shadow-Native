@@ -6,6 +6,7 @@ import {
 	NINJA_HEADER,
 	PRINT,
 } from "./Utilities.ts";
+import { debugBuild } from "./main.ts";
 
 type shaderPlatform =
 	| "android"
@@ -68,11 +69,66 @@ export async function generateShaderBuildFiles(
 			file.endsWith(".sc");
 	});
 
+	function shaderTarget(
+		targetName: string,
+		platform: shaderPlatform,
+		profile: shaderProfile,
+	): string {
+		let ninja = NINJA_HEADER;
+
+		const optimization: shaderOptimization = debugBuild ? 0 : 3;
+
+		const incs: string[] = [];
+		for (const include of conf.Shaders.IncludeDirs) {
+			incs.push("-i");
+			incs.push("../../../" + include);
+		}
+
+		ninja += `
+platform = ${platform}
+profile  = ${profile}
+incs     = ${incs.join(" ")}
+
+rule shader
+ command   = ../../../${shaderc} --platform $platform -p $profile --varyingdef $vdef $incs --type $type -O ${
+			String(optimization)
+		} -f $in -o $out
+ description = Compiling shader $out
+
+`;
+
+		for (const shader of shaders) {
+			const blankDest = shader.substring(
+				(conf.Shaders.ShadersLocation + "/").length,
+			);
+
+			ninja += `build ${blankDest}.${targetName}.bin : shader ../../../${shader}
+ vdef = ../../../${
+				shader.substring(shader.lastIndexOf("/"), 0) + "/varying.def.sc"
+			}
+ type = ${shader.includes("vs_") ? "vertex" : "fragment"}
+`;
+		}
+
+		Deno.writeTextFileSync(`${shaderOutDir}/${targetName}.ninja`, ninja);
+
+		return `subninja ${targetName}.ninja\n`;
+	}
+
+	let subninjas = "";
+
+	subninjas += shaderTarget("glsl", "linux", "120");
+	subninjas += shaderTarget("essl", "android", "100_es");
+	subninjas += shaderTarget("spv", "linux", "spirv");
+	subninjas += shaderTarget("mtl", "ios", "metal");
+
+	if (Deno.build.os == "windows") {
+		subninjas += shaderTarget("dx9", "windows", "s_3_0");
+		subninjas += shaderTarget("dx11", "windows", "s_5_0");
+	}
+
 	Deno.writeTextFileSync(
 		shaderOutDir + "/build.ninja",
-		NINJA_HEADER +
-			``,
+		NINJA_HEADER + subninjas,
 	);
-
-	PRINT(shaders);
 }

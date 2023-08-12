@@ -51,13 +51,13 @@
 		Enabled: true,
 
 		// Compile all shaders directly into engine binary
-		EmbedShaders: true,
+		EmbedShaders: false,
 
 		ShadersLocation: "Shaders",
 
 		Compiler: "{BuildDir}/shaderc/shaderc",
 
-		IncludeDirs: [ "../lib/bgfx/src" ]
+		IncludeDirs: [ "lib/bgfx/src" ]
 	},
 
 	Targets: [
