@@ -1,6 +1,11 @@
 import { recursiveReaddir } from "https://deno.land/x/recursive_readdir@v2.0.0/mod.ts";
 import { BuildFile } from "./Interfaces.ts";
-import { formatUnicorn, mkIfNotExist, PRINT } from "./Utilities.ts";
+import {
+	formatUnicorn,
+	mkIfNotExist,
+	NINJA_HEADER,
+	PRINT,
+} from "./Utilities.ts";
 
 type shaderPlatform =
 	| "android"
@@ -62,6 +67,12 @@ export async function generateShaderBuildFiles(
 		return (file.includes("vs_") || file.includes("fs_")) &&
 			file.endsWith(".sc");
 	});
+
+	Deno.writeTextFileSync(
+		shaderOutDir + "/build.ninja",
+		NINJA_HEADER +
+			``,
+	);
 
 	PRINT(shaders);
 }
