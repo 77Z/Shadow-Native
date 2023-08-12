@@ -293,10 +293,10 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigDockingTransparentPayload = true;
 
-	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
+	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 	io.Fonts->AddFontDefault();
 	// io.FontGlobalScale = 1.3f;
-	io.IniFilename = "editor.ini";
+	io.IniFilename = "./Resources/editor.ini";
 
 	ImGui::SetupTheme();
 

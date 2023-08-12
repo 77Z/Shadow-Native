@@ -77,7 +77,7 @@ void* load(const char* _filePath, uint32_t* _size) {
 
 void unload(void* _ptr) { bx::free(getAllocator(), _ptr); }
 
-static const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath) {
+const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath) {
 	if (bx::open(reader, filePath)) {
 		uint32_t size = (uint32_t)bx::getSize(reader);
 		const bgfx::Memory* mem = bgfx::alloc(size + 1);
@@ -91,7 +91,7 @@ static const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath
 	return NULL;
 }
 
-static bgfx::ShaderHandle loadShader(bx::FileReaderI* reader, const char* name) {
+bgfx::ShaderHandle loadShader(bx::FileReaderI* reader, const char* name) {
 	char filePath[512];
 
 	const char* shaderPath = "../res/shaders/";
@@ -106,7 +106,7 @@ static bgfx::ShaderHandle loadShader(bx::FileReaderI* reader, const char* name) 
 	return handle;
 }
 
-static bgfx::ShaderHandle loadShader(const char* name) { return loadShader(getFileReader(), name); }
+bgfx::ShaderHandle loadShader(const char* name) { return loadShader(getFileReader(), name); }
 
 // Nice function to load both shaders and return a program automatically
 bgfx::ProgramHandle loadProgram(bx::FileReaderI* reader, const char* vsName, const char* fsName) {

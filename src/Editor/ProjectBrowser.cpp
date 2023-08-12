@@ -325,11 +325,12 @@ int Editor::startProjectBrowser() {
 	io.ConfigDockingTransparentPayload = true;
 
 	// TODO: in the future make this one file load into two fonts
-	mainFont = io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
-	headingFont = io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 40.0f);
+	mainFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f);
+	headingFont
+		= io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 40.0f);
 	io.Fonts->AddFontDefault();
 	io.FontGlobalScale = 1.3f;
-	io.IniFilename = "projectBrowser.ini";
+	io.IniFilename = "./Resources/projectBrowser.ini";
 
 	ImGui::SetupTheme();
 

@@ -21,10 +21,10 @@ void InitBXFilesystem();
 void ShutdownBXFilesytem();
 
 // TODO: New API for all of this in the future?
-static const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath);
+const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath);
 
-static bgfx::ShaderHandle loadShader(bx::FileReaderI* reader, const char* name);
-static bgfx::ShaderHandle loadShader(const char* name);
+bgfx::ShaderHandle loadShader(bx::FileReaderI* reader, const char* name);
+bgfx::ShaderHandle loadShader(const char* name);
 
 bgfx::ProgramHandle loadProgram(bx::FileReaderI* reader, const char* vsName, const char* fsName);
 bgfx::ProgramHandle loadProgram(const char* vsName, const char* fsName);

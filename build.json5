@@ -22,7 +22,7 @@
 	// {cxx} - Compiler name
 	BuildDir: "shadow-{dbg}-{version}-{cc}",
 
-	DebugBuild: false,
+	DebugBuild: true,
 
 	EngineConfiguration: [
 			

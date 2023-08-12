@@ -30,7 +30,7 @@ inline void debugPrintfVargs(const char* fmt, va_list argList) {
 	std::cout << out << std::endl;
 }
 
-inline void debugPrintf(std::string caller, const char* fmt, ...) {
+inline void debugPrintf(const char* caller, const char* fmt, ...) {
 #ifdef SHADOW_DEBUG_BUILD
 	std::cout << "[" << caller << "] ";
 	va_list argList;
@@ -40,7 +40,7 @@ inline void debugPrintf(std::string caller, const char* fmt, ...) {
 #endif
 }
 
-inline void debugWarnf(std::string caller, const char* fmt, ...) {
+inline void debugWarnf(const char* caller, const char* fmt, ...) {
 #ifdef SHADOW_DEBUG_BUILD
 	std::cout << termcolor::yellow << "WARN: {" << caller << "} " << termcolor::reset;
 	va_list argList;
@@ -50,7 +50,7 @@ inline void debugWarnf(std::string caller, const char* fmt, ...) {
 #endif
 }
 
-inline void debugErrorf(std::string caller, const char* fmt, ...) {
+inline void debugErrorf(const char* caller, const char* fmt, ...) {
 #ifdef SHADOW_DEBUG_BUILD
 	std::cerr << termcolor::red << "ERROR: {" << caller << "} " << termcolor::reset;
 	va_list argList;

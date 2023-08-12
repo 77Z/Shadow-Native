@@ -188,9 +188,9 @@ int Shadow::StartRuntime() {
 	// std::string nerdFont = Chunker::readFile(imguiChunkFileIndex, "imgui.chunk/nerdfont.ttf");
 	// io.Fonts->AddFontFromMemoryTTF(nerdFont.data(), nerdFont.size(), 16.0f);
 
-	io.Fonts->AddFontFromFileTTF("./caskaydia-cove-nerd-font-mono.ttf", 16.0f);
+	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 	io.FontGlobalScale = 1.3f;
-	io.IniFilename = "devui.ini";
+	io.IniFilename = "./Resources/devui.ini";
 
 	ImGui::SetupTheme();
 
