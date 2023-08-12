@@ -73,13 +73,13 @@
 			Defines: [],
 			CXXFLAGS: [
 				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
-				"-g", "-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
+				"-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
 				"-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
 				"-Wlogical-op", "-fPIC" ],
 
 			IfDebug: {
 				Defines: [ "BX_CONFIG_DEBUG=1" ],
-				CXXFLAGS: []
+				CXXFLAGS: [ '-g' ]
 			},
 			IfRelease: {
 				Defines: [ "BX_CONFIG_DEBUG=0" ],
@@ -100,16 +100,16 @@
 
 			std: "c++20",
 			Defines: [],
-			//TODO: Move -g to debug only??
+			// astc-encoder doesn't work with fast-math
 			CXXFLAGS: [
-				"-Wall", "-Wextra", "-fomit-frame-pointer", "-g", "-m64",
+				"-Wall", "-Wextra", "-fomit-frame-pointer", "-m64",
 				"-fno-rtti", "-fno-exceptions", "-Wshadow","-mfpmath=sse",
 				"-msse4.2", "-Wunused-value", "-Wundef", "-Wlogical-op",
 				"-fPIC" ],
 
 			IfDebug: {
 				Defines: [ "BX_CONFIG_DEBUG=1" ],
-				CXXFLAGS: []
+				CXXFLAGS: [ '-g' ]
 			},
 			IfRelease: {
 				Defines: [ "BX_CONFIG_DEBUG=0" ],
@@ -120,7 +120,93 @@
 				"include", "3rdparty", "3rdparty/astc-encoder/include",
 				"3rdparty/tinyexr/deps/miniz", "3rdparty/iqa/include",
 				"../bx/include" ],
-			Sources: [ "src/*.cpp", "3rdparty/astc-encoder/source/*.cpp" ],
+			Sources: [
+				"src/*.cpp",
+				"3rdparty/astc-encoder/source/*.cpp",
+				"3rdparty/tinyexr/deps/miniz/miniz.c",
+			],
+			SrcExcludes: [
+				"src/image_cubemap_filter.cpp",
+				"src/image_decode.cpp",
+				"src/image_encode.cpp",
+			]
+		},
+		{
+			Name: "bimg_encode",
+			PrettyName: "BIMG Encoding Module",
+			Type: "StaticLib",
+			Language: "C++",
+			BaseDir: "lib/bimg",
+			Artifact: "libbimg_encode.a",
+
+			std: "c++20",
+			Defines: [],
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-fomit-frame-pointer", "-m64",
+				"-fno-rtti", "-fno-exceptions", "-mfpmath=sse",
+				"-msse4.2", "-Wunused-value", "-Wundef", "-Wlogical-op",
+				"-Wno-implicit-fallthrough", "-Wno-shadow",
+				"-Wno-shift-negative-value", "-Wno-undef",
+				"-Wno-class-memaccess", "-Wno-deprecated-copy", "-fPIC" ],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0" ],
+				CXXFLAGS: [ '-O3'] 
+			},
+
+			IncludeDirs: [
+				"include", "3rdparty", "../bx/include",
+				"3rdparty/astc-encoder/include",
+				"3rdparty/tinyexr/deps/miniz",
+				"3rdparty/iqa/include",
+				"3rdparty/nvtt" ],
+			Sources: [
+				"src/image_encode.cpp",
+				"src/image_cubemap_filter.cpp",
+				"3rdparty/libsquish/*.cpp",
+				"3rdparty/edtaa3/*.cpp",
+				"3rdparty/etc1/*.cpp",
+				"3rdparty/etc2/*.cpp",
+				"3rdparty/nvtt/*.cpp",
+				"3rdparty/pvrtc/*.cpp",
+				"3rdparty/tinyexr/*.cpp",
+				"3rdparty/iqa/source/*.c",
+			],
+			SrcExcludes: []
+		},
+		{
+			Name: "bimg_decode",
+			PrettyName: "BIMG Decoding Module",
+			Type: "StaticLib",
+			Language: "C++",
+			BaseDir: "lib/bimg",
+			Artifact: "libbimg_decode.a",
+
+			std: "c++20",
+			Defines: [],
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+				"-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
+				"-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
+				"-Wlogical-op", "-fPIC" ],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1" ],
+				CXXFLAGS: [ "-g" ]
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"include", "3rdparty", "../bx/include",
+				"3rdparty/tinyexr/deps/miniz" ],
+			Sources: [ "src/image_decode.cpp", "3rdparty/tinyexr/deps/miniz/miniz.c" ],
 			SrcExcludes: []
 		},
 		{
@@ -161,8 +247,91 @@
 			SrcExcludes: [ "src/amalgamated.*" ]
 		},
 		{
+			Name: "glfw",
+			PrettyName: "GLFW",
+			Type: "StaticLib",
+			Language: "C",
+			BaseDir: "lib/glfw",
+			Artifact: "libglfw.a",
+
+			std: "gnu99",
+			Defines: [ "_GLFW_X11", "_DEFAULT_SOURCE" ],
+			CXXFLAGS: [ "-m64", "-Wall", "-fPIC" ],
+
+			IfDebug: {
+				Defines: [],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [ "src", "include" ],
+			Sources: [ "src/*.c" ],
+			SrcExcludes: []
+		},
+		{
+			Name: "snappy",
+			PrettyName: "Snappy",
+			Type: "StaticLib",
+			Language: "C++",
+			BaseDir: "lib/snappy-lib",
+			Artifact: "libsnappy.a",
+
+			std: "c++11",
+			Defines: [ "HAVE_CONFIG_H" ],
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-Wno-sign-compare", "-fno-exceptions",
+				"-fno-rtti" ],
+
+			IfDebug: {
+				Defines: [],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [ ".", "../../misc/snappy-hack" ],
+			Sources: [
+				"snappy.cc",
+				"snappy-stubs-internal.cc",
+				"snappy-sinksource.cc",
+				"snappy-c.cc" ],
+			SrcExcludes: []
+		},
+		{
+			Name: "leveldb",
+			PrettyName: "LevelDB",
+			Type: "StaticLib",
+			Language: "C++",
+			BaseDir: "lib/leveldb-lib",
+			Artifact: "libleveldb.a",
+
+			std: "c++11",
+			Defines: [ "LEVELDB_PLATFORM_POSIX=1", "LEVELDB_COMPILE_LIBRARY" ],
+			CXXFLAGS: [ "-fno-exceptions", "-fno-rtti" ],
+
+			IfDebug: {
+				Defines: [],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [ ".", "include" ],
+			Sources: [
+				"db/*.cc", "table/*.cc", "util/*.cc", "helpers/memenv/*.cc" ],
+			SrcExcludes: [
+				"*_test.cc", "util/testutil.cc", "util/env_windows.cc" ]
+		},
+		{
 			// Directories and ninja files will use the Name so don't set it to
-			// anything that would trip up your filesystem and probably leave\
+			// anything that would trip up your filesystem and probably leave
 			// spaces out of it for the sake of simplicity
 			Name: "shadow-engine",
 			PrettyName: "Shadow Engine",
@@ -231,21 +400,15 @@
 			
 			// InlineBuildLibs is a list of libraries that will be included in
 			// the build of the current target, but they must be built within
-			// the current Horde build chain
-			// InlineBuildLibs: ["bgfx", "bimg", "bx", "glfw"],
-			InlineBuildLibs: [],
+			// the current Horde build chain.
+			// Assumes that your target libraries follow the format:
+			//     (name)/lib(name).a
+			InlineBuildLibs: [
+				"bgfx", "bimg", "bimg_encode", "bimg_decode", "bx", "glfw",
+				"snappy", "leveldb" ],
+
 			// Libs is just a general list of libraries that will be linked
-			Libs: [
-				"../lib/snappy/libsnappy.a",
-				"../lib/leveldb/libleveldb.a",
-				"../lib/bgfx/.build/linux64_gcc/bin/libbgfxDebug.a",
-				"../lib/bgfx/.build/linux64_gcc/bin/libbxDebug.a",
-				"../lib/bgfx/.build/linux64_gcc/bin/libbimg_decodeDebug.a",
-				"../lib/bgfx/.build/linux64_gcc/bin/libbimgDebug.a",
-				"../lib/glfw/src/libglfw3.a",
-				"../lib/leveldb/libleveldb.a",
-				"../lib/snappy/libsnappy.a"
-				],
+			Libs: [],
 			PostBuild: {
 				Symlinks: [
 					// You can use the following to format these strings:

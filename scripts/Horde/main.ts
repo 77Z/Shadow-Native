@@ -60,7 +60,7 @@ interface MakefileTarget {
 	name: string;
 	prettyName: string;
 }
-let makefileTargets: MakefileTarget[] = [];
+const makefileTargets: MakefileTarget[] = [];
 let topLevelMakefileContent = `#
 # Horde version ${HORDE_VERSION}
 # Automatically generated makefile
@@ -85,12 +85,14 @@ for (const target of conf.Targets) {
 		} mode`,
 	);
 
+	ninjaTargetContent += `# Build mode: ${debugBuild ? "DEBUG" : "RELEASE"}\n\n`;
+
 	ninjaTargetContent += `# Compiler vars
 flags = ${gatherFlags(target)}
 
 `;
 
-	ninjaTargetContent += `# Rules [${debugBuild ? "DEBUG" : "RELEASE"}]
+	ninjaTargetContent += `# Rules
 rule cc
  command     = ${CC} $flags -c -o $out $in
  description = Compiling C object $out
@@ -104,7 +106,7 @@ rule static_link
  description = Linking static target $out
 
 rule link
- command     = echo UNFINISHED!!
+ command     = ${CXX} -o $out $in $libs $flags
  description = Linking target $out
 
 # Build files
@@ -112,6 +114,7 @@ rule link
 `;
 
 	const sources: string[] = await gatherSources(target);
+	const objs: string[] = [];
 
 	for (const source of sources) {
 		const swappedExt = replaceFileExtension(source, ".o");
@@ -122,16 +125,43 @@ rule link
 			obj = swappedExt.slice((target.BaseDir + "/").length);
 		}
 
+		objs.push(obj);
+
 		ninjaTargetContent += `build ${obj} : ${
-			target.Language == "C++" ? "cxx" : "c"
+			target.Language == "C++" ? "cxx" : "cc"
 		} ../../../${source}\n`;
 	}
 
-	/* if (target.Type == "Executable") {
-		ninjaTargetContent += `# Link executable
+	switch (target.Type) {
+		case "StaticLib": {
+			ninjaTargetContent += `
+# Link library
 
-build ${artifactDest}: link`;
-	} */
+build ../../../${artifactDest}: static_link ${objs.join(" ")}
+ flags = -rcs
+
+`;
+			break;
+		}
+		case "Executable": {
+			const inlineBuildLibs: string[] = [];
+			for (const inlineLib of target.InlineBuildLibs) {
+				inlineBuildLibs.push(`../${inlineLib}/lib${inlineLib}.a`);
+			}
+
+			ninjaTargetContent += `
+# Link executable
+
+build ../../../${artifactDest}: link ${objs.join(" ")}
+ libs = ${inlineBuildLibs.join(" ")}  ${target.Libs.join(" ")}
+ flags = ${target.LinkerFlags.join(" ")}
+`;
+			break;
+		}
+		case "DynamicLib":
+		default:
+			throw Error("Not implemented");
+	}
 
 	Deno.writeTextFileSync(
 		`${targetDir}/build.ninja`,

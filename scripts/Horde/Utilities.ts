@@ -140,7 +140,7 @@ export async function gatherSources(target: Target): Promise<string[]> {
 			) {
 				PRINT_VERBOSE(`Excluding ${file} from sources`);
 				const index = sources.indexOf(file);
-				if (index !== 1) sources.splice(index, 1);
+				if (index !== -1) sources.splice(index, 1);
 			}
 		}
 	}

@@ -26,6 +26,7 @@ export interface Target {
 	Sources: string[];
 	SrcExcludes: string[];
 	LinkerFlags: string[];
+	InlineBuildLibs: string[];
 	Libs: string[];
 	PostBuild: {
 		Symlinks: string[][];
