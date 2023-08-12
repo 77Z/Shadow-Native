@@ -53,16 +53,15 @@
 		// Compile all shaders directly into engine binary
 		EmbedShaders: true,
 
-		ShadersLocation: "../Shaders",
+		ShadersLocation: "Shaders",
 
-		Compiler: "../lib/bgfx/.build/linux64_gcc/bin/shadercRelease",
+		Compiler: "{BuildDir}/shaderc/shaderc",
 
 		IncludeDirs: [ "../lib/bgfx/src" ]
 	},
 
 	Targets: [
-		{
-			Name: "bx",
+		{ Name: "bx",
 			PrettyName: "BX",
 			Type: "StaticLib",
 			Language: "C++",
@@ -90,8 +89,7 @@
 			Sources: [ "src/*.cpp" ],
 			SrcExcludes: [ "src/amalgamated.*" ]
 		},
-		{
-			Name: "bimg",
+		{ Name: "bimg",
 			PrettyName: "BIMG",
 			Type: "StaticLib",
 			Language: "C++",
@@ -131,8 +129,7 @@
 				"src/image_encode.cpp",
 			]
 		},
-		{
-			Name: "bimg_encode",
+		{ Name: "bimg_encode",
 			PrettyName: "BIMG Encoding Module",
 			Type: "StaticLib",
 			Language: "C++",
@@ -178,8 +175,7 @@
 			],
 			SrcExcludes: []
 		},
-		{
-			Name: "bimg_decode",
+		{ Name: "bimg_decode",
 			PrettyName: "BIMG Decoding Module",
 			Type: "StaticLib",
 			Language: "C++",
@@ -209,8 +205,7 @@
 			Sources: [ "src/image_decode.cpp", "3rdparty/tinyexr/deps/miniz/miniz.c" ],
 			SrcExcludes: []
 		},
-		{
-			Name: "bgfx",
+		{ Name: "bgfx",
 			PrettyName: "BGFX",
 			Type: "StaticLib",
 			Language: "C++",
@@ -246,8 +241,416 @@
 			Sources: [ "src/*.cpp" ],
 			SrcExcludes: [ "src/amalgamated.*" ]
 		},
-		{
-			Name: "glfw",
+		{ Name: "spirv-opt",
+			PrettyName: "SPIRV Tools",
+			Type: "StaticLib",
+			Language: "C++",
+			BaseDir: "lib/bgfx/3rdparty/spirv-tools",
+			Artifact: "libspirv-opt.a",
+
+			std: "c++17",
+			Defines: [
+				"__STDC_LIMIT_MACROS",
+				"__STDC_FORMAT_MACROS",
+				"__STDC_CONSTANT_MACROS" ],
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+				"-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
+				"-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
+				"-Wlogical-op", "-Wno-switch", "-Wno-misleading-indentation" ],
+
+			IfDebug: {
+				Defines: [ "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				".", "include", "include/generated", "source",
+				"../spirv-headers/include" ],
+			Sources: [ "source/*.cpp" ],
+			SrcExcludes: [ "source/spirv_fuzzer_options.cpp" ]
+		},
+		{ Name: "spirv-cross",
+			PrettyName: "SPIRV Cross",
+			Type: "StaticLib",
+			Language: "C++",
+			BaseDir: "lib/bgfx/3rdparty/spirv-cross",
+			Artifact: "libspirv-cross.a",
+
+			std: "c++17",
+			Defines: [
+				"__STDC_LIMIT_MACROS",
+				"__STDC_FORMAT_MACROS",
+				"__STDC_CONSTANT_MACROS",
+				"SPIRV_CROSS_EXCEPTIONS_TO_ASSERTIONS",
+				"SPIRV_CROSS_C_API_MSL=0" ],
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+				"-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
+				"-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
+				"-Wlogical-op", "-Wno-type-limits" ],
+
+			IfDebug: {
+				Defines: [ "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [ ".", "include" ],
+			Sources: [ "*.cpp" ],
+			SrcExcludes: [ "main.cpp", "spirv_cross_c.cpp" ]
+		},
+		{ Name: "glsl-optimizer",
+			PrettyName: "GLSL Optimizer",
+			Type: "StaticLib",
+			Language: "C",
+			BaseDir: "lib/bgfx/3rdparty/glsl-optimizer",
+			Artifact: "libglsl-optimizer.a",
+
+			std: "c++17",
+			Defines: [
+				"__STDC_LIMIT_MACROS",
+				"__STDC_FORMAT_MACROS",
+				"__STDC_CONSTANT_MACROS" ],
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+				"-m64",
+				"-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
+				"-Wlogical-op",
+				"-fno-strict-aliasing", // glsl-optimizer has bugs if strict aliasing is used.
+				"-Wno-implicit-fallthrough",
+				"-Wno-parentheses",
+				"-Wno-sign-compare",
+				"-Wno-unused-function",
+				"-Wno-unused-parameter",
+				
+				// MinGW AND Linux GCC
+				"-Wno-misleading-indentation",
+
+				// MacOS
+				// "-Wno-deprecated-register",
+				],
+
+			IfDebug: {
+				Defines: [ "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				".", "src", "include",
+				"src/mesa",
+				"src/mapi",
+				"src/glsl" ],
+			Sources: [
+				"src/glsl/glcpp/glcpp-lex.c",
+				"src/glsl/glcpp/glcpp-parse.c",
+				"src/glsl/glcpp/pp.c",
+
+				"src/glsl/ast_array_index.cpp",
+				"src/glsl/ast_expr.cpp",
+				"src/glsl/ast_function.cpp",
+				"src/glsl/ast_to_hir.cpp",
+				"src/glsl/ast_type.cpp",
+				"src/glsl/builtin_functions.cpp",
+				"src/glsl/builtin_types.cpp",
+				"src/glsl/builtin_variables.cpp",
+				"src/glsl/glsl_lexer.cpp",
+				"src/glsl/glsl_optimizer.cpp",
+				"src/glsl/glsl_parser.cpp",
+				"src/glsl/glsl_parser_extras.cpp",
+				"src/glsl/glsl_symbol_table.cpp",
+				"src/glsl/glsl_types.cpp",
+				"src/glsl/hir_field_selection.cpp",
+				"src/glsl/ir.cpp",
+				"src/glsl/ir_basic_block.cpp",
+				"src/glsl/ir_builder.cpp",
+				"src/glsl/ir_clone.cpp",
+				"src/glsl/ir_constant_expression.cpp",
+				"src/glsl/ir_equals.cpp",
+				"src/glsl/ir_expression_flattening.cpp",
+				"src/glsl/ir_function.cpp",
+				"src/glsl/ir_function_can_inline.cpp",
+				"src/glsl/ir_function_detect_recursion.cpp",
+				"src/glsl/ir_hierarchical_visitor.cpp",
+				"src/glsl/ir_hv_accept.cpp",
+				"src/glsl/ir_import_prototypes.cpp",
+				"src/glsl/ir_print_glsl_visitor.cpp",
+				"src/glsl/ir_print_metal_visitor.cpp",
+				"src/glsl/ir_print_visitor.cpp",
+				"src/glsl/ir_rvalue_visitor.cpp",
+				"src/glsl/ir_stats.cpp",
+				"src/glsl/ir_unused_structs.cpp",
+				"src/glsl/ir_validate.cpp",
+				"src/glsl/ir_variable_refcount.cpp",
+				"src/glsl/link_atomics.cpp",
+				"src/glsl/link_functions.cpp",
+				"src/glsl/link_interface_blocks.cpp",
+				"src/glsl/link_uniform_block_active_visitor.cpp",
+				"src/glsl/link_uniform_blocks.cpp",
+				"src/glsl/link_uniform_initializers.cpp",
+				"src/glsl/link_uniforms.cpp",
+				"src/glsl/link_varyings.cpp",
+				"src/glsl/linker.cpp",
+				"src/glsl/loop_analysis.cpp",
+				"src/glsl/loop_controls.cpp",
+				"src/glsl/loop_unroll.cpp",
+				"src/glsl/lower_clip_distance.cpp",
+				"src/glsl/lower_discard.cpp",
+				"src/glsl/lower_discard_flow.cpp",
+				"src/glsl/lower_if_to_cond_assign.cpp",
+				"src/glsl/lower_instructions.cpp",
+				"src/glsl/lower_jumps.cpp",
+				"src/glsl/lower_mat_op_to_vec.cpp",
+				"src/glsl/lower_named_interface_blocks.cpp",
+				"src/glsl/lower_noise.cpp",
+				"src/glsl/lower_offset_array.cpp",
+				"src/glsl/lower_output_reads.cpp",
+				"src/glsl/lower_packed_varyings.cpp",
+				"src/glsl/lower_packing_builtins.cpp",
+				"src/glsl/lower_ubo_reference.cpp",
+				"src/glsl/lower_variable_index_to_cond_assign.cpp",
+				"src/glsl/lower_vec_index_to_cond_assign.cpp",
+				"src/glsl/lower_vec_index_to_swizzle.cpp",
+				"src/glsl/lower_vector.cpp",
+				"src/glsl/lower_vector_insert.cpp",
+				"src/glsl/lower_vertex_id.cpp",
+				"src/glsl/opt_algebraic.cpp",
+				"src/glsl/opt_array_splitting.cpp",
+				"src/glsl/opt_constant_folding.cpp",
+				"src/glsl/opt_constant_propagation.cpp",
+				"src/glsl/opt_constant_variable.cpp",
+				"src/glsl/opt_copy_propagation.cpp",
+				"src/glsl/opt_copy_propagation_elements.cpp",
+				"src/glsl/opt_cse.cpp",
+				"src/glsl/opt_dead_builtin_variables.cpp",
+				"src/glsl/opt_dead_builtin_varyings.cpp",
+				"src/glsl/opt_dead_code.cpp",
+				"src/glsl/opt_dead_code_local.cpp",
+				"src/glsl/opt_dead_functions.cpp",
+				"src/glsl/opt_flatten_nested_if_blocks.cpp",
+				"src/glsl/opt_flip_matrices.cpp",
+				"src/glsl/opt_function_inlining.cpp",
+				"src/glsl/opt_if_simplification.cpp",
+				"src/glsl/opt_minmax.cpp",
+				"src/glsl/opt_noop_swizzle.cpp",
+				"src/glsl/opt_rebalance_tree.cpp",
+				"src/glsl/opt_redundant_jumps.cpp",
+				"src/glsl/opt_structure_splitting.cpp",
+				"src/glsl/opt_swizzle_swizzle.cpp",
+				"src/glsl/opt_tree_grafting.cpp",
+				"src/glsl/opt_vectorize.cpp",
+				"src/glsl/s_expression.cpp",
+				"src/glsl/standalone_scaffolding.cpp",
+				"src/glsl/strtod.c",
+
+				"src/mesa/main/imports.c",
+
+				"src/mesa/program/prog_hash_table.c",
+				"src/mesa/program/symbol_table.c",
+
+				"src/util/hash_table.c",
+				"src/util/ralloc.c",
+			],
+			SrcExcludes: []
+		},
+		{ Name: "glslang",
+			PrettyName: "Glslang",
+			Type: "StaticLib",
+			Language: "C++",
+			BaseDir: "lib/bgfx/3rdparty/glslang",
+			Artifact: "libglslang.a",
+
+			std: "c++17",
+			Defines: [
+				"__STDC_LIMIT_MACROS",
+				"__STDC_FORMAT_MACROS",
+				"__STDC_CONSTANT_MACROS",
+				"ENABLE_OPT=1", // spirv-tools
+				"ENABLE_HLSL=1" ],
+			CXXFLAGS: [
+				"-Wall",
+				"-Wextra",
+				"-ffast-math",
+				"-fomit-frame-pointer",
+				"-m64",
+				"-fno-rtti",
+				"-fno-exceptions",
+				"-mfpmath=sse",
+				"-msse4.2",
+				"-Wunused-value",
+				"-Wlogical-op",
+				"-Wno-type-limits",
+				"-fno-strict-aliasing", // glslang has bugs if strict aliasing is used.
+				"-Wno-ignored-qualifiers",
+				"-Wno-implicit-fallthrough",
+				"-Wno-missing-field-initializers",
+				"-Wno-reorder",
+				"-Wno-return-type",
+				"-Wno-shadow",
+				"-Wno-sign-compare",
+				"-Wno-switch",
+				"-Wno-undef",
+				"-Wno-unknown-pragmas",
+				"-Wno-unused-function",
+				"-Wno-unused-parameter",
+				"-Wno-unused-variable",
+				
+				// Linux GCC
+				"-Wno-unused-but-set-variable",
+
+				// MinGW AND Linux GCC
+				"-Wno-logical-op",
+				"-Wno-maybe-uninitialized",
+
+				// MacOS
+				// "-Wno-c++11-extensions",
+				// "-Wno-unused-const-variable",
+				// "-Wno-deprecated-register",
+				],
+
+			IfDebug: {
+				Defines: [ "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				".", "..", "../spirv-tools/include", "../spirv-tools/source" ],
+			Sources: [
+				"glslang/*.cpp", "SPIRV/*.cpp", "OGLCompilersDLL/*.cpp" ],
+
+			// IF WINDOWS
+			// SrcExcludes: [ "glslang/OSDependent/Unix/*.cpp" ],
+
+			// IF NOT WINDOWS
+			SrcExcludes: [ "glslang/OSDependent/Windows/*.cpp" ]
+		},
+		{ Name: "fcpp",
+			PrettyName: "Frexx CPP",
+			Type: "StaticLib",
+			Language: "C",
+			BaseDir: "lib/bgfx/3rdparty/fcpp",
+			Artifact: "libfcpp.a",
+
+			std: "c99",
+			Defines: [
+				"NINCLUDE=64",
+				"NWORK=65536",
+				"NBUFF=65536",
+				"OLD_PREPROCESSOR=0", ],
+			CXXFLAGS: [
+				"-Wall",
+				"-Wextra",
+				"-ffast-math",
+				"-fomit-frame-pointer",
+				"-m64",
+				"-Wshadow",
+				"-mfpmath=sse",
+				"-msse4.2",
+				"-Wunused-value",
+				"-Wundef",
+				"-Wlogical-op",
+				"-m64",
+
+				// NOT MSVC
+				"-Wno-implicit-fallthrough",
+				"-Wno-incompatible-pointer-types", ],
+
+			IfDebug: {
+				Defines: [ "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [ "." ],
+			Sources: [ "*.c" ],
+			SrcExcludes: [ "usecpp.c"]
+		},
+		{ Name: "shaderc",
+			PrettyName: "Shader Compiler",
+			Type: "Executable",
+			Language: "C++",
+			BaseDir: "lib/bgfx/tools/shaderc",
+			Artifact: "shaderc",
+
+			std: "c++17",
+			Defines: [
+				"__STDC_LIMIT_MACROS",
+				"__STDC_FORMAT_MACROS",
+				"__STDC_CONSTANT_MACROS" ],
+			CXXFLAGS: [
+				"-Wall",
+				"-Wextra",
+				"-ffast-math",
+				"-fomit-frame-pointer",
+				"-fno-rtti",
+				"-fno-exceptions",
+				"-Wshadow",
+				"-mfpmath=sse",
+				"-msse4.2",
+				"-Wunused-value",
+				"-Wundef",
+				"-Wlogical-op"
+				],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1", "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0", "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"../../include", // BGFX include dir
+				"../../../bx/include",
+				"../../../bimg/include",
+				"../../3rdparty/webgpu/include",
+				"../../3rdparty/dxsdk/include",
+				"../../3rdparty/fcpp",
+				"../../3rdparty/glslang/glslang/Public",
+				"../../3rdparty/glslang/glslang/Include",
+				"../../3rdparty/glslang",
+				"../../3rdparty/glsl-optimizer/include",
+				"../../3rdparty/glsl-optimizer/src/glsl",
+				"../../3rdparty/spirv-cross",
+				"../../3rdparty/spirv-tools/include" ],
+
+			Sources: [ "*.cpp" ],
+			SrcExcludes: [],
+			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl" ],
+
+			InlineBuildLibs: [
+				"bgfx",
+				"bx",
+				"bimg",
+				"fcpp",
+				"glslang",
+				"glsl-optimizer",
+				"spirv-opt",
+				"spirv-cross" ],
+			
+			Libs: [],
+		},
+		{ Name: "glfw",
 			PrettyName: "GLFW",
 			Type: "StaticLib",
 			Language: "C",
@@ -271,8 +674,7 @@
 			Sources: [ "src/*.c" ],
 			SrcExcludes: []
 		},
-		{
-			Name: "snappy",
+		{ Name: "snappy",
 			PrettyName: "Snappy",
 			Type: "StaticLib",
 			Language: "C++",
@@ -302,8 +704,7 @@
 				"snappy-c.cc" ],
 			SrcExcludes: []
 		},
-		{
-			Name: "leveldb",
+		{ Name: "leveldb",
 			PrettyName: "LevelDB",
 			Type: "StaticLib",
 			Language: "C++",
@@ -329,11 +730,7 @@
 			SrcExcludes: [
 				"*_test.cc", "util/testutil.cc", "util/env_windows.cc" ]
 		},
-		{
-			// Directories and ninja files will use the Name so don't set it to
-			// anything that would trip up your filesystem and probably leave
-			// spaces out of it for the sake of simplicity
-			Name: "shadow-engine",
+		{ Name: "shadow-engine",
 			PrettyName: "Shadow Engine",
 			Type: "Executable",
 			Language: "C++",
@@ -415,10 +812,11 @@
 					// You can use the following to format these strings:
 					// {cwd} - Current working directory (from Horde dir)
 					// {targetDir} - directory your binary will be built to
-					["{cwd}/../res/runtimeres", "{targetDir}/Resources"]
+					["{cwd}/res/runtimeres", "{targetDir}/Resources"]
 				]
 			}
 		},
+		
 		// {
 		//     Name: "chunker-cli"
 		// }

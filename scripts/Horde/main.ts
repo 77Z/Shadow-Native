@@ -1,5 +1,6 @@
 import { parse } from "https://deno.land/std@0.192.0/flags/mod.ts";
 import {
+	exists,
 	formatUnicorn,
 	gatherFlags,
 	gatherSources,
@@ -14,6 +15,7 @@ import JSON5 from "https://deno.land/x/json5@v1.0.0/mod.ts";
 import { BuildFile } from "./Interfaces.ts";
 import { HORDE_VERSION } from "./Product.ts";
 import { generateShadowEngineConfig } from "./ShadowConfigGen.ts";
+import { generateShaderBuildFiles } from "./Shaders.ts";
 
 export const cliFlags = parse(Deno.args, {
 	boolean: ["help", "verbose", "version", "v", "clean", "confgen"],
@@ -54,7 +56,10 @@ if (cliFlags.clean) {
 
 await mkIfNotExist(buildDir);
 
-await generateShadowEngineConfig(conf);
+await Promise.all([
+	generateShadowEngineConfig(conf),
+	generateShaderBuildFiles(conf, buildDir),
+]);
 
 interface MakefileTarget {
 	name: string;
@@ -172,6 +177,29 @@ build ../../../${artifactDest}: link ${objs.join(" ")}
 		name: target.Name,
 		prettyName: target.PrettyName,
 	});
+
+	const PS = target.PostBuild;
+	if (PS) {
+		PRINT(target.PrettyName + " post-setup routines");
+		if (PS.Symlinks) {
+			for (const link of PS.Symlinks) {
+				const dest = formatUnicorn(link[1], {
+					targetDir: targetDir,
+					cwd: Deno.cwd(),
+				});
+
+				if (await exists(dest)) continue;
+
+				Deno.symlinkSync(
+					formatUnicorn(link[0], {
+						targetDir: targetDir,
+						cwd: Deno.cwd(),
+					}),
+					dest,
+				);
+			}
+		}
+	}
 }
 
 const namesOnly: string[] = [];
