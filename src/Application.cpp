@@ -6,10 +6,14 @@
 #include "Editor/ProjectBrowser.hpp"
 #include "ProductionRuntime.hpp"
 #include "Runtime.hpp"
+#include "bx/bx.h"
 #include "ppk_assert.h"
 
 namespace Shadow {
 int Main(int argc, char** argv) {
+	BX_UNUSED(argc);
+	BX_UNUSED(argv);
+
 	int ret;
 
 	PPK_ASSERT(Editor::getCurrentProjectName().empty());
@@ -22,12 +26,12 @@ int Main(int argc, char** argv) {
 #else
 	// return Shadow::StartRuntime();
 
-	ret = Editor::startProjectBrowser();
+	// ret = Editor::startProjectBrowser();
 
-	/* Editor::ProjectEntry project;
+	Editor::ProjectEntry project;
 	project.path = "/home/vince/.config/Shadow/Projects/WIS";
 	project.name = "WIS";
-	ret = Shadow::startEditor(project); */
+	ret = Shadow::startEditor(project);
 
 	// ret = devEntry();
 #endif

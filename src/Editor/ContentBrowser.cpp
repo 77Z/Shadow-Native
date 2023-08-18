@@ -8,6 +8,7 @@
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui_internal.h"
+#include <cstddef>
 #include <filesystem>
 #include <string>
 #include <vector>
@@ -80,9 +81,9 @@ ContentBrowser::ContentBrowser() {
 	// fileIcon = bgfx::createTexture2D(
 	// 	300, 300, false, 1, bgfx::TextureFormat::RGB8, BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem);
 
-	cppIcon = loadTexture("./fileIcon.png");
-	hppIcon = loadTexture("./hppIcon.png");
-	folderIcon = loadTexture("./folderIcon.png");
+	// cppIcon = loadTexture("./Resources/fileIcon.png");
+	// hppIcon = loadTexture("./Resources/hppIcon.png");
+	// folderIcon = loadTexture("./Resources/folderIcon.png");
 
 	loadDir(&activeFileIndex, "/");
 }
@@ -90,9 +91,13 @@ ContentBrowser::ContentBrowser() {
 ContentBrowser::~ContentBrowser() { }
 
 void ContentBrowser::unload() {
-	bgfx::destroy(cppIcon);
-	bgfx::destroy(hppIcon);
-	bgfx::destroy(folderIcon);
+	// bgfx::destroy(cppIcon);
+	// bgfx::destroy(hppIcon);
+	// bgfx::destroy(folderIcon);
+
+	for (const auto& item : fileTypeMap) {
+		bgfx::destroy(item.second);
+	}
 }
 
 static std::string currentDir = "/";
@@ -250,11 +255,11 @@ void ContentBrowser::onUpdate() {
 		fileEntry file = activeFileIndex[i];
 
 		if (file.isFolder) {
-			if (ImGui::ContentBrowser::fileNode(file, ImGui::toId(folderIcon, 0, 0))) {
+			if (ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["folder"], 0, 0))) {
 				loadDir(&activeFileIndex, getCurrentDir() + "/" + file.name);
 			}
 		} else {
-			ImGui::ContentBrowser::fileNode(file, ImGui::toId(cppIcon, 0, 0));
+			ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["cpp"], 0, 0));
 		}
 	}
 

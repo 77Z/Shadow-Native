@@ -1,8 +1,10 @@
 #ifndef SHADOW_NATIVE_EDITOR_CONTENT_BROWSER
 #define SHADOW_NATIVE_EDITOR_CONTENT_BROWSER
 
+#include "Util.hpp"
 #include <bgfx/bgfx.h>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace Shadow {
@@ -30,9 +32,16 @@ public:
 	std::string getCurrentDir();
 
 private:
-	bgfx::TextureHandle cppIcon;
-	bgfx::TextureHandle hppIcon;
-	bgfx::TextureHandle folderIcon;
+	std::unordered_map<const char*, bgfx::TextureHandle> fileTypeMap
+		= { { "cpp", loadTexture("./Resources/fileIcon.png") },
+			  { "hpp", loadTexture("./Resources/hppIcon.png") },
+			  { "folder", loadTexture("./Resources/folderIcon.png") },
+			  { "scene", loadTexture("./Resources/sceneIcon.png") } };
+
+	// bgfx::TextureHandle cppIcon;
+	// bgfx::TextureHandle hppIcon;
+	// bgfx::TextureHandle folderIcon;
+	// bgfx::TextureHandle sceneIcon;
 
 	std::vector<fileEntry> activeFileIndex;
 

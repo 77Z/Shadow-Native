@@ -25,8 +25,8 @@
 #include "imgui/imgui_utils.hpp"
 #include "imgui/theme.hpp"
 #include "types.hpp"
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/case_conv.hpp>
+//#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string/case_conv.hpp>
 #include <bx/math.h>
 #include <cstdint>
 #include <generated/autoconf.h>
@@ -384,8 +384,9 @@ int Shadow::StartRuntime() {
 		bgfx::dbgTextClear();
 
 		if (s_showWarningText) {
-			bgfx::dbgTextPrintf(3, 2, 0x01, "DEBUG BUILD OF %s",
-				boost::to_upper_copy<std::string>(CONFIG_PRETTY_NAME).c_str());
+      bgfx::dbgTextPrintf(3, 2, 0x01, "DEBUG BUILD OF SHADOW ENGINE");
+//			bgfx::dbgTextPrintf(3, 2, 0x01, "DEBUG BUILD OF %s",
+//				boost::to_upper_copy<std::string>(CONFIG_PRETTY_NAME).c_str());
 			bgfx::dbgTextPrintf(3, 3, 0x01, "NOT READY FOR PRODUCTION");
 
 #ifdef CONFIG_VINCES_MORE_VERBOSE_DEBUG_TEXT

@@ -94,7 +94,7 @@ const bgfx::Memory* loadMem(bx::FileReaderI* reader, const char* filePath) {
 bgfx::ShaderHandle loadShader(bx::FileReaderI* reader, const char* name) {
 	char filePath[512];
 
-	const char* shaderPath = "../res/shaders/";
+	const char* shaderPath = "../Shaders/";
 
 	bx::strCopy(filePath, BX_COUNTOF(filePath), shaderPath);
 	bx::strCat(filePath, BX_COUNTOF(filePath), name);

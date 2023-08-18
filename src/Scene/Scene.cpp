@@ -81,6 +81,11 @@ Scene::Scene() { init(); }
 
 Scene::~Scene() { }
 
+void Scene::unload() {
+	bgfx::destroy(vbh);
+	bgfx::destroy(ibh);
+}
+
 void Scene::init() {
 
 	pcvDecl.begin()
@@ -147,7 +152,7 @@ void Scene::onUpdate(bgfx::ViewId viewid, bgfx::ProgramHandle program) {
 		// auto& transform = group.get<TransformComponent>(entity);
 		// auto& shape = group.get<ShapePusherComponent>(entity);
 
-		auto& offset = m_Registry.get<CubeComponent>(entity);
+		// auto& offset = m_Registry.get<CubeComponent>(entity);
 		auto& transform = m_Registry.get<TransformComponent>(entity);
 
 		float tfMtx[16];

@@ -254,7 +254,10 @@ static void drawEditorWindows() {
 	drawDebugWindow();
 }
 
-static void sigintHandler(int signal) { refWindow->close(); }
+static void sigintHandler(int signal) {
+	BX_UNUSED(signal);
+	refWindow->close();
+}
 
 namespace Shadow {
 
@@ -295,7 +298,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 	io.Fonts->AddFontDefault();
-	// io.FontGlobalScale = 1.3f;
+	io.FontGlobalScale = 1.5f;
 	io.IniFilename = "./Resources/editor.ini";
 
 	ImGui::SetupTheme();
@@ -303,7 +306,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	ImGui_Implbgfx_Init(2);
 	ImGui_ImplGlfw_InitForVulkan(editorWindow.window, true);
 
-	const bgfx::Caps* rendererCaps = bgfx::getCaps();
+	// const bgfx::Caps* rendererCaps = bgfx::getCaps();
 
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 	float speed = 0.37f, time = 0.0f;
@@ -313,11 +316,11 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		BGFX_TEXTURE_RT | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT);
 	vportBuf = bgfx::createFrameBuffer(1, &vportTex, true);
 
-	shadowLogo = loadTexture("./logo.png");
+	shadowLogo = loadTexture("./Resources/logo.png");
 
 	/////////////////////////////////////////////
 
-	bgfx::ProgramHandle program = loadProgram("test/vs_test.vulkan", "test/fs_test.vulkan");
+	bgfx::ProgramHandle program = loadProgram("test/vs_test.sc.spv", "test/fs_test.sc.spv");
 
 	ContentBrowser contentBrowser;
 	Editor::ProjectPreferencesPanel projectPreferencesPanel;
@@ -385,7 +388,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			const int64_t frameTime = now - last;
 			last = now;
 			const double freq = double(bx::getHPFrequency());
-			const float deltaTime = float(frameTime / freq);
+			// const float deltaTime = float(frameTime / freq);
 			time += (float)(frameTime + speed / freq);
 
 			bgfx::setUniform(u_time, &time);
@@ -419,6 +422,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	bgfx::destroy(vportBuf);
 	bgfx::destroy(program);
 	bgfx::destroy(shadowLogo);
+
+	editorScene->unload();
 
 	contentBrowser.unload();
 	projectPreferencesPanel.unload();

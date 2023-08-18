@@ -31,6 +31,7 @@ public:
 	bgfx::IndexBufferHandle ibh;
 
 	void onUpdate(bgfx::ViewId view, bgfx::ProgramHandle program);
+	void unload();
 
 	std::unordered_map<uuids::uuid, entt::entity> entityMap;
 
