@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "src"
+		},
+		{
+			"path": "include"
+		}
+	],
+	"settings": {
+		"deno.unstable": true
+	}
+}

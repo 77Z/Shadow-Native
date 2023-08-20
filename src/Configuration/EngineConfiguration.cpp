@@ -49,6 +49,7 @@ namespace EngineConfiguration {
 
 		std::filesystem::create_directory(configDir);
 		std::filesystem::create_directory(configDir + "/Projects");
+    std::filesystem::create_directory(configDir + "/AXEProjects");
 
 		std::ofstream engineConfigFile(configDir + "/engineConfig.sec");
 		engineConfigFile.write(engineConfigSecData, strlen(engineConfigSecData));
