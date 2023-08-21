@@ -1,14 +1,10 @@
 #include "AXE/AXEProjectBrowser.hpp"
 #include "GLFW/glfw3.h"
+#include "RenderBootstrapper.hpp"
 #include "ShadowWindow.hpp"
 #include "Util.hpp"
 #include "bgfx/bgfx.h"
-#include "bgfx/defines.h"
 #include "imgui.h"
-#include "imgui/theme.hpp"
-#include "imgui_impl_glfw.h"
-#include <cstdint>
-#include <imgui/imgui_impl_bgfx.h>
 
 namespace Shadow::AXE {
 
@@ -40,77 +36,20 @@ static void drawRootWindow() {
 }
 
 int startAXEProjectBrowser() {
-	InitBXFilesystem();
-	IMGUI_CHECKVERSION();
-
-	int width = 1000, height = 720;
-
-	ShadowWindow axeProjectBrowserWindow(width, height, "AXE Projects");
-
-	bgfx::Init init;
-	init.type = bgfx::RendererType::Vulkan;
-	init.platformData.ndt = axeProjectBrowserWindow.getNativeDisplayHandle();
-	init.platformData.nwh = axeProjectBrowserWindow.getNativeWindowHandle();
-
-	init.resolution.width = (uint32_t)width;
-	init.resolution.height = (uint32_t)height;
-	init.resolution.reset = BGFX_RESET_VSYNC;
-
-	if (!bgfx::init(init))
-		return 1;
-
-	bgfx::setViewClear(0, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x222222FF, 1.0f, 0);
-	bgfx::setViewRect(0, 0, 0, bgfx::BackbufferRatio::Equal);
-
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	// io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-	io.ConfigDockingTransparentPayload = true;
-
-	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f);
-	io.Fonts->AddFontDefault();
-	io.FontGlobalScale = 1.5f;
-	io.IniFilename = "./Resources/axeProjBrowser.ini";
-
-	ImGui::SetupTheme();
-
-	ImGui_Implbgfx_Init(255);
-	ImGui_ImplGlfw_InitForVulkan(axeProjectBrowserWindow.window, true);
+	ShadowWindow axeProjectBrowserWindow(1000, 720, "AXE Projects");
+	RenderBootstrapper rb(&axeProjectBrowserWindow, bgfx::RendererType::Vulkan);
 
 	while (!axeProjectBrowserWindow.shouldClose()) {
 		glfwPollEvents();
 
-		if (axeProjectBrowserWindow.wasWindowResized()) {
-			auto bounds = axeProjectBrowserWindow.getExtent();
-			width = bounds.width;
-			height = bounds.height;
-			bgfx::reset((uint32_t)width, (uint32_t)height, BGFX_RESET_VSYNC);
-			bgfx::setViewRect(0, 0, 0, bgfx::BackbufferRatio::Equal);
-			axeProjectBrowserWindow.resetWindowResizedFlag();
-		}
-
-		ImGui_Implbgfx_NewFrame();
-		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
-		ImGui::ShowDemoWindow();
+		rb.startFrame();
 
 		drawRootWindow();
 
-		ImGui::Render();
-		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
-
-		bgfx::frame();
+		rb.endFrame();
 	}
 
-	ImGui_Implbgfx_Shutdown();
-	ImGui_ImplGlfw_Shutdown();
-
-	ShutdownBXFilesytem();
-
-	ImGui::DestroyContext();
-	bgfx::shutdown();
+	rb.shutdown();
 
 	return 0;
 }

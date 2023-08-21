@@ -25,8 +25,8 @@
 #include "imgui/imgui_utils.hpp"
 #include "imgui/theme.hpp"
 #include "types.hpp"
-//#include <boost/algorithm/string.hpp>
-//#include <boost/algorithm/string/case_conv.hpp>
+// #include <boost/algorithm/string.hpp>
+// #include <boost/algorithm/string/case_conv.hpp>
 #include <bx/math.h>
 #include <cstdint>
 #include <generated/autoconf.h>
@@ -125,7 +125,6 @@ static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int acti
 // void handle_sigint(int signal) { WARN("Recieved SIGINT"); }
 
 int Shadow::StartRuntime() {
-	InitBXFilesystem();
 	RAPID_PROFILE_INIT();
 	INTERVAL(STARTUP);
 
@@ -376,7 +375,7 @@ int Shadow::StartRuntime() {
 		bgfx::touch(SCENE_VIEW_ID);
 
 #ifdef SHADOW_DEBUG_BUILD
-		const bgfx::Stats* stats = bgfx::getStats();
+		// const bgfx::Stats* stats = bgfx::getStats();
 		bgfx::setDebug(s_showStats ? BGFX_DEBUG_STATS : BGFX_DEBUG_TEXT);
 #endif
 
@@ -384,9 +383,9 @@ int Shadow::StartRuntime() {
 		bgfx::dbgTextClear();
 
 		if (s_showWarningText) {
-      bgfx::dbgTextPrintf(3, 2, 0x01, "DEBUG BUILD OF SHADOW ENGINE");
-//			bgfx::dbgTextPrintf(3, 2, 0x01, "DEBUG BUILD OF %s",
-//				boost::to_upper_copy<std::string>(CONFIG_PRETTY_NAME).c_str());
+			bgfx::dbgTextPrintf(3, 2, 0x01, "DEBUG BUILD OF SHADOW ENGINE");
+			//			bgfx::dbgTextPrintf(3, 2, 0x01, "DEBUG BUILD OF %s",
+			//				boost::to_upper_copy<std::string>(CONFIG_PRETTY_NAME).c_str());
 			bgfx::dbgTextPrintf(3, 3, 0x01, "NOT READY FOR PRODUCTION");
 
 #ifdef CONFIG_VINCES_MORE_VERBOSE_DEBUG_TEXT
@@ -507,7 +506,6 @@ int Shadow::StartRuntime() {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui_Implbgfx_Shutdown();
 
-	ShutdownBXFilesytem();
 	ImGui::DestroyContext();
 	bgfx::shutdown();
 

@@ -6,7 +6,7 @@
 	// Extra string appended to version number to help identify and
 	// differentiate builds from each other. If not empty, a "-" will be
 	// prefixed to the local version, so no need to add it yourself
-	LocalVersion: "vince",
+	LocalVersion: "",
 
 	CC: "gcc",
 	CXX: "g++",
@@ -20,7 +20,8 @@
 	// {version} - Version number + Local Version
 	// {cc} - Compiler name
 	// {cxx} - Compiler name
-	BuildDir: "shadow-{dbg}-{version}-{cc}",
+	// BuildDir: "shadow-{dbg}-{version}-{cc}",
+	BuildDir: "sdw",
 
 	DebugBuild: true,
 
@@ -763,6 +764,7 @@
 				"lib/leveldb-lib/include",
 				"lib/entt",
 				"lib/stduuid",
+				"lib/ImGuizmo",
 				"lib/imgui",
 				"lib/imgui/backends",
 				"misc/snappy-hack",
@@ -778,6 +780,11 @@
 				"lib/imgui/imgui_widgets.cpp",
 				"lib/imgui/backends/imgui_impl_glfw.cpp",
 				"lib/imgui/backends/imgui_impl_vulkan.cpp",
+				"lib/ImGuizmo/GraphEditor.cpp",
+				"lib/ImGuizmo/ImCurveEdit.cpp",
+				"lib/ImGuizmo/ImGradient.cpp",
+				"lib/ImGuizmo/ImGuizmo.cpp",
+				"lib/ImGuizmo/ImSequencer.cpp",
 			],
 
 			// This should and will work in the future, buuuuut... it doesn't

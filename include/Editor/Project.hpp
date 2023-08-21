@@ -10,6 +10,17 @@ struct ProjectEntry {
 	std::string name;
 	std::string path;
 	bgfx::TextureHandle icon;
+
+	ProjectEntry() = default;
+
+	ProjectEntry(std::string name, std::string path, bgfx::TextureHandle icon)
+		: name(name)
+		, path(path)
+		, icon(icon) { }
+
+	ProjectEntry(std::string name, std::string path)
+		: name(name)
+		, path(path) { }
 };
 
 // Can be empty if no project is open, CHECK FOR IT!

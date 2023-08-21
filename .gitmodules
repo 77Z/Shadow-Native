@@ -28,3 +28,6 @@
 [submodule "lib/leveldb-lib"]
 	path = lib/leveldb-lib
 	url = https://github.com/google/leveldb.git
+[submodule "lib/ImGuizmo"]
+	path = lib/ImGuizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git

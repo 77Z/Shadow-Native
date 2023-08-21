@@ -291,7 +291,6 @@ static void drawProjectBrowser() {
 namespace Shadow {
 
 int Editor::startProjectBrowser() {
-	InitBXFilesystem();
 	IMGUI_CHECKVERSION();
 
 	int width = 1280, height = 720;
@@ -337,7 +336,7 @@ int Editor::startProjectBrowser() {
 	ImGui_Implbgfx_Init(255);
 	ImGui_ImplGlfw_InitForVulkan(projectEditorWindow.window, true);
 
-	const bgfx::Caps* rendererCapabilities = bgfx::getCaps();
+	// const bgfx::Caps* rendererCapabilities = bgfx::getCaps();
 
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 	float speed = 0.37f;
@@ -378,7 +377,7 @@ int Editor::startProjectBrowser() {
 		const int64_t frameTime = now - last;
 		last = now;
 		const double freq = double(bx::getHPFrequency());
-		const float deltaTime = float(frameTime / freq);
+		// const float deltaTime = float(frameTime / freq);
 
 		time += (float)(frameTime + speed / freq);
 
@@ -409,8 +408,6 @@ int Editor::startProjectBrowser() {
 
 	ImGui_ImplGlfw_Shutdown();
 	ImGui_Implbgfx_Shutdown();
-
-	ShutdownBXFilesytem();
 
 	ImGui::DestroyContext();
 	bgfx::shutdown();

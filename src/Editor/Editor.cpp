@@ -263,7 +263,6 @@ namespace Shadow {
 
 int startEditor(Shadow::Editor::ProjectEntry project) {
 
-	InitBXFilesystem();
 	IMGUI_CHECKVERSION();
 
 	Editor::setCurrentProjectName(project.name);
@@ -430,8 +429,6 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 	ImGui_ImplGlfw_Shutdown();
 	ImGui_Implbgfx_Shutdown();
-
-	ShutdownBXFilesytem();
 
 	ImGui::DestroyContext();
 	bgfx::shutdown();

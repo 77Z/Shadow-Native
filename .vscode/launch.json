@@ -8,10 +8,12 @@
 			"name": "(gdb) Launch",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/bin/shadow-debug-0.7.0-vince-gcc/shadow-engine/Shadow",
-			"args": [],
+			"program": "${workspaceFolder}/bin/sdw/shadow-engine/Shadow",
+			"args": [
+				"axeEditor"
+			],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/bin/shadow-debug-0.7.0-vince-gcc/shadow-engine",
+			"cwd": "${workspaceFolder}/bin/sdw/shadow-engine",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
