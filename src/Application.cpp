@@ -32,7 +32,7 @@ int Main(int argc, char** argv) {
 			ret = Shadow::AXE::startAXEProjectBrowser();
 		} else if (strcmp(argv[1], "axeEditor") == 0) {
 			ret = Shadow::AXE::startAXEEditor(
-				{ "Bruz", "/home/vince/.config/Shadow/Projects/bruz" });
+				{ "Bruz", "/home/vince/.config/Shadow/AXEProjects/bruz" });
 		}
 	} else {
 		// return Shadow::StartRuntime();
