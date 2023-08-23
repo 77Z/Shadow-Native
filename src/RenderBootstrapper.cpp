@@ -1,4 +1,5 @@
 #include "RenderBootstrapper.hpp"
+#include "Debug/Logger.hpp"
 #include "bgfx/bgfx.h"
 #include "bgfx/defines.h"
 #include "imgui.h"
@@ -37,7 +38,8 @@ RenderBootstrapper::RenderBootstrapper(
 	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f);
 	io.Fonts->AddFontDefault();
 	io.FontGlobalScale = 1.5f;
-	io.IniFilename = ("./Resources/" + window->windowTitle + ".ini").c_str();
+	std::string iniFile = "./Resources/" + window->windowTitle + ".ini";
+	io.IniFilename = iniFile.c_str();
 
 	ImGui::SetupTheme();
 
