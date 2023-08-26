@@ -39,7 +39,7 @@
 		["VINCES_MORE_VERBOSE_DEBUG_TEXT", false],
 
 		// Default location of the UserCode library
-		["DYNAMIC_USERCODE_LIBRARY_LOCATION", "./usercode/libusercode.so"],
+		["DYNAMIC_USERCODE_LIBRARY_LOCATION", "./libusercode.so"],
 
 		// Location of the config directory where everything Shadow related is
 		// stored
@@ -648,6 +648,60 @@
 				"glsl-optimizer",
 				"spirv-opt",
 				"spirv-cross" ],
+			
+			Libs: [],
+		},
+		{ Name: "geometryc",
+			PrettyName: "Geometry Compiler",
+			Type: "Executable",
+			Language: "C++",
+			BaseDir: "lib/bgfx/tools/geometryc",
+			Artifact: "geometryc",
+
+			std: "c++17",
+			Defines: [
+				"__STDC_LIMIT_MACROS",
+				"__STDC_FORMAT_MACROS",
+				"__STDC_CONSTANT_MACROS" ],
+			CXXFLAGS: [
+				"-Wall",
+				"-Wextra",
+				"-ffast-math",
+				"-fomit-frame-pointer",
+				"-fno-rtti",
+				"-fno-exceptions",
+				"-Wshadow",
+				"-mfpmath=sse",
+				"-msse4.2",
+				"-Wunused-value",
+				"-Wundef",
+				"-Wlogical-op"
+				],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1", "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0", "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"../../include", // BGFX include dir
+				"../../../bx/include",
+				"../../3rdparty",
+				"../../examples/common",
+				"../../3rdparty/meshoptimizer/src" ],
+
+			Sources: [
+				"geometryc.cpp",
+				"../../3rdparty/meshoptimizer/src/*.cpp", // TODO: BROKEN! FIXME!
+				"../../src/vertexlayout.cpp" ],
+			SrcExcludes: [],
+			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl" ],
+
+			InlineBuildLibs: [ "bx" ],
 			
 			Libs: [],
 		},
