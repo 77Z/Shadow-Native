@@ -819,6 +819,7 @@
 				"lib/entt",
 				"lib/stduuid",
 				"lib/ImGuizmo",
+				"lib/xxHash",
 				"lib/imgui",
 				"lib/imgui/backends",
 				"misc/snappy-hack",

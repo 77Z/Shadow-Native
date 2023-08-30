@@ -6,7 +6,9 @@
 #include "imgui/theme.hpp"
 #include "imgui_impl_glfw.h"
 #include <cstdint>
+#include <cstring>
 #include <imgui/imgui_impl_bgfx.h>
+#include "xxhash.h"
 
 namespace Shadow {
 
@@ -35,9 +37,16 @@ RenderBootstrapper::RenderBootstrapper(
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigDockingTransparentPayload = true;
 
-	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f);
+	float sf = window->getContentScale();
+	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
 	io.Fonts->AddFontDefault();
-	io.FontGlobalScale = 1.5f;
+	// io.FontGlobalScale = 1.5f; // Don't use this
+
+	ImGui::GetStyle().ScaleAllSizes(sf);
+
+	const char* ctitle = window->windowTitle.c_str();
+	XXH64_hash_t hash = XXH64(ctitle, strlen(ctitle), 25);
+	PRINT("%s", hash);
 	std::string iniFile = "./Resources/" + window->windowTitle + ".ini";
 	io.IniFilename = iniFile.c_str();
 
