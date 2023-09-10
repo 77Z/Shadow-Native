@@ -7,13 +7,15 @@
 #include "imgui_impl_glfw.h"
 #include <cstdint>
 #include <cstring>
+// #include <functional>
 #include <imgui/imgui_impl_bgfx.h>
-#include "xxhash.h"
+// #include <string>
+// #include "xxhash.h"
 
 namespace Shadow {
 
 RenderBootstrapper::RenderBootstrapper(
-	ShadowWindow* window, bgfx::RendererType::Enum renderer, bool vsync)
+	ShadowWindow* window, bgfx::RendererType::Enum renderer, bool vsync, const char* imguiIni)
 	: window(window)
 	, vsync(vsync) {
 	IMGUI_CHECKVERSION();
@@ -45,10 +47,12 @@ RenderBootstrapper::RenderBootstrapper(
 	ImGui::GetStyle().ScaleAllSizes(sf);
 
 	const char* ctitle = window->windowTitle.c_str();
-	XXH64_hash_t hash = XXH64(ctitle, strlen(ctitle), 25);
-	PRINT("%s", hash);
-	std::string iniFile = "./Resources/" + window->windowTitle + ".ini";
-	io.IniFilename = iniFile.c_str();
+	// XXH64_hash_t hash = XXH64(ctitle, strlen(ctitle), 25);
+	// std::hash<std::string> hasher;
+	// size_t hash = hasher(ctitle);
+	// std::string iniFile = "./" + std::to_string(hash) + ".ini";
+	// PRINT("%s", iniFile.c_str());
+	io.IniFilename = imguiIni;
 
 	ImGui::SetupTheme();
 

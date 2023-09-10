@@ -1,11 +1,13 @@
 #include "Editor/Editor.hpp"
 #include "Core.hpp"
+#include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
 #include "Editor/ContentBrowser.hpp"
 #include "Editor/Notification.hpp"
 #include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
 #include "Editor/ProjectPreferencesPanel.hpp"
+#include "Mesh.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
@@ -18,6 +20,7 @@
 #include "bx/platform.h"
 #include "bx/timer.h"
 #include "imgui.h"
+#include "imgui/imgui_memory_editor.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui/theme.hpp"
 #include "imgui_impl_glfw.h"
@@ -33,8 +36,9 @@
 
 static Shadow::ShadowWindow* refWindow;
 
-static bool vsync = true;
+static bool vsync = false;
 static bool openProjectBrowserOnDeath = false;
+static bool consoleOpen = true;
 
 // Dummy values to be written over later
 static ImVec2 vportMin(0, 0);
@@ -288,6 +292,11 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	bgfx::setViewClear(VIEWPORT_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x111111FF, 1.0f, 0);
 	bgfx::setViewRect(VIEWPORT_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 
+	EditorConsole editorConsole;
+
+	static MemoryEditor memedit;
+	Mesh mesh("./Resources/suzanne.mesh");
+
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -364,6 +373,9 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		// ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
 		drawEditorWindows();
+		memedit.DrawWindow("Mesh Data", mesh.m_layout.m_attributes, sizeof(mesh.m_layout.m_attributes));
+
+		editorConsole.onUpdate(&consoleOpen);
 
 		projectPreferencesPanel.onUpdate();
 		contentBrowser.onUpdate();
