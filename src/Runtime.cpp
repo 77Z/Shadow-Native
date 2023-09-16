@@ -32,9 +32,9 @@
 #include <generated/autoconf.h>
 #include <string>
 
-#define GLM_FORCE_RADIANS
-#include <glm/ext.hpp>
-#include <glm/glm.hpp>
+// #define GLM_FORCE_RADIANS
+// #include <glm/ext.hpp>
+// #include <glm/glm.hpp>
 
 #include "imgui/imgui_memory_editor.h"
 #include <GLFW/glfw3.h>

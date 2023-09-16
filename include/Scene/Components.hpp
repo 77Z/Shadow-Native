@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <glm/glm.hpp>
+// #include <glm/glm.hpp>
 #include <string>
 
 namespace Shadow {

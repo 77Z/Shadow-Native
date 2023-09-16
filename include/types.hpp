@@ -17,7 +17,7 @@ typedef int32_t i32;
 typedef int64_t i64;
 
 typedef std::size_t usize;
-typedef __ssize_t isize;
+// typedef __ssize_t isize;
 
 typedef float f32;
 typedef double f64;

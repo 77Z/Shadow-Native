@@ -9,7 +9,7 @@
 #include "ProductionRuntime.hpp"
 #include "Runtime.hpp"
 #include "Util.hpp"
-#include "ppk_assert.h"
+#include "ppk_assert_impl.hpp"
 #include <cstring>
 
 namespace Shadow {
@@ -39,7 +39,8 @@ int Main(int argc, char** argv) {
 
 		// ret = Editor::startProjectBrowser();
 
-		ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
+		// ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
+		ret = Shadow::startEditor({ "WIS", "C:/Users/r2d2f/AppData/Roaming/ShadowEngine/Projects/WIS" });
 
 		// ret = devEntry();
 	}

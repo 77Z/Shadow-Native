@@ -2,8 +2,8 @@
 #include "Debug/Logger.hpp"
 #include <bgfx/bgfx.h>
 #include <cstdint>
-#include <glm/fwd.hpp>
-#include <glm/glm.hpp>
+// #include <glm/fwd.hpp>
+// #include <glm/glm.hpp>
 
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"

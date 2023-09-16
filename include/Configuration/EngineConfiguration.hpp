@@ -30,10 +30,10 @@ namespace EngineConfiguration {
 		if (pos == std::string::npos) {
 			return configDir;
 		}
-#error Not Implemented!
+// #error Not Implemented!
 		ERROUT("Not implemented! [%i]", __LINE__);
 
-		return configDir.replace(pos, 9, "C:\Users\Somethings???");
+		return configDir.replace(pos, 9, getenv("APPDATA"));
 	}
 
 #endif

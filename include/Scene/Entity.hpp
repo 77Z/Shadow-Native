@@ -3,7 +3,7 @@
 
 #include "Scene/Components.hpp"
 #include "Scene/Scene.hpp"
-#include "ppk_assert.h"
+#include "ppk_assert_impl.hpp"
 #include "uuid_impl.hpp"
 #include <cstdint>
 #include <entt.hpp>

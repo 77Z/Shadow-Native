@@ -115,7 +115,9 @@ export function gatherFlags(target: Target): string {
 export async function gatherSources(target: Target): Promise<string[]> {
 	const sources = [];
 	const files = await recursiveReaddir(target.BaseDir);
-	for (const file of files) {
+	for (const rawfile of files) {
+		const file = rawfile.replaceAll("\\", "/");
+		// PRINT_VERBOSE(`Found file: ${file}`);
 		for (const source of target.Sources) {
 			if (
 				wildcardMatch(
@@ -126,6 +128,7 @@ export async function gatherSources(target: Target): Promise<string[]> {
 				)
 			) {
 				sources.push(file);
+				PRINT_VERBOSE(`Including file: ${file}`);
 			}
 		}
 
