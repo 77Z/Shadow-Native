@@ -1,0 +1,97 @@
+{
+
+	ProductName: "Shadow Engine Windows Build",
+	Version: "0.7.0",
+
+	// Extra string appended to version number to help identify and
+	// differentiate builds from each other. If not empty, a "-" will be
+	// prefixed to the local version, so no need to add it yourself
+	LocalVersion: "win",
+
+	CC: "gcc",
+	CXX: "g++",
+	AR: "ar",
+
+	// CC: "clang",
+	// CXX: "clang++",
+	
+	// You can use the following to format this string:
+	// {dbg} - Debug or Release
+	// {version} - Version number + Local Version
+	// {cc} - Compiler name
+	// {cxx} - Compiler name
+	// BuildDir: "shadow-{dbg}-{version}-{cc}",
+	BuildDir: "sdw-win",
+
+	DebugBuild: true,
+
+	EngineConfiguration: [
+			
+		// Might remove this in the future. For now, you can change this to
+		// replace the name of the engine in some locations
+		["PRETTY_NAME", "Shadow Engine"],
+
+		// Enables the time profiler built into Shadow, useful internally while
+		// developing the engine
+		["ENABLE_SHADOW_PROFILER", true],
+
+		// Prints more somewhat useful garbage on the screen for me
+		["VINCES_MORE_VERBOSE_DEBUG_TEXT", false],
+
+		// Default location of the UserCode library
+		["DYNAMIC_USERCODE_LIBRARY_LOCATION", "./libusercode.so"],
+
+		// Location of the config directory where everything Shadow related is
+		// stored
+		["EDITOR_CONFIG_DIR_UNIX", "~/.config/Shadow"],
+		["EDITOR_CONFIG_DIR_WINDOWS", "%AppData%/ShadowEngine"],
+	],
+
+	Shaders: {
+		// Disabling this will most likely cause the build to fail
+		Enabled: false,
+
+		// Compile all shaders directly into engine binary
+		EmbedShaders: false,
+
+		ShadersLocation: "Shaders",
+
+		Compiler: "{BuildDir}/shaderc/shaderc",
+
+		IncludeDirs: [ "lib/bgfx/src" ]
+	},
+
+	Targets: [
+		{ Name: "Dummy",
+			PrettyName: "Dummy Executable",
+			Type: "Executable",
+			Language: "C++",
+			BaseDir: "WinDummy",
+			Artifact: "dummy",
+
+			std: "c++17",
+			Defines: [],
+			CXXFLAGS: [],
+
+			IfDebug: {
+				Defines: [],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [],
+
+			Sources: [ "*.cpp" ],
+			SrcExcludes: [],
+			LinkerFlags: [],
+
+			InlineBuildLibs: [],
+
+			Libs: [],
+		}
+	]
+
+}
