@@ -65,12 +65,15 @@ export function showHelp() {
 	console.log(
 		`
 Options:
---help                : Show this message and exit
---version | -v        : Print the version string and exit
---config [file.json5] : Path to a json5 file that contains the Horde
-                        configuration you'd like to use for compiling
---clean               : Deletes BuildDir
---confgen             : Generate engine configuration only`,
+--help                 : Show this message and exit
+--version | -v         : Print the version string and exit
+--verbose              : Print LOTS of data to stdout
+--target [target.Name] : Generate one specific build target (useful when
+                       : used with --verbose)
+--config [file.json5]  : Path to a json5 file that contains the Horde
+                         configuration you'd like to use for compiling
+--clean                : Deletes BuildDir
+--confgen              : Generate engine configuration only`,
 	);
 	Deno.exit();
 }
@@ -117,7 +120,7 @@ export async function gatherSources(target: Target): Promise<string[]> {
 	const files = await recursiveReaddir(target.BaseDir);
 	for (const rawfile of files) {
 		const file = rawfile.replaceAll("\\", "/");
-		// PRINT_VERBOSE(`Found file: ${file}`);
+		PRINT_VERBOSE(`Found file: ${file}`);
 		for (const source of target.Sources) {
 			if (
 				wildcardMatch(
@@ -144,6 +147,46 @@ export async function gatherSources(target: Target): Promise<string[]> {
 				PRINT_VERBOSE(`Excluding ${file} from sources`);
 				const index = sources.indexOf(file);
 				if (index !== -1) sources.splice(index, 1);
+			}
+		}
+
+		
+		// Big problem here... Since we recursively read the whole BaseDir then
+		// filter out what we need, we can't ascend up past the BaseDir in the
+		// filesystem...
+		// And oh boy do I have a horrible solution!
+		// If the source string starts with "../" we'll count the number of "../"'s
+		// with a regex and move that many dirs up the tree then recurse from there.
+		// This also probably means that ../'s in the middle of a dir won't work,
+		// but I'm not sure honestly.
+		// I'm sorry...
+
+		// ! Source excludes don't yet reach backwards!!
+
+		for (const rawSource of target.Sources) {
+			if (!rawSource.startsWith("../")) continue;
+
+			PRINT_VERBOSE("BACKWARDS REACHING FILE: " + rawSource);
+			// PRINT("CURRENT DIR: " + target.BaseDir);
+			// PRINT("WANTS TO NAVIGATE BACK: " + rawSource.match(/\.\.\//g)?.length);
+
+			let modBaseDir: string = target.BaseDir;
+			const navBacksMatch: number | undefined = rawSource.match(/\.\.\//g)?.length;
+			const navBacks: number = navBacksMatch == undefined ? 0 : navBacksMatch;
+
+			for (let i = 0; i < navBacks; i++) {
+				modBaseDir = modBaseDir.substring(0, modBaseDir.lastIndexOf("/"));
+			}
+
+			const sourceWithBacksRemoved = rawSource.substring(3 * navBacks);
+			const filteredSource = modBaseDir + "/" + sourceWithBacksRemoved;
+
+			const files = await recursiveReaddir(modBaseDir);
+			for (const rawfile of files) {
+				if (wildcardMatch(rawfile, filteredSource)) {
+					sources.push(rawfile);
+					PRINT_VERBOSE(`Including file: ${rawfile}`);
+				}
 			}
 		}
 	}

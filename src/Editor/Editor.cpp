@@ -10,7 +10,9 @@
 #include "Mesh.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
+#include "Scene/EntityInspector.hpp"
 #include "Scene/Scene.hpp"
+#include "Scene/SceneExplorer.hpp"
 #include "Scene/SceneSerializer.hpp"
 #include "ShadowWindow.hpp"
 #include "UserCode.hpp"
@@ -294,8 +296,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 	EditorConsole editorConsole;
 
-	static MemoryEditor memedit;
-	Mesh mesh("./Resources/suzanne.mesh");
+	// static MemoryEditor memedit;
+	// Mesh mesh("./Resources/suzanne.mesh");
 
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -339,6 +341,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	{
 		// Load Project information
 		PRINT("Loading project %s", project.name.c_str());
+		editorConsole.addLog("All", "Loading project %s", project.name.c_str());
 
 		json projectSec = JSON::readBsonFile(project.path + "/project.sec");
 		PRINT("Decoded project.sec file: %s", projectSec.dump(4).c_str());
@@ -346,6 +349,9 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		SceneSerializer ss(editorScene);
 		ss.deserialize(project.path + "/Content/" + (std::string)projectSec["default-scene"]);
 	}
+	
+	EntityInspector entityInspector;
+	SceneExplorer sceneExplorer(*editorScene, entityInspector);
 
 	while (!editorWindow.shouldClose()) {
 		glfwPollEvents();
@@ -373,14 +379,18 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		// ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
 		drawEditorWindows();
-		memedit.DrawWindow("Mesh Data", mesh.m_layout.m_attributes, sizeof(mesh.m_layout.m_attributes));
+		// memedit.DrawWindow("Mesh Data", mesh.m_layout.m_attributes, sizeof(mesh.m_layout.m_attributes));
 
 		editorConsole.onUpdate(&consoleOpen);
 
+		sceneExplorer.onUpdate();
+		entityInspector.onUpdate();
+
 		projectPreferencesPanel.onUpdate();
 		contentBrowser.onUpdate();
-		Editor::notificationUpdate();
 
+#if 0
+		Editor::notificationUpdate();
 		ImGui::Begin("AHHHHH");
 
 		if (ImGui::Button("Open modal"))
@@ -389,8 +399,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		if (ImGui::Button("LOAD USERCODE")) {
 			UserCode::loadUserCode();
 		}
-
 		ImGui::End();
+#endif
 
 		ImGui::Render();
 		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
@@ -437,6 +447,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	bgfx::destroy(shadowLogo);
 
 	editorScene->unload();
+
+	entityInspector.unload();
 
 	contentBrowser.unload();
 	projectPreferencesPanel.unload();

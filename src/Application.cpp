@@ -6,7 +6,7 @@
 #include "Editor/Editor.hpp"
 #include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
-#include "ProductionRuntime.hpp"
+#include "ProductionRuntime/RuntimeBootstrapper.hpp"
 #include "Runtime.hpp"
 #include "Util.hpp"
 #include "ppk_assert_impl.hpp"
@@ -37,10 +37,10 @@ int Main(int argc, char** argv) {
 	} else {
 		// return Shadow::StartRuntime();
 
-		// ret = Editor::startProjectBrowser();
+		ret = Editor::startProjectBrowser();
 
 		// ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
-		ret = Shadow::startEditor({ "WIS", "C:/Users/r2d2f/AppData/Roaming/ShadowEngine/Projects/WIS" });
+		// ret = Shadow::startEditor({ "WIS", "C:/Users/r2d2f/AppData/Roaming/ShadowEngine/Projects/WIS" });
 
 		// ret = devEntry();
 	}

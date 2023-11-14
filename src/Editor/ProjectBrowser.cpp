@@ -11,9 +11,11 @@
 #include "Scene/Scene.hpp"
 #include "Scene/SceneSerializer.hpp"
 #include "ShadowWindow.hpp"
+#include "TextureUtilities.hpp"
 #include "Util.hpp"
 #include "bgfx/bgfx.h"
 #include "bgfx/defines.h"
+#include "bx/allocator.h"
 #include "bx/platform.h"
 #include "bx/timer.h"
 #include "imgui.h"
@@ -206,6 +208,8 @@ static std::vector<ProjectEntry> getProjects() {
 	std::vector<ProjectEntry> projects;
 	std::string projectsDir = Shadow::EngineConfiguration::getConfigDir() + "/Projects";
 
+	PRINT("FRAME");
+
 	for (const auto& file : std::filesystem::directory_iterator(projectsDir)) {
 		if (!file.is_directory())
 			continue;
@@ -215,7 +219,12 @@ static std::vector<ProjectEntry> getProjects() {
 			= project.path.substr(project.path.find_last_of("/") + 1, project.path.length());
 		std::string iconPath = project.path + "/icon.png";
 		PRINT("%s", iconPath.c_str());
-		project.icon = loadTexture(iconPath.c_str());
+		if (std::filesystem::exists(iconPath)) {
+			project.icon = loadTexture(iconPath.c_str());
+		} else {
+			// TODO: FIX THIS
+			project.icon = Shadow::generateMissingTexture(10, 10);
+		}
 
 		projects.push_back(project);
 	}

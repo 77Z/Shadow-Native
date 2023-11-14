@@ -1,7 +1,7 @@
 {
 
 	ProductName: "Shadow Engine",
-	Version: "0.7.0",
+	Version: "0.8.0",
 
 	// Extra string appended to version number to help identify and
 	// differentiate builds from each other. If not empty, a "-" will be
@@ -696,7 +696,7 @@
 
 			Sources: [
 				"geometryc.cpp",
-				"../../3rdparty/meshoptimizer/src/*.cpp", // TODO: BROKEN! FIXME!
+				"../../3rdparty/meshoptimizer/src/*.cpp",
 				"../../src/vertexlayout.cpp" ],
 			SrcExcludes: [],
 			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl" ],
@@ -793,8 +793,9 @@
 			Artifact: "Shadow",
 
 			std: "c++20",
+			// Defines: [ "SHADOW_PRODUCTION_BUILD" ],
 			Defines: [],
-			CXXFLAGS: [ "-Wall", "-Wextra", "-ffast-math", "-m64",  ],
+			CXXFLAGS: [ "-Wall", "-Wextra", "-ffast-math", "-m64", "-fvisibility=hidden" ],
 
 			IfDebug: {
 				Defines: [ "BX_CONFIG_DEBUG=1", "SHADOW_DEBUG_BUILD" ],
@@ -856,7 +857,7 @@
 			SrcExcludes: [],
 			LinkerFlags: [
 				"-lstdc++", "-lm", "-lGL", "-lX11", "-ldl", "-lpthread", "-lrt",
-				"-lvulkan" ],
+				"-lvulkan", "-fvisibility=hidden" ],
 			
 			// InlineBuildLibs is a list of libraries that will be included in
 			// the build of the current target, but they must be built within
