@@ -17,6 +17,8 @@ private:
 	Scene& scene;
 	EntityInspector& entityInspector;
 	int selectedNode = -1;
+	
+	entt::entity* selectedEntityRef = nullptr;
 };
 
 }

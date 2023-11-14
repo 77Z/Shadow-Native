@@ -153,11 +153,16 @@ void ContentBrowser::drawPathNavigationRail() {
 		// ImGui::SameLine();
 		if (ImGui::IsItemDeactivatedAfterEdit()) {
 			userinputtingPath = false;
-			if (std::filesystem::exists(
-					Editor::getCurrentProjectPath() + "/Content/" + userinputPath))
-				loadDir(&activeFileIndex, userinputPath);
-			else
-				PRINT("Notification");
+			if (userinputPath.empty()) {
+				loadDir(&activeFileIndex, "/");
+			} else {
+				std::string path = Editor::getCurrentProjectPath() + "/Content/" + userinputPath;
+
+				if (std::filesystem::exists(path) && std::filesystem::is_directory(path))
+					loadDir(&activeFileIndex, userinputPath);
+				else
+					PRINT("Notification here: path doesn't exist or not dir");
+			}
 		}
 	} else {
 		once = false;
@@ -183,7 +188,7 @@ void ContentBrowser::drawPathNavigationRail() {
 		}
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(0, 0, 0, 0));
 		if (ImGui::Button("##manualpath",
-				ImVec2(ImGui::GetWindowSize().x - ImGui::GetCursorPosX() - 10, 20))) {
+				ImVec2(ImGui::GetWindowSize().x - ImGui::GetCursorPosX() - 10, 20 /* TODO: Scale factor here */ ))) {
 			userinputPath = currentDir;
 			userinputtingPath = true;
 		}
@@ -243,7 +248,8 @@ void ContentBrowser::onUpdate() {
 
 	drawPathNavigationRail();
 
-	ImGui::Text("%s", getCurrentDir().c_str());
+	// Prints the current directory, useful for debugging the content browser.
+	// ImGui::Text("%s", getCurrentDir().c_str());
 
 	// ImGui::Image(fileIcon, ImVec2(70, 70));
 

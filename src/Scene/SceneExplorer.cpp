@@ -77,7 +77,8 @@ void SceneExplorer::onUpdate() {
 		if (ImGui::IsItemClicked()) {
 			selectedNode = i;
 			
-			entityInspector.pickEntity({entity, scene});
+			selectedEntityRef = &entity;
+			// entityInspector.pickEntity({entity, scene});
 		}
 		i++;
 	});
@@ -91,24 +92,28 @@ void SceneExplorer::onUpdate() {
 
 	// editor.renderEntityList(scene.m_Registry, std::set<ComponentTypeID> &comp_list)
 
-#if 0
+// #if 0
 	ImGui::SetNextWindowSize(ImVec2(550, 400), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Entity Editor")) {
-		if (ImGui::BeginChild("list", { 300, 0 }, true)) {
-			static std::set<entt::id_type> comp_list;
-			editor.renderEntityList(scene.m_Registry, comp_list);
-		}
-		ImGui::EndChild();
+		if (selectedEntityRef != nullptr) {
+			if (ImGui::BeginChild("list", { 300, 0 }, true)) {
+				static std::set<entt::id_type> comp_list;
+				editor.renderEntityList(scene.m_Registry, comp_list);
+			}
+			ImGui::EndChild();
 
-		ImGui::SameLine();
+			ImGui::SameLine();
 
-		if (ImGui::BeginChild("editor")) {
-			editor.renderEditor(scene.m_Registry, entity);
+			if (ImGui::BeginChild("editor")) {
+				editor.renderEditor(scene.m_Registry, *selectedEntityRef);
+			}
+			ImGui::EndChild();
+		} else {
+			ImGui::Text("No Entity selected.");
 		}
-		ImGui::EndChild();
 	}
 	ImGui::End();
-#endif
+// #endif
 }
 
 }
