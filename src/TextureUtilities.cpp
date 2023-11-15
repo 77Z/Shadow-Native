@@ -7,6 +7,7 @@
 namespace Shadow {
 		
 	bgfx::TextureHandle generateMissingTexture(uint32_t width, uint32_t height) {
+#if 0
 		const bgfx::Memory* mem = bgfx::alloc(width * height * sizeof(uint32_t));
 
 		uint32_t* pixels = (uint32_t*)mem->data;
@@ -25,6 +26,18 @@ namespace Shadow {
 		}
 
 		return bgfx::createTexture2D(uint16_t(width), uint16_t(height), false, 1, bgfx::TextureFormat::BGRA8, BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_U_CLAMP | BGFX_SAMPLER_V_CLAMP, mem);
+#endif
+
+		BX_UNUSED(width);
+		BX_UNUSED(height);
+
+		const bgfx::Memory* mem = bgfx::alloc(270000);
+		unsigned char* texbuf = (unsigned char*)mem->data;
+
+		bx::memSet(texbuf, 0xff, mem->size);
+
+		return bgfx::createTexture2D(
+			300, 300, false, 1, bgfx::TextureFormat::RGB8, BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem);
 	}
 
 }

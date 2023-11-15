@@ -17,6 +17,12 @@
 #include <string>
 #include <vector>
 
+#include "generated/autoconf.h"
+#if CONFIG_MISSING_TEXTURE_ON_FAIL_LOAD
+#include <filesystem>
+#include "TextureUtilities.hpp"
+#endif
+
 bx::AllocatorI* getDefaultAllocator() {
 	static bx::DefaultAllocator s_allocator;
 	return &s_allocator;
@@ -132,6 +138,13 @@ bgfx::TextureHandle loadTexture(bx::FileReaderI* _reader, const char* _filePath,
 	uint8_t _skip, bgfx::TextureInfo* _info, bimg::Orientation::Enum* _orientation) {
 	BX_UNUSED(_skip);
 	bgfx::TextureHandle handle = BGFX_INVALID_HANDLE;
+	
+#if CONFIG_MISSING_TEXTURE_ON_FAIL_LOAD
+	if (!std::filesystem::exists(_filePath)) {
+		WARN("Texture file '%s' doesn't exist, returning missing texture instead due to engine config", _filePath);
+		return Shadow::generateMissingTexture(0, 0); // ! Dimensions redundent right now.
+	}
+#endif
 
 	uint32_t size;
 	void* data = load(_reader, getAllocator(), _filePath, &size);

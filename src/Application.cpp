@@ -33,6 +33,10 @@ int Main(int argc, char** argv) {
 		} else if (strcmp(argv[1], "axeEditor") == 0) {
 			ret = Shadow::AXE::startAXEEditor(
 				{ "Bruz", "/home/vince/.config/Shadow/AXEProjects/bruz" });
+		} else if (strcmp(argv[1], "editorwis") == 0) {
+			ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
+		} else if (strcmp(argv[1], "dev") == 0) {
+			ret = devEntry();
 		}
 	} else {
 		// return Shadow::StartRuntime();

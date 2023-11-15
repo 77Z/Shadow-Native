@@ -11,6 +11,7 @@
 			"program": "${workspaceFolder}/bin/sdw/shadow-engine/Shadow",
 			"args": [
 				// "axeEditor"
+				"dev"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/bin/sdw/shadow-engine",

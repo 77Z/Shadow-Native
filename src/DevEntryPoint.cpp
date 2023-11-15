@@ -115,6 +115,7 @@ int devEntry() {
 		}
 	}
 
+	loadTexture("./doesn't exist");
 
 
 #if 0

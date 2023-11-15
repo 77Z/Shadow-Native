@@ -337,6 +337,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	ContentBrowser contentBrowser;
 	Editor::ProjectPreferencesPanel projectPreferencesPanel;
 
+#if 0 // No more default loading scene
 	Reference<Scene> editorScene = CreateReference<Scene>();
 	{
 		// Load Project information
@@ -352,6 +353,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	
 	EntityInspector entityInspector;
 	SceneExplorer sceneExplorer(*editorScene, entityInspector);
+#endif
 
 	while (!editorWindow.shouldClose()) {
 		glfwPollEvents();
@@ -383,8 +385,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 		editorConsole.onUpdate(&consoleOpen);
 
-		sceneExplorer.onUpdate();
-		entityInspector.onUpdate();
+		// sceneExplorer.onUpdate();
+		// entityInspector.onUpdate();
 
 		projectPreferencesPanel.onUpdate();
 		contentBrowser.onUpdate();
@@ -436,7 +438,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			bgfx::touch(VIEWPORT_VIEW_ID);
 		}
 
-		editorScene->onUpdate(VIEWPORT_VIEW_ID, program);
+		// editorScene->onUpdate(VIEWPORT_VIEW_ID, program);
 
 		bgfx::frame();
 	}
@@ -446,9 +448,9 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	bgfx::destroy(program);
 	bgfx::destroy(shadowLogo);
 
-	editorScene->unload();
+	// editorScene->unload();
 
-	entityInspector.unload();
+	// entityInspector.unload();
 
 	contentBrowser.unload();
 	projectPreferencesPanel.unload();
