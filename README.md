@@ -12,6 +12,11 @@ You need Deno, Ninja, and optionally Make in order to build Shadow
 Running `./Horde` in the root of the project directory will generate the build
 files needed for compilation. Then run `make` somewhere in "bin/shadow..."
 
+# Deps
+```bash
+pacman -S base-devel boost glm vulkan-devel ninja wget unzip 
+```
+
 # TODO
 
 - Horde Build system

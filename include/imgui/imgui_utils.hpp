@@ -2,6 +2,7 @@
 #define SHADOW_NATIVE_IMGUI_UTILS_HPP
 
 #include <bgfx/bgfx.h>
+#include <cstdarg>
 #include <imgui.h>
 #include <string>
 
@@ -11,6 +12,18 @@ namespace ImGui {
 #define IMGUI_FLAGS_ALPHA_BLEND UINT8_C(0x01)
 
 bool myBeginMenuBar();
+
+inline void TextCenter(const char* text, ...) {
+	va_list vaList;
+	va_start(vaList, text);
+
+	float font_size = ImGui::GetFontSize() * strlen(text) / 2;
+	ImGui::SameLine(ImGui::GetWindowSize().x / 2 - font_size + (font_size / 2));
+
+	ImGui::TextV(text, vaList);
+
+	va_end(vaList);
+}
 
 inline bool MouseOverArea() {
 	return false || ImGui::IsAnyItemActive() || ImGui::IsAnyItemHovered()
