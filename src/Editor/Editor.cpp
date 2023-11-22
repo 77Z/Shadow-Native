@@ -391,6 +391,10 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		projectPreferencesPanel.onUpdate();
 		contentBrowser.onUpdate();
 
+		if (mouseOverVport) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+
+		if (mouseOverVport && ImGui::IsMouseDown(ImGuiMouseButton_Right)) ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+
 #if 0
 		Editor::notificationUpdate();
 		ImGui::Begin("AHHHHH");

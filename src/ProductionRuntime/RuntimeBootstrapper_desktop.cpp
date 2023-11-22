@@ -1,5 +1,7 @@
+#include "Core.hpp"
 #include "GLFW/glfw3.h"
 #include "ProductionRuntime/RuntimeBootstrapper.hpp"
+#include "Scene/Scene.hpp"
 #include "ShadowWindow.hpp"
 #include "bgfx/bgfx.h"
 #include "bgfx/defines.h"
@@ -27,6 +29,9 @@ int StartProductionRuntime() {
 
 	bgfx::setViewClear(TEMP_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x111111FF, 1.0f, 0);
 	bgfx::setViewRect(TEMP_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
+
+	Reference<Scene> scene = CreateReference<Scene>();
+	
 
 	while (!window.shouldClose()) {
 		glfwPollEvents();

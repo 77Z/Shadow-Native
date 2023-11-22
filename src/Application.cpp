@@ -11,6 +11,7 @@
 #include "Util.hpp"
 #include "ppk_assert_impl.hpp"
 #include <cstring>
+#include "generated/autoconf.h"
 
 namespace Shadow {
 int Main(int argc, char** argv) {
@@ -23,9 +24,9 @@ int Main(int argc, char** argv) {
 
 	InitBXFilesystem();
 
-#ifdef SHADOW_PRODUCTION_BUILD
+#if CONFIG_SHADOW_PRODUCTION_BUILD
 	return Shadow::StartProductionRuntime();
-#else
+#else\
 
 	if (argc > 1) {
 		if (strcmp(argv[1], "axe") == 0) {

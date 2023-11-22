@@ -48,7 +48,11 @@
 
 		// Return a missing texture on texture loading failure instead of
 		// erroring and probably crashing
-		["MISSING_TEXTURE_ON_FAIL_LOAD", true],
+		["MISSING_TEXTURE_ON_FAIL_LOAD", false],
+
+		// Full production run, everything packed into chunker files, built as
+		// release, all editor components are excluded
+		["SHADOW_PRODUCTION_BUILD", false],
 	],
 
 	Shaders: {
