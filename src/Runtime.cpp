@@ -32,9 +32,9 @@
 #include <generated/autoconf.h>
 #include <string>
 
-#define GLM_FORCE_RADIANS
-#include <glm/ext.hpp>
-#include <glm/glm.hpp>
+// #define GLM_FORCE_RADIANS
+// #include <glm/ext.hpp>
+// #include <glm/glm.hpp>
 
 #include "imgui/imgui_memory_editor.h"
 #include <GLFW/glfw3.h>
@@ -125,6 +125,7 @@ static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int acti
 // void handle_sigint(int signal) { WARN("Recieved SIGINT"); }
 
 int Shadow::StartRuntime() {
+#if 0
 	RAPID_PROFILE_INIT();
 	INTERVAL(STARTUP);
 
@@ -512,5 +513,7 @@ int Shadow::StartRuntime() {
 	shadowWindow.shutdown();
 
 	PRINT("Goodbye from Shadow Engine");
+	return 0;
+#endif
 	return 0;
 }

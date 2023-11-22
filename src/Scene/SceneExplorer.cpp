@@ -2,6 +2,7 @@
 #include "Debug/Logger.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
+#include "Scene/EntityInspector.hpp"
 #include "Scene/Scene.hpp"
 #include "imgui.h"
 #include "imgui/imgui_entt_entity_editor.hpp"
@@ -47,12 +48,13 @@ void ComponentEditorWidget<Shadow::TagComponent>(
 
 namespace Shadow {
 
-SceneExplorer::SceneExplorer(Scene& scene)
-	: scene(scene) { }
+SceneExplorer::SceneExplorer(Scene& scene, EntityInspector& entityInspector)
+	: scene(scene)
+	, entityInspector(entityInspector) { }
 
 SceneExplorer::~SceneExplorer() { }
 
-void SceneExplorer::onUpdate(entt::entity& entity) {
+void SceneExplorer::onUpdate() {
 	ImGui::Begin("Scene Explorer");
 	int i = 0;
 
@@ -72,8 +74,12 @@ void SceneExplorer::onUpdate(entt::entity& entity) {
 		// ImGui::TreeNodeEx(std::to_string(i).c_str(), nodeFlags);
 		ImGui::TreeNodeEx(tag.c_str(), nodeFlags);
 
-		if (ImGui::IsItemClicked())
+		if (ImGui::IsItemClicked()) {
 			selectedNode = i;
+			
+			selectedEntityRef = &entity;
+			// entityInspector.pickEntity({entity, scene});
+		}
 		i++;
 	});
 
@@ -86,22 +92,28 @@ void SceneExplorer::onUpdate(entt::entity& entity) {
 
 	// editor.renderEntityList(scene.m_Registry, std::set<ComponentTypeID> &comp_list)
 
+// #if 0
 	ImGui::SetNextWindowSize(ImVec2(550, 400), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Entity Editor")) {
-		if (ImGui::BeginChild("list", { 300, 0 }, true)) {
-			static std::set<entt::id_type> comp_list;
-			editor.renderEntityList(scene.m_Registry, comp_list);
-		}
-		ImGui::EndChild();
+		if (selectedEntityRef != nullptr) {
+			if (ImGui::BeginChild("list", { 300, 0 }, true)) {
+				static std::set<entt::id_type> comp_list;
+				editor.renderEntityList(scene.m_Registry, comp_list);
+			}
+			ImGui::EndChild();
 
-		ImGui::SameLine();
+			ImGui::SameLine();
 
-		if (ImGui::BeginChild("editor")) {
-			editor.renderEditor(scene.m_Registry, entity);
+			if (ImGui::BeginChild("editor")) {
+				editor.renderEditor(scene.m_Registry, *selectedEntityRef);
+			}
+			ImGui::EndChild();
+		} else {
+			ImGui::Text("No Entity selected.");
 		}
-		ImGui::EndChild();
 	}
 	ImGui::End();
+// #endif
 }
 
 }

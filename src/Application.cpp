@@ -6,11 +6,12 @@
 #include "Editor/Editor.hpp"
 #include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
-#include "ProductionRuntime.hpp"
+#include "ProductionRuntime/RuntimeBootstrapper.hpp"
 #include "Runtime.hpp"
 #include "Util.hpp"
-#include "ppk_assert.h"
+#include "ppk_assert_impl.hpp"
 #include <cstring>
+#include "generated/autoconf.h"
 
 namespace Shadow {
 int Main(int argc, char** argv) {
@@ -23,9 +24,9 @@ int Main(int argc, char** argv) {
 
 	InitBXFilesystem();
 
-#ifdef SHADOW_PRODUCTION_BUILD
+#if CONFIG_SHADOW_PRODUCTION_BUILD
 	return Shadow::StartProductionRuntime();
-#else
+#else\
 
 	if (argc > 1) {
 		if (strcmp(argv[1], "axe") == 0) {
@@ -33,13 +34,18 @@ int Main(int argc, char** argv) {
 		} else if (strcmp(argv[1], "axeEditor") == 0) {
 			ret = Shadow::AXE::startAXEEditor(
 				{ "Bruz", "/home/vince/.config/Shadow/AXEProjects/bruz" });
+		} else if (strcmp(argv[1], "editorwis") == 0) {
+			ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
+		} else if (strcmp(argv[1], "dev") == 0) {
+			ret = devEntry();
 		}
 	} else {
 		// return Shadow::StartRuntime();
 
-		// ret = Editor::startProjectBrowser();
+		ret = Editor::startProjectBrowser();
 
-		ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
+		// ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
+		// ret = Shadow::startEditor({ "WIS", "C:/Users/r2d2f/AppData/Roaming/ShadowEngine/Projects/WIS" });
 
 		// ret = devEntry();
 	}

@@ -4,13 +4,15 @@
 #include <generated/autoconf.h>
 #include <string>
 
-#ifdef _WIN32
-#include <Windows.h>
-#else
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
 #include <dlfcn.h>
+#elif BX_PLATFORM_WINDOWS
+#include <Windows.h>
 #endif
 
 // void callme() { WARN("I HAVE BEEN CALLED"); }
+
+#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
 
 int Shadow::UserCode::loadUserCode(void) {
 
@@ -65,3 +67,11 @@ int Shadow::UserCode::loadUserCode(void) {
 
 	return UserCodeReturnStatus_Success;
 }
+
+#else
+
+int Shadow::UserCode::loadUserCode(void) {
+	return UserCodeReturnStatus_Failure;
+}
+
+#endif

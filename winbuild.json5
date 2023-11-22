@@ -1,12 +1,12 @@
 {
 
-	ProductName: "Shadow Engine",
-	Version: "0.8.0",
+	ProductName: "Shadow Engine Windows Build",
+	Version: "0.7.0",
 
 	// Extra string appended to version number to help identify and
 	// differentiate builds from each other. If not empty, a "-" will be
 	// prefixed to the local version, so no need to add it yourself
-	LocalVersion: "",
+	LocalVersion: "win",
 
 	CC: "gcc",
 	CXX: "g++",
@@ -21,7 +21,7 @@
 	// {cc} - Compiler name
 	// {cxx} - Compiler name
 	// BuildDir: "shadow-{dbg}-{version}-{cc}",
-	BuildDir: "sdw",
+	BuildDir: "sdw-win",
 
 	DebugBuild: true,
 
@@ -45,14 +45,6 @@
 		// stored
 		["EDITOR_CONFIG_DIR_UNIX", "~/.config/Shadow"],
 		["EDITOR_CONFIG_DIR_WINDOWS", "%AppData%/ShadowEngine"],
-
-		// Return a missing texture on texture loading failure instead of
-		// erroring and probably crashing
-		["MISSING_TEXTURE_ON_FAIL_LOAD", false],
-
-		// Full production run, everything packed into chunker files, built as
-		// release, all editor components are excluded
-		["SHADOW_PRODUCTION_BUILD", false],
 	],
 
 	Shaders: {
@@ -70,6 +62,36 @@
 	},
 
 	Targets: [
+		{ Name: "Dummy",
+			PrettyName: "Dummy Executable",
+			Type: "Executable",
+			Language: "C++",
+			BaseDir: "WinDummy",
+			Artifact: "dummy",
+
+			std: "c++17",
+			Defines: [],
+			CXXFLAGS: [],
+
+			IfDebug: {
+				Defines: [],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [],
+
+			Sources: [ "*.cpp" ],
+			SrcExcludes: [],
+			LinkerFlags: [],
+
+			InlineBuildLibs: [],
+
+			Libs: [],
+		},
 		{ Name: "bx",
 			PrettyName: "BX",
 			Type: "StaticLib",
@@ -94,7 +116,10 @@
 				CXXFLAGS: [ '-O3' ]
 			},
 
-			IncludeDirs: [ "include", "3rdparty", "include/compat/linux" ],
+			IncludeDirs: [ "include", "3rdparty", 
+			// TODO: CAN WE REMOVE THIS??
+			"include/compat/linux",
+			"include/compat/mingw" ],
 			Sources: [ "src/*.cpp" ],
 			SrcExcludes: [ "src/amalgamated.*" ]
 		},
@@ -126,7 +151,7 @@
 			IncludeDirs: [
 				"include", "3rdparty", "3rdparty/astc-encoder/include",
 				"3rdparty/tinyexr/deps/miniz", "3rdparty/iqa/include",
-				"../bx/include" ],
+				"../bx/include", "../bx/include/compat/mingw" ],
 			Sources: [
 				"src/*.cpp",
 				"3rdparty/astc-encoder/source/*.cpp",
@@ -169,7 +194,8 @@
 				"3rdparty/astc-encoder/include",
 				"3rdparty/tinyexr/deps/miniz",
 				"3rdparty/iqa/include",
-				"3rdparty/nvtt" ],
+				"3rdparty/nvtt",
+				"../bx/include/compat/mingw" ],
 			Sources: [
 				"src/image_encode.cpp",
 				"src/image_cubemap_filter.cpp",
@@ -210,7 +236,8 @@
 
 			IncludeDirs: [
 				"include", "3rdparty", "../bx/include",
-				"3rdparty/tinyexr/deps/miniz" ],
+				"3rdparty/tinyexr/deps/miniz",
+				"../bx/include/compat/mingw" ],
 			Sources: [ "src/image_decode.cpp", "3rdparty/tinyexr/deps/miniz/miniz.c" ],
 			SrcExcludes: []
 		},
@@ -243,10 +270,10 @@
 				"include", "3rdparty",
 				"../bimg/include", "../bx/include",
 				"3rdparty/directx-headers/include/directx",
-				"3rdparty/directx-headers/include",
-				"3rdparty/directx-headers/include/wsl/stubs",
 				"3rdparty/khronos/",
-				"../bx/include/compat/linux" ],
+				// TODO: CAN WE REMOVE THIS??
+				"../bx/include/compat/linux",
+				"../bx/include/compat/mingw" ],
 			Sources: [ "src/*.cpp" ],
 			SrcExcludes: [ "src/amalgamated.*" ]
 		},
@@ -516,7 +543,7 @@
 				"-Wno-unused-variable",
 				
 				// Linux GCC
-				"-Wno-unused-but-set-variable",
+				// "-Wno-unused-but-set-variable",
 
 				// MinGW AND Linux GCC
 				"-Wno-logical-op",
@@ -543,10 +570,10 @@
 				"glslang/*.cpp", "SPIRV/*.cpp", "OGLCompilersDLL/*.cpp" ],
 
 			// IF WINDOWS
-			// SrcExcludes: [ "glslang/OSDependent/Unix/*.cpp" ],
+			SrcExcludes: [ "glslang/OSDependent/Unix/*.cpp" ],
 
 			// IF NOT WINDOWS
-			SrcExcludes: [ "glslang/OSDependent/Windows/*.cpp" ]
+			// SrcExcludes: [ "glslang/OSDependent/Windows/*.cpp" ]
 		},
 		{ Name: "fcpp",
 			PrettyName: "Frexx CPP",
@@ -641,11 +668,12 @@
 				"../../3rdparty/glsl-optimizer/include",
 				"../../3rdparty/glsl-optimizer/src/glsl",
 				"../../3rdparty/spirv-cross",
-				"../../3rdparty/spirv-tools/include" ],
+				"../../3rdparty/spirv-tools/include",
+				"../../../bx/include/compat/mingw" ],
 
 			Sources: [ "*.cpp" ],
 			SrcExcludes: [],
-			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl" ],
+			LinkerFlags: [ "-lstdc++", "-lpthread" ],
 
 			InlineBuildLibs: [
 				"bgfx",
@@ -659,60 +687,6 @@
 			
 			Libs: [],
 		},
-		{ Name: "geometryc",
-			PrettyName: "Geometry Compiler",
-			Type: "Executable",
-			Language: "C++",
-			BaseDir: "lib/bgfx/tools/geometryc",
-			Artifact: "geometryc",
-
-			std: "c++17",
-			Defines: [
-				"__STDC_LIMIT_MACROS",
-				"__STDC_FORMAT_MACROS",
-				"__STDC_CONSTANT_MACROS" ],
-			CXXFLAGS: [
-				"-Wall",
-				"-Wextra",
-				"-ffast-math",
-				"-fomit-frame-pointer",
-				"-fno-rtti",
-				"-fno-exceptions",
-				"-Wshadow",
-				"-mfpmath=sse",
-				"-msse4.2",
-				"-Wunused-value",
-				"-Wundef",
-				"-Wlogical-op"
-				],
-
-			IfDebug: {
-				Defines: [ "BX_CONFIG_DEBUG=1", "_DEBUG" ],
-				CXXFLAGS: [ '-g' ]
-			},
-			IfRelease: {
-				Defines: [ "BX_CONFIG_DEBUG=0", "NDEBUG" ],
-				CXXFLAGS: [ '-O3' ]
-			},
-
-			IncludeDirs: [
-				"../../include", // BGFX include dir
-				"../../../bx/include",
-				"../../3rdparty",
-				"../../examples/common",
-				"../../3rdparty/meshoptimizer/src" ],
-
-			Sources: [
-				"geometryc.cpp",
-				"../../3rdparty/meshoptimizer/src/*.cpp",
-				"../../src/vertexlayout.cpp" ],
-			SrcExcludes: [],
-			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl" ],
-
-			InlineBuildLibs: [ "bx" ],
-			
-			Libs: [],
-		},
 		{ Name: "glfw",
 			PrettyName: "GLFW",
 			Type: "StaticLib",
@@ -721,7 +695,7 @@
 			Artifact: "libglfw.a",
 
 			std: "gnu99",
-			Defines: [ "_GLFW_X11", "_DEFAULT_SOURCE" ],
+			Defines: [ "WINVER=0x0501", "_GLFW_WIN32" ],
 			CXXFLAGS: [ "-m64", "-Wall", "-fPIC" ],
 
 			IfDebug: {
@@ -759,7 +733,7 @@
 				CXXFLAGS: [ '-O3' ]
 			},
 
-			IncludeDirs: [ ".", "../../misc/snappy-hack" ],
+			IncludeDirs: [ ".", "../../misc/snappy-hack-windows" ],
 			Sources: [
 				"snappy.cc",
 				"snappy-stubs-internal.cc",
@@ -791,7 +765,7 @@
 			Sources: [
 				"db/*.cc", "table/*.cc", "util/*.cc", "helpers/memenv/*.cc" ],
 			SrcExcludes: [
-				"*_test.cc", "util/testutil.cc", "util/env_windows.cc" ]
+				"*_test.cc", "util/testutil.cc", "util/env_posix.cc" ]
 		},
 		{ Name: "shadow-engine",
 			PrettyName: "Shadow Engine",
@@ -801,9 +775,8 @@
 			Artifact: "Shadow",
 
 			std: "c++20",
-			// Defines: [ "SHADOW_PRODUCTION_BUILD" ],
-			Defines: [],
-			CXXFLAGS: [ "-Wall", "-Wextra", "-ffast-math", "-m64", "-fvisibility=hidden" ],
+			Defines: [ "PPK_ASSERT_ENABLED=0" ],
+			CXXFLAGS: [ "-Wall", "-Wextra", "-ffast-math", "-m64",  ],
 
 			IfDebug: {
 				Defines: [ "BX_CONFIG_DEBUG=1", "SHADOW_DEBUG_BUILD" ],
@@ -831,7 +804,8 @@
 				"lib/xxHash",
 				"lib/imgui",
 				"lib/imgui/backends",
-				"misc/snappy-hack",
+				"misc/snappy-hack-windows",
+				"lib/bx/include/compat/mingw"
 				// "../vcpkg/packages/ms-gsl_x64-linux/include"
 				],
 
@@ -864,8 +838,7 @@
 			//     "lib/imgui/backends/imgui_impl_vulkan.cpp" ],
 			SrcExcludes: [],
 			LinkerFlags: [
-				"-lstdc++", "-lm", "-lGL", "-lX11", "-ldl", "-lpthread", "-lrt",
-				"-lvulkan", "-fvisibility=hidden" ],
+				"-lstdc++", "-lm", "-lpthread", "-lopengl32", "-LC:/VulkanSDK/1.3.261.1/Lib", "-lvulkan-1", "-lgdi32" ],
 			
 			// InlineBuildLibs is a list of libraries that will be included in
 			// the build of the current target, but they must be built within
@@ -883,14 +856,10 @@
 					// You can use the following to format these strings:
 					// {cwd} - Current working directory (from Horde dir)
 					// {targetDir} - directory your binary will be built to
-					["{cwd}/res/runtimeres", "{targetDir}/Resources"]
+					// ["{cwd}/res/runtimeres", "{targetDir}/Resources"]
 				]
 			}
 		},
-		
-		// {
-		//     Name: "chunker-cli"
-		// }
 	]
 
 }

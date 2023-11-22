@@ -1,14 +1,18 @@
 #include "Editor/Editor.hpp"
 #include "Core.hpp"
+#include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
 #include "Editor/ContentBrowser.hpp"
 #include "Editor/Notification.hpp"
 #include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
 #include "Editor/ProjectPreferencesPanel.hpp"
+#include "Mesh.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
+#include "Scene/EntityInspector.hpp"
 #include "Scene/Scene.hpp"
+#include "Scene/SceneExplorer.hpp"
 #include "Scene/SceneSerializer.hpp"
 #include "ShadowWindow.hpp"
 #include "UserCode.hpp"
@@ -18,6 +22,7 @@
 #include "bx/platform.h"
 #include "bx/timer.h"
 #include "imgui.h"
+#include "imgui/imgui_memory_editor.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui/theme.hpp"
 #include "imgui_impl_glfw.h"
@@ -33,8 +38,9 @@
 
 static Shadow::ShadowWindow* refWindow;
 
-static bool vsync = true;
+static bool vsync = false;
 static bool openProjectBrowserOnDeath = false;
+static bool consoleOpen = true;
 
 // Dummy values to be written over later
 static ImVec2 vportMin(0, 0);
@@ -288,6 +294,11 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	bgfx::setViewClear(VIEWPORT_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x111111FF, 1.0f, 0);
 	bgfx::setViewRect(VIEWPORT_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 
+	EditorConsole editorConsole;
+
+	// static MemoryEditor memedit;
+	// Mesh mesh("./Resources/suzanne.mesh");
+
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -295,9 +306,11 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigDockingTransparentPayload = true;
 
-	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f);
+	float sf = editorWindow.getContentScale();
+	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
 	io.Fonts->AddFontDefault();
-	io.FontGlobalScale = 1.5f;
+	ImGui::GetStyle().ScaleAllSizes(sf);
+	// io.FontGlobalScale = 1.5f;
 	io.IniFilename = "./Resources/editor.ini";
 
 	ImGui::SetupTheme();
@@ -324,10 +337,12 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	ContentBrowser contentBrowser;
 	Editor::ProjectPreferencesPanel projectPreferencesPanel;
 
+#if 0 // No more default loading scene
 	Reference<Scene> editorScene = CreateReference<Scene>();
 	{
 		// Load Project information
 		PRINT("Loading project %s", project.name.c_str());
+		editorConsole.addLog("All", "Loading project %s", project.name.c_str());
 
 		json projectSec = JSON::readBsonFile(project.path + "/project.sec");
 		PRINT("Decoded project.sec file: %s", projectSec.dump(4).c_str());
@@ -335,6 +350,10 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		SceneSerializer ss(editorScene);
 		ss.deserialize(project.path + "/Content/" + (std::string)projectSec["default-scene"]);
 	}
+	
+	EntityInspector entityInspector;
+	SceneExplorer sceneExplorer(*editorScene, entityInspector);
+#endif
 
 	while (!editorWindow.shouldClose()) {
 		glfwPollEvents();
@@ -362,11 +381,22 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		// ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
 		drawEditorWindows();
+		// memedit.DrawWindow("Mesh Data", mesh.m_layout.m_attributes, sizeof(mesh.m_layout.m_attributes));
+
+		editorConsole.onUpdate(&consoleOpen);
+
+		// sceneExplorer.onUpdate();
+		// entityInspector.onUpdate();
 
 		projectPreferencesPanel.onUpdate();
 		contentBrowser.onUpdate();
-		Editor::notificationUpdate();
 
+		if (mouseOverVport) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
+
+		if (mouseOverVport && ImGui::IsMouseDown(ImGuiMouseButton_Right)) ImGui::SetMouseCursor(ImGuiMouseCursor_None);
+
+#if 0
+		Editor::notificationUpdate();
 		ImGui::Begin("AHHHHH");
 
 		if (ImGui::Button("Open modal"))
@@ -375,8 +405,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		if (ImGui::Button("LOAD USERCODE")) {
 			UserCode::loadUserCode();
 		}
-
 		ImGui::End();
+#endif
 
 		ImGui::Render();
 		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
@@ -412,7 +442,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			bgfx::touch(VIEWPORT_VIEW_ID);
 		}
 
-		editorScene->onUpdate(VIEWPORT_VIEW_ID, program);
+		// editorScene->onUpdate(VIEWPORT_VIEW_ID, program);
 
 		bgfx::frame();
 	}
@@ -422,7 +452,9 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	bgfx::destroy(program);
 	bgfx::destroy(shadowLogo);
 
-	editorScene->unload();
+	// editorScene->unload();
+
+	// entityInspector.unload();
 
 	contentBrowser.unload();
 	projectPreferencesPanel.unload();

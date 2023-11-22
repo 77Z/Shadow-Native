@@ -31,3 +31,6 @@
 [submodule "lib/ImGuizmo"]
 	path = lib/ImGuizmo
 	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "lib/xxHash"]
+	path = lib/xxHash
+	url = https://github.com/Cyan4973/xxHash.git

@@ -10,7 +10,8 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/bin/sdw/shadow-engine/Shadow",
 			"args": [
-				"axeEditor"
+				// "axeEditor"
+				"dev"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/bin/sdw/shadow-engine",

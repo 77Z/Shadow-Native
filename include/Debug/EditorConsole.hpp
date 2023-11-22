@@ -1,6 +1,8 @@
 #ifndef SHADOW_NATIVE_DEBUG_EDITOR_CONSOLE_HPP
 #define SHADOW_NATIVE_DEBUG_EDITOR_CONSOLE_HPP
 
+#include "imgui.h"
+#include "imgui/imgui_memory_editor.h"
 #include <functional>
 #include <string>
 #include <vector>
@@ -15,30 +17,36 @@ public:
 	EditorConsole();
 	~EditorConsole();
 
+	struct message {
+		message() = default;
+		message(const message&) = default;
+		message(const char* category, const char* data, void* bindata)
+			: category(category)
+			, data(data)
+			, bindata(bindata) { }
+
+		const char* category;
+		const char* data;
+		void* bindata;
+	};
+
 	void clearLog();
-	void addLog(const char* fmt, ...);
+	void addLog(const char* category, const char* fmt, ...);
+	void addLogWithBinData(const char* category, void* binData, const char* fmt, ...);
 	void onUpdate(bool* p_open);
 
+	MemoryEditor edit;
+
+	void* data;
+
 	bool autoScroll = true;
-	std::vector<char*> items;
+	std::string currentCategory;
+	std::vector<const char*> categories;
+	std::vector<message> items;
 	std::vector<const char*> commands;
 	std::vector<char*> history;
 	int historyPos = -1;
 	char inputBuf[256];
-	std::string consoleName;
-};
-
-class EditorConsoleManager {
-public:
-	EditorConsoleManager();
-	~EditorConsoleManager();
-
-	void createNewConsole(std::string name);
-	void onUpdate();
-	bool showConsoles = true;
-
-private:
-	std::vector<std::reference_wrapper<EditorConsole>> consoles;
 };
 
 }

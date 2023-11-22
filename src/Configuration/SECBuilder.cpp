@@ -1,5 +1,5 @@
 #include "Configuration/SECBuilder.hpp"
-#include "ppk_assert.h"
+#include "ppk_assert_impl.hpp"
 #include <fstream>
 
 namespace Shadow {

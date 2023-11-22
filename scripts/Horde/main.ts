@@ -19,7 +19,7 @@ import { generateShaderBuildFiles } from "./Shaders.ts";
 
 export const cliFlags = parse(Deno.args, {
 	boolean: ["help", "verbose", "version", "v", "clean", "confgen"],
-	string: ["config"],
+	string: ["config", "target"],
 });
 
 if (cliFlags.help) showHelp();
@@ -77,6 +77,10 @@ NINJA=ninja
 `;
 
 for (const target of conf.Targets) {
+	if (cliFlags.target !== undefined && cliFlags.target !== target.Name) {
+		continue;
+	}
+
 	const targetDir = buildDir + "/" + target.Name;
 	const artifactDest = targetDir + "/" + target.Artifact;
 

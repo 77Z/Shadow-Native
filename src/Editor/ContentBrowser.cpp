@@ -39,8 +39,8 @@ bool fileNode(Shadow::ContentBrowser::fileEntry file, ImTextureID icon) {
 	bool pressed = ButtonBehavior(boundingBox, id, &hovered, &held);
 
 	if (hovered && ImGui::BeginTooltip()) {
-		ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(56, 76, 255, 255));
-		ImGui::TextUnformatted("C++ Source File");
+		ImGui::PushStyleColor(ImGuiCol_Text, file.fileTypeColor);
+		ImGui::TextUnformatted(file.fileTypePrettyName.c_str());
 		ImGui::PopStyleColor();
 		ImGui::Separator();
 		ImGui::Text("%s", label);
@@ -73,28 +73,12 @@ bool fileNode(Shadow::ContentBrowser::fileEntry file, ImTextureID icon) {
 namespace Shadow {
 
 ContentBrowser::ContentBrowser() {
-	// const bgfx::Memory* mem = bgfx::alloc(270000);
-	// unsigned char* texbuf = (unsigned char*)mem->data;
-
-	// bx::memSet(texbuf, 0xff, mem->size);
-
-	// fileIcon = bgfx::createTexture2D(
-	// 	300, 300, false, 1, bgfx::TextureFormat::RGB8, BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, mem);
-
-	// cppIcon = loadTexture("./Resources/fileIcon.png");
-	// hppIcon = loadTexture("./Resources/hppIcon.png");
-	// folderIcon = loadTexture("./Resources/folderIcon.png");
-
 	loadDir(&activeFileIndex, "/");
 }
 
 ContentBrowser::~ContentBrowser() { }
 
 void ContentBrowser::unload() {
-	// bgfx::destroy(cppIcon);
-	// bgfx::destroy(hppIcon);
-	// bgfx::destroy(folderIcon);
-
 	for (const auto& item : fileTypeMap) {
 		bgfx::destroy(item.second);
 	}
@@ -123,9 +107,20 @@ void ContentBrowser::loadDir(std::vector<fileEntry>* indexToWrite, std::string d
 		fe.fullpath = file.path().string();
 		fe.name = fe.fullpath.substr(fe.fullpath.find_last_of("/") + 1, fe.fullpath.length());
 
-		/* if (file.is_directory()) {
-			fe.fileType = fileTypes::Folder;
-		} */
+		if (file.is_directory()) {
+			fe.fileType = fileTypes_Folder;
+			fe.fileTypePrettyName = "Directory";
+			fe.fileTypeColor = IM_COL32(255, 255, 255, 255);
+		} else {
+			std::string path = file.path().string();
+			std::string fileExt = path.substr(path.find_last_of(".") + 1);
+
+			if		(fileExt == "cpp")		{ fe.fileType = fileTypes_CppSource; fe.fileTypePrettyName = "C++ Source File"; fe.fileTypeColor = IM_COL32(56, 76, 255, 255); }
+			else if	(fileExt == "hpp")		{ fe.fileType = fileTypes_HppSource; fe.fileTypePrettyName = "C++ Header File"; fe.fileTypeColor = IM_COL32(56, 76, 255, 255); }
+			else if	(fileExt == "c")		{ fe.fileType = fileTypes_CSource; fe.fileTypePrettyName = "C Source File"; fe.fileTypeColor = IM_COL32(56, 76, 255, 255); }
+			else if	(fileExt == "scene")	{ fe.fileType = fileTypes_ShadowEngineScene; fe.fileTypePrettyName = "Shadow Engine Scene"; fe.fileTypeColor = IM_COL32(255, 184, 0, 255); }
+			else { fe.fileType = fileTypes_Other; fe.fileTypePrettyName = "? Unknown file type ?"; fe.fileTypeColor = IM_COL32(113, 113, 113, 255); }
+		}
 
 		indexToWrite->push_back(fe);
 	}
@@ -153,11 +148,16 @@ void ContentBrowser::drawPathNavigationRail() {
 		// ImGui::SameLine();
 		if (ImGui::IsItemDeactivatedAfterEdit()) {
 			userinputtingPath = false;
-			if (std::filesystem::exists(
-					Editor::getCurrentProjectPath() + "/Content/" + userinputPath))
-				loadDir(&activeFileIndex, userinputPath);
-			else
-				PRINT("Notification");
+			if (userinputPath.empty()) {
+				loadDir(&activeFileIndex, "/");
+			} else {
+				std::string path = Editor::getCurrentProjectPath() + "/Content/" + userinputPath;
+
+				if (std::filesystem::exists(path) && std::filesystem::is_directory(path))
+					loadDir(&activeFileIndex, userinputPath);
+				else
+					PRINT("Notification here: path doesn't exist or not dir");
+			}
 		}
 	} else {
 		once = false;
@@ -183,7 +183,7 @@ void ContentBrowser::drawPathNavigationRail() {
 		}
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(0, 0, 0, 0));
 		if (ImGui::Button("##manualpath",
-				ImVec2(ImGui::GetWindowSize().x - ImGui::GetCursorPosX() - 10, 20))) {
+				ImVec2(ImGui::GetWindowSize().x - ImGui::GetCursorPosX() - 10, 20 /* TODO: Scale factor here */ ))) {
 			userinputPath = currentDir;
 			userinputtingPath = true;
 		}
@@ -243,7 +243,8 @@ void ContentBrowser::onUpdate() {
 
 	drawPathNavigationRail();
 
-	ImGui::Text("%s", getCurrentDir().c_str());
+	// Prints the current directory, useful for debugging the content browser.
+	// ImGui::Text("%s", getCurrentDir().c_str());
 
 	// ImGui::Image(fileIcon, ImVec2(70, 70));
 
@@ -254,13 +255,40 @@ void ContentBrowser::onUpdate() {
 	for (int i = 0; i < activeFileIndex.size(); i++) {
 		fileEntry file = activeFileIndex[i];
 
-		if (file.isFolder) {
-			if (ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["folder"], 0, 0))) {
-				loadDir(&activeFileIndex, getCurrentDir() + "/" + file.name);
+		// This switch is executed every frame. Checking file extentions
+		// every frame would be hell. That's checked during indexing.
+		switch (file.fileType) {
+
+			case fileTypes_Folder: {
+				if (ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["folder"], 0, 0))) {
+					loadDir(&activeFileIndex, getCurrentDir() + "/" + file.name);
+				}
+				break;
 			}
-		} else {
-			ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["cpp"], 0, 0));
+			case fileTypes_CppSource: {
+				if (ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["cpp"], 0, 0))) {
+					PRINT("Open Code Editor for file: %s", file.fullpath.c_str());
+				}
+				break;
+			}
+			case fileTypes_HppSource: {
+				if (ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["hpp"], 0, 0))) {
+					PRINT("Open Code Editor for file: %s", file.fullpath.c_str());
+				}
+				break;
+			}
+			case fileTypes_ShadowEngineScene:
+				if (ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["scene"], 0, 0))) {
+					PRINT("load scene into editor: %s", file.fullpath.c_str());
+				}
+				break;
+			case fileTypes_CSource:
+			case fileTypes_Other: {
+				ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["other"], 0, 0));
+				break;
+			}
 		}
+		
 	}
 
 	ImGui::End();

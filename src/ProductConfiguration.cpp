@@ -7,7 +7,7 @@
 namespace Shadow {
 
 json ProductConfiguration::getConfig(Shadow::DataReader::DataSource::Enum dataSource) {
-	std::ifstream file("./product.chunk/product.json");
+	std::ifstream file("./Resources/product.chunk/product.json");
 	if (!file)
 		ERROUT("Product configuration not found");
 	json data = json::parse(file);

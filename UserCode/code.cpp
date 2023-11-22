@@ -1,5 +1,5 @@
 #include "include/code.hpp"
-#include <iostream>
+#include "ShadowAPI.hpp"
 
 SHADOW_CODE
 
@@ -7,7 +7,8 @@ SHADOW_CODE
 // extern "C" void register_function(void (*callmeplz)()) { callback = callmeplz; }
 
 void Start() {
-	std::cout << "WE LOVE WYATT!" << std::endl;
+	simplePrint(
+		"[PLUGIN] Shadow Engine in debug mode: " + isShadowEngineDebugMode() ? "true" : "false");
 	// callback();
 }
 

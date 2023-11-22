@@ -40,6 +40,7 @@ public:
 	void shutdown();
 	void* getNativeWindowHandle();
 	void* getNativeDisplayHandle();
+	float getContentScale();
 
 	std::string windowTitle;
 

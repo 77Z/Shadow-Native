@@ -66,10 +66,11 @@ public:
 	void submit(const MeshState* const* _state, uint8_t _numPasses, const float* _mtx,
 		uint16_t _numMatrices = 1) const;
 
+	bgfx::VertexLayout m_layout;
+	
 private:
 	void load(const char* _filePath, bool _ramcopy = false);
 
-	bgfx::VertexLayout m_layout;
 	GroupArray m_groups;
 };
 

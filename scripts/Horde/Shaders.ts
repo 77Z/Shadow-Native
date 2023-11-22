@@ -97,7 +97,8 @@ rule shader
 
 `;
 
-		for (const shader of shaders) {
+		for (const rawshader of shaders) {
+			const shader = rawshader.replaceAll("\\", "/");
 			const blankDest = shader.substring(
 				(conf.Shaders.ShadersLocation + "/").length,
 			);

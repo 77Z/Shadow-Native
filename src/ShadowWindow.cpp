@@ -59,6 +59,12 @@ void* ShadowWindow::getNativeDisplayHandle() {
 #endif
 }
 
+float ShadowWindow::getContentScale() {
+	float s;
+	glfwGetWindowContentScale(window, &s, nullptr);
+	return s;
+}
+
 void ShadowWindow::initWindow() {
 	glfwSetErrorCallback(glfw_errorCallback);
 

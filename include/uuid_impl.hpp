@@ -2,7 +2,7 @@
 #define SHADOW_NATIVE_UUID_IMPL_HPP
 
 // #define UUID_SYSTEM_GENERATOR
-#include "ppk_assert.h"
+#include "ppk_assert_impl.hpp"
 #include <algorithm>
 #include <array>
 #include <functional>
