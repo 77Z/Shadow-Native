@@ -5,9 +5,9 @@
 #include "snappy.h"
 #include <cstdint>
 
-// #include "missingtex.snap.ktx.h"
+#include "missingtex.snap.ktx.h"
 // #include "missingtex.ktx.h"
-#include "missingtex.exr.h"
+// #include "missingtex.exr.h"
 
 
 namespace Shadow {
@@ -52,19 +52,19 @@ namespace Shadow {
 		BX_UNUSED(width);
 		BX_UNUSED(height);
 		
-		// std::string out;
-		// snappy::Uncompress((char*)missing_texture_snap, sizeof(missing_texture_snap), &out);
-		// const bgfx::Memory* mem = bgfx::makeRef(out.data(), out.size());
+		std::string out;
+		snappy::Uncompress((char*)missing_texture_snap, sizeof(missing_texture_snap), &out);
+		const bgfx::Memory* mem = bgfx::makeRef(out.data(), out.size());
 
-		const bgfx::Memory* mem = bgfx::makeRef(missing_texture_exr, sizeof(missing_texture_exr));
+		// const bgfx::Memory* mem = bgfx::makeRef(missing_texture_exr, sizeof(missing_texture_exr));
 
 		return bgfx::createTexture2D(
 			800,
 			800,
 			false,
 			1,
-			// bgfx::TextureFormat::RGBA8,
-			bgfx::TextureFormat::RGBA16F,
+			bgfx::TextureFormat::RGBA8,
+			// bgfx::TextureFormat::RGBA16F,
 			BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE,
 			mem
 		);

@@ -850,6 +850,59 @@
 			
 			Libs: [],
 		},
+		{ Name: "texturev",
+			PrettyName: "Texture Viewer",
+			Type: "Executable",
+			Language: "C++",
+			BaseDir: "lib/bgfx/tools/texturev",
+			Artifact: "texturev",
+
+			std: "c++17",
+			Defines: [
+				"__STDC_LIMIT_MACROS",
+				"__STDC_FORMAT_MACROS",
+				"__STDC_CONSTANT_MACROS" ],
+			CXXFLAGS: [
+				"-Wall",
+				"-Wextra",
+				"-ffast-math",
+				"-fomit-frame-pointer",
+				"-fno-rtti",
+				"-fno-exceptions",
+				"-Wshadow",
+				"-mfpmath=sse",
+				"-msse4.2",
+				"-Wunused-value",
+				"-Wundef",
+				"-Wlogical-op"
+				],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1", "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0", "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"../../include", // BGFX include dir
+				"../../../bx/include",
+				"../../../bx/include/compat/linux",
+				"../../../bimg/include",
+				"../../3rdparty",
+				"../../examples/common" ],
+
+			Sources: [ "texturev.cpp" ],
+			SrcExcludes: [],
+			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl", "-lX11" ],
+
+			// example-common has to come before bx for some reason :/
+			InlineBuildLibs: [ "bgfx", "example-common", "bx", "bimg", "bimg_decode"],
+			
+			Libs: [],
+		},
 		{ Name: "glfw",
 			PrettyName: "GLFW",
 			Type: "StaticLib",
@@ -1020,7 +1073,11 @@
 					// You can use the following to format these strings:
 					// {cwd} - Current working directory (from Horde dir)
 					// {targetDir} - directory your binary will be built to
-					["{cwd}/res/runtimeres", "{targetDir}/Resources"]
+					["{cwd}/res/runtimeres", "{targetDir}/Resources"],
+					["../texturev/texturev", "{targetDir}/texturev"],
+					["../texturec/texturec", "{targetDir}/texturec"],
+					["../geometryc/geometryc", "{targetDir}/geometryc"],
+					["../geometryv/geometryv", "{targetDir}/geometryv"],
 				]
 			}
 		},

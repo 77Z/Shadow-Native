@@ -136,9 +136,16 @@ rule link
 
 		objs.push(obj);
 
+		
+		//TODO: temporary patch
+		const cOrCpp = source.substring(source.lastIndexOf(".")) == ".cpp" ? "cxx" : "cc"
 		ninjaTargetContent += `build ${obj} : ${
-			target.Language == "C++" ? "cxx" : "cc"
+			cOrCpp
 		} ../../../${source}\n`;
+
+		/* ninjaTargetContent += `build ${obj} : ${
+			target.Language == "C++" ? "cxx" : "cc"
+		} ../../../${source}\n`; */
 	}
 
 	switch (target.Type) {
