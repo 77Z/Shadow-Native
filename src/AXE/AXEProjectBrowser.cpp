@@ -1,5 +1,4 @@
 #include "AXE/AXEProjectBrowser.hpp"
-#include "GLFW/glfw3.h"
 #include "RenderBootstrapper.hpp"
 #include "ShadowWindow.hpp"
 #include "Util.hpp"
@@ -40,7 +39,7 @@ int startAXEProjectBrowser() {
 	RenderBootstrapper rb(&axeProjectBrowserWindow, bgfx::RendererType::Vulkan);
 
 	while (!axeProjectBrowserWindow.shouldClose()) {
-		glfwPollEvents();
+		axeProjectBrowserWindow.pollEvents();
 
 		rb.startFrame();
 

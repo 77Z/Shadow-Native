@@ -6,7 +6,6 @@
 #include "Editor/Notification.hpp"
 #include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
-#include "Editor/ProjectPreferencesPanel.hpp"
 #include "Mesh.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
@@ -84,7 +83,7 @@ static void drawMainMenuBar() {
 			ImGui::Separator();
 			if (ImGui::MenuItem("Project Preferences", "CTRL + SHIFT + ,")) {
 				PRINT("PROJECT PREFERENCES");
-				ImGui::OpenPopup("ProjectPreferencesPanel");
+				//TODO: I can't figure out this freaking popup
 			}
 			ImGui::EndMenu();
 		}
@@ -335,7 +334,6 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	bgfx::ProgramHandle program = loadProgram("test/vs_test.sc.spv", "test/fs_test.sc.spv");
 
 	ContentBrowser contentBrowser;
-	Editor::ProjectPreferencesPanel projectPreferencesPanel;
 
 #if 0 // No more default loading scene
 	Reference<Scene> editorScene = CreateReference<Scene>();
@@ -388,7 +386,6 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		// sceneExplorer.onUpdate();
 		// entityInspector.onUpdate();
 
-		projectPreferencesPanel.onUpdate();
 		contentBrowser.onUpdate();
 
 		if (mouseOverVport) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
@@ -398,9 +395,6 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 #if 0
 		Editor::notificationUpdate();
 		ImGui::Begin("AHHHHH");
-
-		if (ImGui::Button("Open modal"))
-			projectPreferencesPanel.open();
 
 		if (ImGui::Button("LOAD USERCODE")) {
 			UserCode::loadUserCode();
@@ -457,7 +451,6 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	// entityInspector.unload();
 
 	contentBrowser.unload();
-	projectPreferencesPanel.unload();
 
 	ImGui_ImplGlfw_Shutdown();
 	ImGui_Implbgfx_Shutdown();

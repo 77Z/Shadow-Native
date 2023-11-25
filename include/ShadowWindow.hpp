@@ -34,6 +34,12 @@ public:
 	bool shouldClose() { return glfwWindowShouldClose(window); }
 	void close() { glfwSetWindowShouldClose(window, GLFW_TRUE); }
 
+	// Polls contstantly, good for games
+	void pollEvents() { glfwPollEvents(); }
+
+	// Polls on user input, good for UI tools
+	void waitEvents() { glfwWaitEvents(); }
+
 	WindowDimensions getExtent() { return { width, height }; };
 	bool wasWindowResized() { return framebufferResized; }
 	void resetWindowResizedFlag() { framebufferResized = false; }
@@ -41,6 +47,9 @@ public:
 	void* getNativeWindowHandle();
 	void* getNativeDisplayHandle();
 	float getContentScale();
+
+	void lockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
+	void unlockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
 
 	std::string windowTitle;
 

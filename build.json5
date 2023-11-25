@@ -250,6 +250,40 @@
 			Sources: [ "src/*.cpp" ],
 			SrcExcludes: [ "src/amalgamated.*" ]
 		},
+		{ Name: "example-common",
+			PrettyName: "Example Shared Code",
+			Type: "StaticLib",
+			Language: "C++",
+			BaseDir: "lib/bgfx",
+			Artifact: "libexample-common.a",
+
+			std: "c++20",
+			Defines: [],
+			//TODO: Move -g to debug only??
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+				"-g", "-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
+				"-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
+				"-Wlogical-op", "-fPIC" ],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1" ],
+				CXXFLAGS: []
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"include", "3rdparty",
+				"../bimg/include", "../bx/include" ],
+			Sources: [
+				"3rdparty/meshoptimizer/src/*.cpp",
+				"3rdparty/dear-imgui/*.cpp",
+				"examples/common/*.cpp" ],
+			SrcExcludes: [ "examples/common/example-glue.cpp" ]
+		},
 		{ Name: "spirv-opt",
 			PrettyName: "SPIRV Tools",
 			Type: "StaticLib",
@@ -710,6 +744,109 @@
 			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl" ],
 
 			InlineBuildLibs: [ "bx" ],
+			
+			Libs: [],
+		},
+		{ Name: "geometryv",
+			PrettyName: "Geometry Viewer",
+			Type: "Executable",
+			Language: "C++",
+			BaseDir: "lib/bgfx/tools/geometryv",
+			Artifact: "geometryv",
+
+			std: "c++17",
+			Defines: [
+				"__STDC_LIMIT_MACROS",
+				"__STDC_FORMAT_MACROS",
+				"__STDC_CONSTANT_MACROS" ],
+			CXXFLAGS: [
+				"-Wall",
+				"-Wextra",
+				"-ffast-math",
+				"-fomit-frame-pointer",
+				"-fno-rtti",
+				"-fno-exceptions",
+				"-Wshadow",
+				"-mfpmath=sse",
+				"-msse4.2",
+				"-Wunused-value",
+				"-Wundef",
+				"-Wlogical-op"
+				],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1", "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0", "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"../../include", // BGFX include dir
+				"../../../bx/include",
+				"../../../bx/include/compat/linux",
+				"../../../bimg/include",
+				"../../3rdparty",
+				"../../examples/common" ],
+
+			Sources: [ "geometryv.cpp" ],
+			SrcExcludes: [],
+			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl", "-lX11" ],
+
+			// example-common has to come before bx for some reason :/
+			InlineBuildLibs: [ "bgfx", "example-common", "bx", "bimg", "bimg_decode"],
+			
+			Libs: [],
+		},
+		{ Name: "texturec",
+			PrettyName: "Texture Compiler",
+			Type: "Executable",
+			Language: "C++",
+			BaseDir: "lib/bimg/tools/texturec",
+			Artifact: "texturec",
+
+			std: "c++17",
+			Defines: [
+				"__STDC_LIMIT_MACROS",
+				"__STDC_FORMAT_MACROS",
+				"__STDC_CONSTANT_MACROS" ],
+			CXXFLAGS: [
+				"-Wall",
+				"-Wextra",
+				"-ffast-math",
+				"-fomit-frame-pointer",
+				"-fno-rtti",
+				"-fno-exceptions",
+				"-Wshadow",
+				"-mfpmath=sse",
+				"-msse4.2",
+				"-Wunused-value",
+				"-Wundef",
+				"-Wlogical-op"
+				],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1", "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0", "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"../../../bgfx/include",
+				"../../../bx/include",
+				"../../include", // BIMG include dir
+				"../../include/3rdparty/iqa/include", ],
+
+			Sources: [ "texturec.cpp" ],
+			SrcExcludes: [],
+			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl" ],
+
+			InlineBuildLibs: [ "bimg", "bimg_encode", "bimg_decode", "bx" ],
 			
 			Libs: [],
 		},

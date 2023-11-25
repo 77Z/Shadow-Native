@@ -1,6 +1,5 @@
 #include "AXE/AXEEditor.hpp"
 #include "Debug/Logger.hpp"
-#include "GLFW/glfw3.h"
 #include "ImCurveEdit.h"
 #include "ImSequencer.h"
 #include "RenderBootstrapper.hpp"
@@ -25,7 +24,7 @@ int startAXEEditor(AXEProjectEntry project) {
 	RenderBootstrapper rb(&axeEditorWindow, bgfx::RendererType::Vulkan);
 
 	while (!axeEditorWindow.shouldClose()) {
-		glfwPollEvents();
+		axeEditorWindow.pollEvents();
 
 		rb.startFrame();
 
