@@ -73,7 +73,7 @@
 		{ Name: "bx",
 			PrettyName: "BX",
 			Type: "StaticLib",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bx",
 			Artifact: "libbx.a",
 
@@ -101,7 +101,7 @@
 		{ Name: "bimg",
 			PrettyName: "BIMG",
 			Type: "StaticLib",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bimg",
 			Artifact: "libbimg.a",
 
@@ -141,7 +141,7 @@
 		{ Name: "bimg_encode",
 			PrettyName: "BIMG Encoding Module",
 			Type: "StaticLib",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bimg",
 			Artifact: "libbimg_encode.a",
 
@@ -187,7 +187,7 @@
 		{ Name: "bimg_decode",
 			PrettyName: "BIMG Decoding Module",
 			Type: "StaticLib",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bimg",
 			Artifact: "libbimg_decode.a",
 
@@ -217,7 +217,7 @@
 		{ Name: "bgfx",
 			PrettyName: "BGFX",
 			Type: "StaticLib",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bgfx",
 			Artifact: "libbgfx.a",
 
@@ -253,7 +253,7 @@
 		{ Name: "example-common",
 			PrettyName: "Example Shared Code",
 			Type: "StaticLib",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bgfx",
 			Artifact: "libexample-common.a",
 
@@ -287,7 +287,7 @@
 		{ Name: "spirv-opt",
 			PrettyName: "SPIRV Tools",
 			Type: "StaticLib",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bgfx/3rdparty/spirv-tools",
 			Artifact: "libspirv-opt.a",
 
@@ -320,7 +320,7 @@
 		{ Name: "spirv-cross",
 			PrettyName: "SPIRV Cross",
 			Type: "StaticLib",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bgfx/3rdparty/spirv-cross",
 			Artifact: "libspirv-cross.a",
 
@@ -353,7 +353,7 @@
 		{ Name: "glsl-optimizer",
 			PrettyName: "GLSL Optimizer",
 			Type: "StaticLib",
-			Language: "C",
+			Language: "C", // deprecated
 			BaseDir: "lib/bgfx/3rdparty/glsl-optimizer",
 			Artifact: "libglsl-optimizer.a",
 
@@ -510,7 +510,7 @@
 		{ Name: "glslang",
 			PrettyName: "Glslang",
 			Type: "StaticLib",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bgfx/3rdparty/glslang",
 			Artifact: "libglslang.a",
 
@@ -585,7 +585,7 @@
 		{ Name: "fcpp",
 			PrettyName: "Frexx CPP",
 			Type: "StaticLib",
-			Language: "C",
+			Language: "C", // deprecated
 			BaseDir: "lib/bgfx/3rdparty/fcpp",
 			Artifact: "libfcpp.a",
 
@@ -626,10 +626,58 @@
 			Sources: [ "*.c" ],
 			SrcExcludes: [ "usecpp.c"]
 		},
+		{ Name: "bin2c",
+			PrettyName: "Binary to C Header Tool",
+			Type: "Executable",
+			Language: "C++", // deprecated
+			BaseDir: "lib/bx/tools/bin2c",
+			Artifact: "bin2c",
+
+			std: "c++17",
+			Defines: [
+				"__STDC_LIMIT_MACROS",
+				"__STDC_FORMAT_MACROS",
+				"__STDC_CONSTANT_MACROS" ],
+			CXXFLAGS: [
+				"-Wall",
+				"-Wextra",
+				"-ffast-math",
+				"-fomit-frame-pointer",
+				"-fno-rtti",
+				"-fno-exceptions",
+				"-Wshadow",
+				"-mfpmath=sse",
+				"-msse4.2",
+				"-Wunused-value",
+				"-Wundef",
+				"-Wlogical-op"
+				],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1", "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0", "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"../../include" // BX include dir
+			],
+
+			Sources: [ "bin2c.cpp" ],
+			SrcExcludes: [],
+			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl" ],
+
+			InlineBuildLibs: [ "bx" ],
+			
+			Libs: [],
+		},
 		{ Name: "shaderc",
 			PrettyName: "Shader Compiler",
 			Type: "Executable",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bgfx/tools/shaderc",
 			Artifact: "shaderc",
 
@@ -696,7 +744,7 @@
 		{ Name: "geometryc",
 			PrettyName: "Geometry Compiler",
 			Type: "Executable",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bgfx/tools/geometryc",
 			Artifact: "geometryc",
 
@@ -750,7 +798,7 @@
 		{ Name: "geometryv",
 			PrettyName: "Geometry Viewer",
 			Type: "Executable",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bgfx/tools/geometryv",
 			Artifact: "geometryv",
 
@@ -803,7 +851,7 @@
 		{ Name: "texturec",
 			PrettyName: "Texture Compiler",
 			Type: "Executable",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bimg/tools/texturec",
 			Artifact: "texturec",
 
@@ -853,7 +901,7 @@
 		{ Name: "texturev",
 			PrettyName: "Texture Viewer",
 			Type: "Executable",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/bgfx/tools/texturev",
 			Artifact: "texturev",
 
@@ -903,10 +951,55 @@
 			
 			Libs: [],
 		},
+		{ Name: "chunker-cli",
+			PrettyName: "Chunker CLI Tool",
+			Type: "Executable",
+			Language: "C++", // deprecated
+			BaseDir: "chunker",
+			Artifact: "chunker",
+
+			std: "c++17",
+			Defines: [],
+			CXXFLAGS: [
+				"-Wall",
+				"-Wextra",
+				"-ffast-math",
+				"-fomit-frame-pointer",
+				"-fno-rtti",
+				"-fno-exceptions",
+				"-Wshadow",
+				"-mfpmath=sse",
+				"-msse4.2",
+				"-Wunused-value",
+				"-Wundef",
+				"-Wlogical-op"
+				],
+
+			IfDebug: {
+				Defines: [ "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"./lib",
+				"../lib/termcolor" ],
+
+			Sources: [ "*.cpp" ],
+			SrcExcludes: [],
+			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl" ],
+
+			InlineBuildLibs: [ "snappy" ],
+			
+			Libs: [],
+		},
 		{ Name: "glfw",
 			PrettyName: "GLFW",
 			Type: "StaticLib",
-			Language: "C",
+			Language: "C", // deprecated
 			BaseDir: "lib/glfw",
 			Artifact: "libglfw.a",
 
@@ -930,7 +1023,7 @@
 		{ Name: "snappy",
 			PrettyName: "Snappy",
 			Type: "StaticLib",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/snappy-lib",
 			Artifact: "libsnappy.a",
 
@@ -960,7 +1053,7 @@
 		{ Name: "leveldb",
 			PrettyName: "LevelDB",
 			Type: "StaticLib",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: "lib/leveldb-lib",
 			Artifact: "libleveldb.a",
 
@@ -986,7 +1079,7 @@
 		{ Name: "shadow-engine",
 			PrettyName: "Shadow Engine",
 			Type: "Executable",
-			Language: "C++",
+			Language: "C++", // deprecated
 			BaseDir: ".",
 			Artifact: "Shadow",
 
@@ -1078,13 +1171,11 @@
 					["../texturec/texturec", "{targetDir}/texturec"],
 					["../geometryc/geometryc", "{targetDir}/geometryc"],
 					["../geometryv/geometryv", "{targetDir}/geometryv"],
+					["../bin2c/bin2c", "{targetDir}/bin2c"],
+					["../chunker-cli/chunker", "{targetDir}/chunker"],
 				]
 			}
 		},
-		
-		// {
-		//     Name: "chunker-cli"
-		// }
 	]
 
 }

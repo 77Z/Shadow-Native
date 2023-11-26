@@ -68,7 +68,12 @@ typedef stl::vector<Group> GroupArray;
 
 int devEntry() {
 
-	std::ifstream file("./missingtex.ktx");
+	
+
+	bgfx::alloc(0);
+
+#if 0
+	std::ifstream file("./missingtex.png");
 
 	std::stringstream ss;
 	ss << file.rdbuf();
@@ -76,9 +81,9 @@ int devEntry() {
 	std::string in = ss.str();
 	std::string out;
 	snappy::Compress(in.data(), in.size(), &out);
-	std::ofstream outfile("./missingtex.snap.ktx");
+	std::ofstream outfile("./missingtex.snap.png");
 	outfile << out;
-
+#endif
 	/*
 	// RenderBootstrapper inits bgfx
 	ShadowWindow devWindow(1300, 700, "GURU MEDITATION");

@@ -127,8 +127,8 @@ bgfx::ProgramHandle loadProgram(bx::FileReaderI* reader, const char* vsName, con
 bgfx::ProgramHandle loadProgram(const char* vsName, const char* fsName) {
 	return loadProgram(getFileReader(), vsName, fsName);
 }
-
-static void imageReleaseCb(void* _ptr, void* _userData) {
+ 
+void imageReleaseCb(void* _ptr, void* _userData) {
 	BX_UNUSED(_ptr);
 	bimg::ImageContainer* imageContainer = (bimg::ImageContainer*)_userData;
 	bimg::imageFree(imageContainer);

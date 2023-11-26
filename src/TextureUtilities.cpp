@@ -1,13 +1,17 @@
 #include "TextureUtilities.hpp"
+#include "Util.hpp"
 #include "bgfx/bgfx.h"
 #include "bgfx/defines.h"
+#include "bimg/bimg.h"
+#include "bimg/decode.h"
 #include "bx/bx.h"
 #include "snappy.h"
 #include <cstdint>
 
-#include "missingtex.snap.ktx.h"
+// #include "missingtex.snap.ktx.h"
 // #include "missingtex.ktx.h"
 // #include "missingtex.exr.h"
+#include "missingtex.snap.png.h"
 
 
 namespace Shadow {
@@ -53,8 +57,10 @@ namespace Shadow {
 		BX_UNUSED(height);
 		
 		std::string out;
-		snappy::Uncompress((char*)missing_texture_snap, sizeof(missing_texture_snap), &out);
-		const bgfx::Memory* mem = bgfx::makeRef(out.data(), out.size());
+		snappy::Uncompress((char*)data, sizeof(data), &out);
+
+		bimg::ImageContainer* imageContainer = bimg::imageParse(getAllocator(), data, sizeof(data));
+		const bgfx::Memory* mem = bgfx::makeRef(imageContainer->m_data, imageContainer->m_size, imageReleaseCb, imageContainer);
 
 		// const bgfx::Memory* mem = bgfx::makeRef(missing_texture_exr, sizeof(missing_texture_exr));
 

@@ -12,6 +12,9 @@
 #include <string>
 #include <termcolor.hpp>
 
+// Don't want to use BX_UNUSED here because Logger should be independent
+#define SHADOW_NATIVE_LOGGER_UNUSED(expression) (void)(true ? (void)0 : ((void)(expression)))
+
 #define PRINT(fmt, ...) Shadow::Logger::debugPrintf(__FILE__, fmt, ##__VA_ARGS__)
 #define WARN(fmt, ...) Shadow::Logger::debugWarnf(__FILE__, fmt, ##__VA_ARGS__)
 #define ERROUT(fmt, ...) Shadow::Logger::debugErrorf(__FILE__, fmt, ##__VA_ARGS__)
@@ -37,6 +40,9 @@ inline void debugPrintf(const char* caller, const char* fmt, ...) {
 	va_start(argList, fmt);
 	debugPrintfVargs(fmt, argList);
 	va_end(argList);
+#else
+	SHADOW_NATIVE_LOGGER_UNUSED(caller);
+	SHADOW_NATIVE_LOGGER_UNUSED(fmt);
 #endif
 }
 
@@ -47,6 +53,9 @@ inline void debugWarnf(const char* caller, const char* fmt, ...) {
 	va_start(argList, fmt);
 	debugPrintfVargs(fmt, argList);
 	va_end(argList);
+#else
+	SHADOW_NATIVE_LOGGER_UNUSED(caller);
+	SHADOW_NATIVE_LOGGER_UNUSED(fmt);
 #endif
 }
 
@@ -57,6 +66,9 @@ inline void debugErrorf(const char* caller, const char* fmt, ...) {
 	va_start(argList, fmt);
 	debugPrintfVargs(fmt, argList);
 	va_end(argList);
+#else
+	SHADOW_NATIVE_LOGGER_UNUSED(caller);
+	SHADOW_NATIVE_LOGGER_UNUSED(fmt);
 #endif
 }
 

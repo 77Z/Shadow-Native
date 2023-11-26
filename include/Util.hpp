@@ -29,6 +29,7 @@ bgfx::ShaderHandle loadShader(const char* name);
 bgfx::ProgramHandle loadProgram(bx::FileReaderI* reader, const char* vsName, const char* fsName);
 bgfx::ProgramHandle loadProgram(const char* vsName, const char* fsName);
 
+void imageReleaseCb(void* _ptr, void* _userData);
 bgfx::TextureHandle loadTexture(const char* _name,
 	uint64_t _flags = BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE, uint8_t _skip = 0,
 	bgfx::TextureInfo* _info = NULL, bimg::Orientation::Enum* _orientation = NULL);

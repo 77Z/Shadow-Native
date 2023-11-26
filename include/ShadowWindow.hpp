@@ -1,6 +1,7 @@
 #ifndef SHADOW_NATIVE_SHADOW_WINDOW_HPP
 #define SHADOW_NATIVE_SHADOW_WINDOW_HPP
 
+#include "Debug/Logger.hpp"
 #include <GLFW/glfw3.h>
 #include <string>
 
@@ -48,8 +49,8 @@ public:
 	void* getNativeDisplayHandle();
 	float getContentScale();
 
-	void lockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
-	void unlockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
+	void lockCursor() { PRINT("Locked?"); glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
+	void unlockCursor() { PRINT("Framed?"); glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
 
 	std::string windowTitle;
 
