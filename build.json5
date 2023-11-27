@@ -70,6 +70,7 @@
 	},
 
 	Targets: [
+		// LIBRARIES
 		{ Name: "bx",
 			PrettyName: "BX",
 			Type: "StaticLib",
@@ -283,6 +284,41 @@
 				"3rdparty/dear-imgui/*.cpp",
 				"examples/common/*.cpp" ],
 			SrcExcludes: [ "examples/common/example-glue.cpp" ]
+		},
+		{ Name: "example-glue",
+			PrettyName: "Example Glue",
+			Type: "StaticLib",
+			Language: "C++", // deprecated
+			BaseDir: "lib/bgfx/examples/common",
+			Artifact: "libexample-glue.a",
+
+			std: "c++20",
+			Defines: [
+				"__STDC_LIMIT_MACROS", "__STDC_FORMAT_MACROS",
+				"__STDC_CONSTANT_MACROS" ],
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+				"-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
+				"-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
+				"-Wlogical-op", "-fPIC" ],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1", "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"../../../bx/include",
+				"../../../bx/include/compat/linux",
+				"../../../bimg/include",
+				"../../include", // BGFX include dir
+				"../../3rdparty" ],
+			Sources: [ "example-glue.cpp" ],
+			SrcExcludes: []
 		},
 		{ Name: "spirv-opt",
 			PrettyName: "SPIRV Tools",
@@ -626,6 +662,176 @@
 			Sources: [ "*.c" ],
 			SrcExcludes: [ "usecpp.c"]
 		},
+		{ Name: "snappy",
+			PrettyName: "Snappy",
+			Type: "StaticLib",
+			Language: "C++", // deprecated
+			BaseDir: "lib/snappy-lib",
+			Artifact: "libsnappy.a",
+
+			std: "c++11",
+			Defines: [ "HAVE_CONFIG_H" ],
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-Wno-sign-compare", "-fno-exceptions",
+				"-fno-rtti" ],
+
+			IfDebug: {
+				Defines: [],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [ ".", "../../misc/snappy-hack" ],
+			Sources: [
+				"snappy.cc",
+				"snappy-stubs-internal.cc",
+				"snappy-sinksource.cc",
+				"snappy-c.cc" ],
+			SrcExcludes: []
+		},
+		{ Name: "leveldb",
+			PrettyName: "LevelDB",
+			Type: "StaticLib",
+			Language: "C++", // deprecated
+			BaseDir: "lib/leveldb-lib",
+			Artifact: "libleveldb.a",
+
+			std: "c++11",
+			Defines: [ "LEVELDB_PLATFORM_POSIX=1", "LEVELDB_COMPILE_LIBRARY" ],
+			CXXFLAGS: [ "-fno-exceptions", "-fno-rtti" ],
+
+			IfDebug: {
+				Defines: [],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [ ".", "include" ],
+			Sources: [
+				"db/*.cc", "table/*.cc", "util/*.cc", "helpers/memenv/*.cc" ],
+			SrcExcludes: [
+				"*_test.cc", "util/testutil.cc", "util/env_windows.cc" ]
+		},
+
+		{ Name: "examples",
+			PrettyName: "Examples",
+			Type: "Executable",
+			Language: "C++", // deprecated
+			BaseDir: "lib/bgfx/examples",
+			Artifact: "shadowExamples",
+
+			std: "c++17",
+			Defines: [
+				"__STDC_LIMIT_MACROS",
+				"__STDC_FORMAT_MACROS",
+				"__STDC_CONSTANT_MACROS" ],
+			CXXFLAGS: [
+				"-Wall",
+				"-Wextra",
+				"-ffast-math",
+				"-fomit-frame-pointer",
+				"-fno-rtti",
+				"-fno-exceptions",
+				"-Wshadow",
+				"-mfpmath=sse",
+				"-msse4.2",
+				"-Wunused-value",
+				"-Wundef",
+				"-Wlogical-op"
+				],
+
+			IfDebug: {
+				Defines: [ "BX_CONFIG_DEBUG=1", "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0", "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [
+				"../include", // BGFX include dir
+				"../../bx/include",
+				"../../bx/include/compat/linux",
+				"../../bimg/include",
+				"../3rdparty",
+				"./common" ],
+
+			Sources: [
+				"00-helloworld/*.cpp",
+				"01-cubes/*.cpp",
+				"02-metaballs/*.cpp",
+				"03-raymarch/*.cpp",
+				"04-mesh/*.cpp",
+				"05-instancing/*.cpp",
+				"06-bump/*.cpp",
+				"07-callback/*.cpp",
+				"08-update/*.cpp",
+				"09-hdr/*.cpp",
+				"10-font/*.cpp",
+				"11-fontsdf/*.cpp",
+				"12-lod/*.cpp",
+				"13-stencil/*.cpp",
+				"14-shadowvolumes/*.cpp",
+				"15-shadowmaps-simple/*.cpp",
+				"16-shadowmaps/*.cpp",
+				// "17-drawstress/*.cpp",
+				"18-ibl/*.cpp",
+				"19-oit/*.cpp",
+				"20-nanovg/*.cpp",
+				"21-deferred/*.cpp",
+				"22-windows/*.cpp",
+				"23-vectordisplay/*.cpp",
+				"24-nbody/*.cpp",
+				"25-c99/*.c",
+				"26-occlusion/*.cpp",
+				"27-terrain/*.cpp",
+				"28-wireframe/*.cpp",
+				"29-debugdraw/*.cpp",
+				"30-picking/*.cpp",
+				"31-rsm/*.cpp",
+				"32-particles/*.cpp",
+				"33-pom/*.cpp",
+				"34-mvs/*.cpp",
+				"35-dynamic/*.cpp",
+				"36-sky/*.cpp",
+				"37-gpudrivenrendering/*.cpp",
+				"38-bloom/*.cpp",
+				"39-assao/*.cpp",
+				"40-svt/*.cpp",
+				"41-tess/*.cpp",
+				"42-bunnylod/*.cpp", "42-bunnylod/*.c",
+				"43-denoise/*.cpp",
+				"44-sss/*.cpp",
+				"45-bokeh/*.cpp",
+				"46-fsr/*.cpp",
+				"47-pixelformats/*.cpp",
+				"48-drawindirect/*.cpp",
+				"49-hextile/*.cpp",
+			],
+			SrcExcludes: [],
+			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl", "-lX11" ],
+
+			InlineBuildLibs: [
+				"example-glue", "example-common", "bgfx", "bimg_decode",
+				"bimg", "bx" ],
+			
+			Libs: [],
+
+			PostBuild: {
+				Symlinks: [
+					["{cwd}/lib/bgfx/examples/runtime", "{targetDir}/runtime"],
+				]
+			}
+		},
+
+		// TOOLS
 		{ Name: "bin2c",
 			PrettyName: "Binary to C Header Tool",
 			Type: "Executable",
@@ -1020,62 +1226,7 @@
 			Sources: [ "src/*.c" ],
 			SrcExcludes: []
 		},
-		{ Name: "snappy",
-			PrettyName: "Snappy",
-			Type: "StaticLib",
-			Language: "C++", // deprecated
-			BaseDir: "lib/snappy-lib",
-			Artifact: "libsnappy.a",
-
-			std: "c++11",
-			Defines: [ "HAVE_CONFIG_H" ],
-			CXXFLAGS: [
-				"-Wall", "-Wextra", "-Wno-sign-compare", "-fno-exceptions",
-				"-fno-rtti" ],
-
-			IfDebug: {
-				Defines: [],
-				CXXFLAGS: [ '-g' ]
-			},
-			IfRelease: {
-				Defines: [],
-				CXXFLAGS: [ '-O3' ]
-			},
-
-			IncludeDirs: [ ".", "../../misc/snappy-hack" ],
-			Sources: [
-				"snappy.cc",
-				"snappy-stubs-internal.cc",
-				"snappy-sinksource.cc",
-				"snappy-c.cc" ],
-			SrcExcludes: []
-		},
-		{ Name: "leveldb",
-			PrettyName: "LevelDB",
-			Type: "StaticLib",
-			Language: "C++", // deprecated
-			BaseDir: "lib/leveldb-lib",
-			Artifact: "libleveldb.a",
-
-			std: "c++11",
-			Defines: [ "LEVELDB_PLATFORM_POSIX=1", "LEVELDB_COMPILE_LIBRARY" ],
-			CXXFLAGS: [ "-fno-exceptions", "-fno-rtti" ],
-
-			IfDebug: {
-				Defines: [],
-				CXXFLAGS: [ '-g' ]
-			},
-			IfRelease: {
-				Defines: [],
-				CXXFLAGS: [ '-O3' ]
-			},
-
-			IncludeDirs: [ ".", "include" ],
-			Sources: [
-				"db/*.cc", "table/*.cc", "util/*.cc", "helpers/memenv/*.cc" ],
-			SrcExcludes: [
-				"*_test.cc", "util/testutil.cc", "util/env_windows.cc" ]
-		},
+		
 		{ Name: "shadow-engine",
 			PrettyName: "Shadow Engine",
 			Type: "Executable",
@@ -1164,7 +1315,8 @@
 			PostBuild: {
 				Symlinks: [
 					// You can use the following to format these strings:
-					// {cwd} - Current working directory (from Horde dir)
+					// {cwd} - Current working directory
+					// 			(from the dir that Horde was executed from)
 					// {targetDir} - directory your binary will be built to
 					["{cwd}/res/runtimeres", "{targetDir}/Resources"],
 					["../texturev/texturev", "{targetDir}/texturev"],
