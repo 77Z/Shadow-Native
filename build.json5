@@ -1266,6 +1266,7 @@
 				"lib/imgui",
 				"lib/imgui/backends",
 				"misc/snappy-hack",
+				"lib/bgfx/examples/common",
 				// "../vcpkg/packages/ms-gsl_x64-linux/include"
 				],
 
@@ -1308,7 +1309,7 @@
 			//     (name)/lib(name).a
 			InlineBuildLibs: [
 				"bgfx", "bimg", "bimg_encode", "bimg_decode", "bx", "glfw",
-				"snappy", "leveldb" ],
+				"snappy", "leveldb", "example-common" ],
 
 			// Libs is just a general list of libraries that will be linked
 			Libs: [],

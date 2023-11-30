@@ -43,6 +43,9 @@
 
 */
 
+#pragma clang diagnostic ignored "-Wempty-body"
+#pragma GCC diagnostic ignored "-Wempty-body"
+
 #if !defined(PPK_ASSERT_ENABLED)
   #if !defined(NDEBUG) // if we are in debug mode
     #define PPK_ASSERT_ENABLED 1 // enable them

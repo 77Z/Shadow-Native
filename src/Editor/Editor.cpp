@@ -296,7 +296,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	EditorConsole editorConsole;
 
 	// static MemoryEditor memedit;
-	// Mesh mesh("./Resources/suzanne.mesh");
+	Mesh mesh("./Resources/suzanne.mesh");
 
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();

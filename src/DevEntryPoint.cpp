@@ -1,10 +1,11 @@
 #include "DevEntryPoint.hpp"
 #include "Core.hpp"
 #include "Debug/Logger.hpp"
+// #include "Mesh.hpp"
 #include "RenderBootstrapper.hpp"
 #include "ShadowWindow.hpp"
 #include "UI/ShadowFlinger.hpp"
-#include "Util.hpp"
+// #include "Util.hpp"
 #include "bgfx/defines.h"
 #include "bx/allocator.h"
 #include "bx/bounds.h"
@@ -22,6 +23,8 @@
 // #include "uuid.h"
 // #include "uuid_impl.hpp"
 
+#include "bgfx_utils.h"
+
 #include <cstdint>
 #include <fstream>
 #include <sstream>
@@ -36,7 +39,7 @@ namespace Shadow {
 
 static void pad() { PRINT("\n\n\n\n"); }
 
-struct Primitive {
+/* struct Primitive {
 	uint32_t m_startIndex;
 	uint32_t m_numIndices;
 	uint32_t m_startVertex;
@@ -63,14 +66,14 @@ struct Group {
 	bx::Obb    m_obb;
 	PrimitiveArray m_prims;
 };
-typedef stl::vector<Group> GroupArray;
+typedef stl::vector<Group> GroupArray; */
 
 
 int devEntry() {
 
 	
 
-	bgfx::alloc(0);
+	// bgfx::alloc(0);
 
 #if 0
 	std::ifstream file("./missingtex.png");
@@ -84,7 +87,7 @@ int devEntry() {
 	std::ofstream outfile("./missingtex.snap.png");
 	outfile << out;
 #endif
-	/*
+	
 	// RenderBootstrapper inits bgfx
 	ShadowWindow devWindow(1300, 700, "GURU MEDITATION");
 	RenderBootstrapper rb(&devWindow, bgfx::RendererType::Vulkan);
@@ -95,6 +98,7 @@ int devEntry() {
 	// init.type = bgfx::RendererType::Noop;
 	// bgfx::init(init);
 
+#if 0
 	GroupArray groups;
 	bgfx::VertexLayout layout;
 
@@ -264,7 +268,7 @@ int devEntry() {
 			}
 		}
 	}
-
+#endif 
 
 #if 0
 	// PRINT("Here's a UUID: %s", uuids::to_string(generateUUID()).c_str());
@@ -292,6 +296,8 @@ int devEntry() {
 
 	pad();
 
+
+	Mesh* mesh = meshLoad("./cube.bin");
 	
 
 	// LOAD DATA
@@ -317,19 +323,28 @@ int devEntry() {
 		ImGui::End();
 
 		// bgfx::setTransform()
-		bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_CULL_CCW | BGFX_STATE_MSAA);
+		// bgfx::setState(BGFX_STATE_WRITE_RGB | BGFX_STATE_WRITE_A | BGFX_STATE_WRITE_Z | BGFX_STATE_DEPTH_TEST_LESS | BGFX_STATE_CULL_CCW | BGFX_STATE_MSAA);
 		
-		for (GroupArray::const_iterator it = groups.begin(), itEnd = groups.end(); it != itEnd; it++) {
-			const Group& group = *it;
+		// for (GroupArray::const_iterator it = groups.begin(), itEnd = groups.end(); it != itEnd; it++) {
+		// 	const Group& group = *it;
 
-			bgfx::setIndexBuffer(group.m_ibh);
-			bgfx::setVertexBuffer(0, group.m_vbh);
-			bgfx::submit(1, program, 0, BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_VERTEX_STREAMS);
-		}
+		// 	bgfx::setIndexBuffer(group.m_ibh);
+		// 	bgfx::setVertexBuffer(0, group.m_vbh);
+		// 	bgfx::submit(1, program, 0, BGFX_DISCARD_INDEX_BUFFER | BGFX_DISCARD_VERTEX_STREAMS);
+		// }
 
-		bgfx::discard();
+		// bgfx::discard();
 
 		// shadowFlinger.draw(program, devWindow.getExtent().width, devWindow.getExtent().height);
+
+		float mtx[16];
+		bx::mtxRotateXY(mtx
+			, 1.0f
+			, 1.0f
+			);
+
+		meshSubmit(mesh, 0, program, mtx);
+
 
 		rb.endFrame();
 	}
@@ -338,7 +353,8 @@ int devEntry() {
 	bgfx::destroy(program);
 
 	rb.shutdown();
-*/
+	meshUnload(mesh);
+
 	return 0;
 }
 
