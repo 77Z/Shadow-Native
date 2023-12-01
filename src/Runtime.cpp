@@ -1,5 +1,5 @@
-#include "Runtime.hpp"
-#include "Chunker/Chunker.hpp"
+/* #include "Runtime.hpp"
+// #include "Chunker/Chunker.hpp"
 // #include "Chunker/ChunkerDevUI.hpp"
 #include "Audio.hpp"
 #include "Components/Camera.h"
@@ -53,13 +53,13 @@
 #include <bgfx/platform.h>
 #include <imgui.h>
 #include <imgui/imgui_impl_bgfx.h>
-#include <imgui_impl_glfw.h>
+#include <imgui_impl_glfw.h> */
 
 /*#ifdef SHADOW_DEBUG_BUILD
 #define IMGUI_VULKAN_DEBUG_REPORT
 #endif*/
 
-#define EDITOR_BG_VIEW_ID 0
+/* #define EDITOR_BG_VIEW_ID 0
 #define IMGUI_VIEW_ID 10
 #define SCENE_VIEW_ID 50
 #define SHADOW_FLINGER_VIEW_ID 51
@@ -72,7 +72,7 @@ static bool vsync = true;
 static bool mouseOverViewport = false;
 
 float fov = 60.0f;
-
+ */
 /*
 float camX = 0.0f;
 float camY = 0.0f;
@@ -124,6 +124,7 @@ static void glfw_keyCallback(GLFWwindow* window, int key, int scancode, int acti
 
 // void handle_sigint(int signal) { WARN("Recieved SIGINT"); }
 
+#include "Runtime.hpp"
 int Shadow::StartRuntime() {
 #if 0
 	RAPID_PROFILE_INIT();
