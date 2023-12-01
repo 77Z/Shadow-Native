@@ -353,6 +353,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	SceneExplorer sceneExplorer(*editorScene, entityInspector);
 #endif
 
+	Reference<Scene> editorScene = CreateReference<Scene>();
+
 	while (!editorWindow.shouldClose()) {
 		glfwPollEvents();
 
@@ -438,7 +440,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			bgfx::touch(VIEWPORT_VIEW_ID);
 		}
 
-		// editorScene->onUpdate(VIEWPORT_VIEW_ID, program);
+		editorScene->onUpdate(VIEWPORT_VIEW_ID, program);
 
 		bgfx::frame();
 	}
@@ -448,7 +450,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	bgfx::destroy(program);
 	bgfx::destroy(shadowLogo);
 
-	// editorScene->unload();
+	editorScene->unload();
 
 	// entityInspector.unload();
 
