@@ -58,6 +58,7 @@ typedef stl::vector<Group> GroupArray;
 
 class Mesh {
 public:
+	Mesh() {};
 	Mesh(const char* _filePath, bool _ramcopy = false);
 
 	void unload();
@@ -67,10 +68,10 @@ public:
 		uint16_t _numMatrices = 1) const;
 
 	bgfx::VertexLayout m_layout;
-	
-private:
+
 	void load(const char* _filePath, bool _ramcopy = false);
 
+private:
 	GroupArray m_groups;
 };
 

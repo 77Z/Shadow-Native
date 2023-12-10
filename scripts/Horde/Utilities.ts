@@ -78,11 +78,15 @@ Options:
 	Deno.exit();
 }
 
-export function gatherFlags(target: Target): string {
+export function gatherFlags(target: Target, isRegularC: boolean): string {
 	const flags: string[] = [];
 
 	// C / C++ standard
-	flags.push("-std=" + target.std);
+	// if (isRegularC)
+	// 	flags.push("-std=c99");
+	// else
+	// 	flags.push("-std=" + target.std);
+	if (!isRegularC) flags.push("-std=" + target.std);
 
 	// Compiler flags
 	flags.push(target.CXXFLAGS.join(" "));

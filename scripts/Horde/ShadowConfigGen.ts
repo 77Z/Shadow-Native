@@ -1,7 +1,7 @@
 import { BuildFile } from "./Interfaces.ts";
 import { HORDE_VERSION } from "./Product.ts";
 import { mkIfNotExist } from "./Utilities.ts";
-import { cliFlags } from "./main.ts";
+import { cliFlags, ProductVersion } from "./main.ts";
 
 export async function generateShadowEngineConfig(conf: BuildFile) {
 	await mkIfNotExist("./include/generated");
@@ -11,6 +11,19 @@ export async function generateShadowEngineConfig(conf: BuildFile) {
 * Automatically generated file
 * Shadow Engine Build Configuration
 */
+
+// Shadow version info
+#define SHADOW_VERSION_STRING "${ProductVersion}"
+#define SHADOW_VERSION_MAJOR ${ProductVersion.split(".")[0]}
+#define SHADOW_VERSION_MINOR ${ProductVersion.split(".")[1]}
+#define SHADOW_VERSION_PATCH ${ProductVersion.split(".")[2]}
+
+#define HORDE_VERSION_STRING "${HORDE_VERSION}"
+#define HORDE_VERSION_MAJOR ${HORDE_VERSION.split(".")[0]}
+#define HORDE_VERSION_MINOR ${HORDE_VERSION.split(".")[1]}
+#define HORDE_VERSION_PATCH ${HORDE_VERSION.split(".")[2]}
+
+#define SHADOW_COMMIT_HASH "${new TextDecoder().decode(new Deno.Command("git", { args: ['rev-parse', 'HEAD'] }).outputSync().stdout).replaceAll('\n', '')}"
 
 `;
 

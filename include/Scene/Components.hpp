@@ -39,16 +39,31 @@ struct TransformComponent {
 	TransformComponent() = default;
 	TransformComponent(const TransformComponent&) = default;
 
+	TransformComponent(
+		const float tx, const float ty, const float tz,
+		const float rx, const float ry, const float rz,
+		const float sx, const float sy, const float sz):
+		translation(tx, ty, tz),
+		rotation(rx, ry, rz),
+		scale(sx, sy, sz)
+		{}
+
 	// operator glm::mat4&() { return transform; }
 	// operator const glm::mat4&() const { return transform; }
 };
 
 struct MeshComponent {
-
-	Mesh mesh();
+	Mesh mesh;
 
 	MeshComponent() = default;
 	MeshComponent(const MeshComponent&) = default;
+	MeshComponent(const char* filepath) {
+		mesh.load(filepath);
+	}
+	
+	void unload() { mesh.unload(); }
+
+	//TODO: Submit mesh for drawing here. Grab transform to mtx here too?
 };
 
 struct ShapePusherComponent {

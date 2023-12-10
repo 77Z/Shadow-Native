@@ -7,6 +7,8 @@
 
 namespace Shadow {
 
+void loadScene(const std::string& sceneFilePath);
+
 int startEditor(Shadow::Editor::ProjectEntry project);
 
 }

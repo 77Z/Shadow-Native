@@ -34,7 +34,7 @@ const conf = JSON5.parse(Deno.readTextFileSync(
 )) as BuildFile;
 
 const localVersion = conf.LocalVersion ? "-" + conf.LocalVersion : "";
-const ProductVersion = conf.Version + localVersion;
+export const ProductVersion = conf.Version + localVersion;
 const CC: string = conf.CC;
 const CXX: string = conf.CXX;
 const AR: string = conf.AR;
@@ -97,13 +97,14 @@ for (const target of conf.Targets) {
 	ninjaTargetContent += `# Build mode: ${debugBuild ? "DEBUG" : "RELEASE"}\n\n`;
 
 	ninjaTargetContent += `# Compiler vars
-flags = ${gatherFlags(target)}
+flags = ${gatherFlags(target, false)}
+ccflags = ${gatherFlags(target, true)}
 
 `;
 
 	ninjaTargetContent += `# Rules
 rule cc
- command     = ${CC} $flags -c -o $out $in
+ command     = ${CC} $ccflags -c -o $out $in
  description = Compiling C object $out
 
 rule cxx

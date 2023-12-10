@@ -68,7 +68,7 @@ static const uint16_t cubeTriList[] = {
 };
 
 // TODO: GET RID OF ME
-static unsigned int counter = 0;
+// static unsigned int counter = 0;
 
 namespace Shadow {
 
@@ -156,16 +156,35 @@ void Scene::onUpdate(bgfx::ViewId viewid, bgfx::ProgramHandle program) {
 		auto& transform = m_Registry.get<TransformComponent>(entity);
 
 		float tfMtx[16];
-		bx::mtxSRT(tfMtx, transform.scale.x, transform.scale.y, transform.scale.z,
-			transform.rotation.x, transform.rotation.y + (counter / 50.0f), transform.rotation.z,
+		bx::mtxSRT(tfMtx, 
+			transform.scale.x, transform.scale.y, transform.scale.z,
+			transform.rotation.x, transform.rotation.y, transform.rotation.z,
 			transform.translation.x, transform.translation.y, transform.translation.z);
+
+
+		// PRINT("Translation: %.6f, %.6f, %.6f", transform.translation.x, transform.translation.z, transform.translation.z);
+		// PRINT("Rotation: %.6f, %.6f, %.6f", transform.rotation.x, transform.rotation.z, transform.rotation.z);
+		// PRINT("Scalar: %.6f, %.6f, %.6f", transform.scale.x, transform.scale.z, transform.scale.z);
 
 		bgfx::setTransform(tfMtx, 1);
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
 
-		counter++;
 		bgfx::submit(viewid, program);
+	}
+
+	auto meshView = m_Registry.view<MeshComponent>();
+	for (auto entity : meshView) {
+		auto& transform = m_Registry.get<TransformComponent>(entity);
+		auto& mesh = m_Registry.get<MeshComponent>(entity);
+
+		float tfMtx[16];
+		bx::mtxSRT(tfMtx, 
+			transform.scale.x, transform.scale.y, transform.scale.z,
+			transform.rotation.x, transform.rotation.y, transform.rotation.z,
+			transform.translation.x, transform.translation.y, transform.translation.z);
+
+		mesh.mesh.submit(viewid, program, tfMtx);
 	}
 }
 

@@ -27,6 +27,10 @@ void Group::reset() {
 
 Mesh::Mesh(const char* _filePath, bool _ramcopy) { load(_filePath, _ramcopy); }
 
+namespace special {
+	int32_t read(bx::ReaderI* _reader, bgfx::VertexLayout& _layout, bx::Error* _err);
+}
+
 void Mesh::load(const char* _filePath, bool _ramcopy) {
 	bx::FileReaderI* reader = getFileReader();
 
@@ -56,13 +60,13 @@ void Mesh::load(const char* _filePath, bool _ramcopy) {
 			read(reader, group.m_aabb, &err);
 			read(reader, group.m_obb, &err);
 
-			read(reader, m_layout, &err);
+			bx::read(reader, m_layout, &err);
 
 			uint16_t stride = m_layout.getStride();
 
-			read(reader, group.m_numVertices, &err);
+			bx::read(reader, group.m_numVertices, &err);
 			const bgfx::Memory* mem = bgfx::alloc(group.m_numVertices * stride);
-			read(reader, mem->data, mem->size, &err);
+			bx::read(reader, mem->data, mem->size, &err);
 
 			if (_ramcopy) {
 				group.m_vertices = (uint8_t*)bx::alloc(allocator, group.m_numVertices * stride);
@@ -222,8 +226,7 @@ void Mesh::submit(
 	bgfx::setTransform(_mtx);
 	bgfx::setState(_state);
 
-	for (GroupArray::const_iterator it = m_groups.begin(), itEnd = m_groups.end(); it != itEnd;
-		 ++it) {
+	for (GroupArray::const_iterator it = m_groups.begin(), itEnd = m_groups.end(); it != itEnd; it++) {
 		const Group& group = *it;
 
 		bgfx::setIndexBuffer(group.m_ibh);

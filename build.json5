@@ -1,15 +1,15 @@
 {
 
 	ProductName: "Shadow Engine",
-	Version: "0.8.0",
+	Version: "0.8.0", // Three parts, dots are delimeters
 
 	// Extra string appended to version number to help identify and
 	// differentiate builds from each other. If not empty, a "-" will be
 	// prefixed to the local version, so no need to add it yourself
 	LocalVersion: "",
 
-	CC: "gcc",
-	CXX: "g++",
+	CC: "clang",
+	CXX: "clang++",
 	AR: "ar",
 
 	// CC: "clang",
@@ -1267,6 +1267,8 @@
 				"lib/imgui/backends",
 				"misc/snappy-hack",
 				"lib/bgfx/examples/common",
+				"lib/stb",
+				"lib/sdf",
 				// "../vcpkg/packages/ms-gsl_x64-linux/include"
 				],
 
@@ -1309,7 +1311,7 @@
 			//     (name)/lib(name).a
 			InlineBuildLibs: [
 				"bgfx", "bimg", "bimg_encode", "bimg_decode", "bx", "glfw",
-				"snappy", "leveldb", "example-common" ],
+				"snappy", "leveldb" ],
 
 			// Libs is just a general list of libraries that will be linked
 			Libs: [],

@@ -108,6 +108,16 @@ bool SceneSerializer::deserialize(const std::string filepath) {
 
 	scene->sceneName = deserializedScene["SceneName"];
 
+	scene->m_Registry.each([this](auto entity) {
+		//TODO: more should happen here in the future
+		// unloading models etc.
+		
+		// This is scene.get() because `scene` is a Reference
+		scene->destroyEntity({entity, scene.get()});
+	});
+	
+	// scene->destroyEntity(Entity entity)
+
 	for (auto entity : deserializedScene["Entities"]) {
 		std::string tag = entity["tag"];
 		uuids::uuid uuid = uuids::uuid::from_string((std::string)entity["uuid"]).value();
@@ -130,8 +140,21 @@ bool SceneSerializer::deserialize(const std::string filepath) {
 				PRINT("-------- sx %.6f", (float)component["sx"]);
 				PRINT("-------- sy %.6f", (float)component["sy"]);
 				PRINT("-------- sz %.6f", (float)component["sz"]);
+
+				deserializedEntity.addComponent<TransformComponent>(
+					(float)component["tx"], (float)component["ty"], (float)component["tz"],
+					(float)component["rx"], (float)component["ry"], (float)component["rz"],
+					(float)component["sx"], (float)component["sy"], (float)component["sz"]
+				);
+				
 			} else if (type == "CubeComponent") {
-				PRINT("-------- %.6f", (float)component["offset"]);
+				PRINT("-------- offset %.6f", (float)component["offset"]);
+
+				deserializedEntity.addComponent<CubeComponent>((float)component["offset"]);
+			} else if (type == "MeshComponent") {
+				PRINT("-------- Location: %s", ((std::string)component["location"]).c_str());
+
+				deserializedEntity.addComponent<MeshComponent>(((std::string)component["location"]).c_str());
 			}
 		}
 	}

@@ -6,7 +6,7 @@
 #include "Editor/Notification.hpp"
 #include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
-#include "Mesh.hpp"
+// #include "Mesh.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/EntityInspector.hpp"
@@ -52,6 +52,8 @@ static float vportWidth = vportMax.x - vportMin.x;
 static float vportHeight = vportMax.y - vportMin.y;
 static bool mouseOverVport = false;
 static bool wasViewportResized = false;
+
+static Shadow::Reference<Shadow::Scene> editorScene;
 
 static bgfx::TextureHandle shadowLogo;
 
@@ -266,6 +268,13 @@ static void sigintHandler(int signal) {
 
 namespace Shadow {
 
+void loadScene(const std::string& sceneFilePath) {
+	WARN("Loading scene %s", sceneFilePath.c_str());
+
+	SceneSerializer ss(editorScene);
+	ss.deserialize(sceneFilePath);
+}
+
 int startEditor(Shadow::Editor::ProjectEntry project) {
 
 	IMGUI_CHECKVERSION();
@@ -296,7 +305,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	EditorConsole editorConsole;
 
 	// static MemoryEditor memedit;
-	Mesh mesh("./Resources/suzanne.mesh");
+	// Mesh mesh("./Resources/suzanne.mesh");
 
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
@@ -335,6 +344,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 	ContentBrowser contentBrowser;
 
+	editorScene = Shadow::CreateReference<Shadow::Scene>();
+
 #if 0 // No more default loading scene
 	Reference<Scene> editorScene = CreateReference<Scene>();
 	{
@@ -352,8 +363,6 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	EntityInspector entityInspector;
 	SceneExplorer sceneExplorer(*editorScene, entityInspector);
 #endif
-
-	Reference<Scene> editorScene = CreateReference<Scene>();
 
 	while (!editorWindow.shouldClose()) {
 		glfwPollEvents();

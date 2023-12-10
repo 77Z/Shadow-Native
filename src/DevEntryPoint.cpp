@@ -1,11 +1,12 @@
 #include "DevEntryPoint.hpp"
+#include "Analytics.hpp"
 #include "Core.hpp"
 #include "Debug/Logger.hpp"
-// #include "Mesh.hpp"
+#include "Mesh.hpp"
 #include "RenderBootstrapper.hpp"
 #include "ShadowWindow.hpp"
 #include "UI/ShadowFlinger.hpp"
-// #include "Util.hpp"
+#include "Util.hpp"
 #include "bgfx/defines.h"
 #include "bx/allocator.h"
 #include "bx/bounds.h"
@@ -18,12 +19,13 @@
 #include "bx/error.h"
 #include "bx/readerwriter.h"
 #include "imgui.h"
+#include "json_impl.hpp"
 #include "meshoptimizer/meshoptimizer.h"
 #include "snappy.h"
 // #include "uuid.h"
 // #include "uuid_impl.hpp"
 
-#include "bgfx_utils.h"
+// #include "bgfx_utils.h"
 
 #include <cstdint>
 #include <fstream>
@@ -71,7 +73,12 @@ typedef stl::vector<Group> GroupArray; */
 
 int devEntry() {
 
-	
+	AnalyticsBroker analytics;
+
+	return 0;
+
+	// json projectSec = JSON::readBsonFile("/home/vince/.config/Shadow/Projects/WIS/Content/default.scene");
+	// std::cout << projectSec.dump(4) << std::endl;
 
 	// bgfx::alloc(0);
 
@@ -89,9 +96,9 @@ int devEntry() {
 #endif
 	
 	// RenderBootstrapper inits bgfx
-	ShadowWindow devWindow(1300, 700, "GURU MEDITATION");
-	RenderBootstrapper rb(&devWindow, bgfx::RendererType::Vulkan);
-	UI::ShadowFlingerViewport shadowFlinger(12);
+	// ShadowWindow devWindow(1300, 700, "GURU MEDITATION");
+	// RenderBootstrapper rb(&devWindow, bgfx::RendererType::Vulkan);
+	// UI::ShadowFlingerViewport shadowFlinger(12);
 
 
 	// bgfx::Init init;
@@ -297,7 +304,7 @@ int devEntry() {
 	pad();
 
 
-	Mesh* mesh = meshLoad("./cube.bin");
+	/* Mesh mesh("./cube.bin");
 	
 
 	// LOAD DATA
@@ -343,7 +350,7 @@ int devEntry() {
 			, 1.0f
 			);
 
-		meshSubmit(mesh, 0, program, mtx);
+		mesh.submit(0, program, mtx);
 
 
 		rb.endFrame();
@@ -353,9 +360,9 @@ int devEntry() {
 	bgfx::destroy(program);
 
 	rb.shutdown();
-	meshUnload(mesh);
+	mesh.unload();
 
-	return 0;
+	return 0;*/
 }
 
 }

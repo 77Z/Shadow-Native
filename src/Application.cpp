@@ -9,8 +9,13 @@
 #include "ProductionRuntime/RuntimeBootstrapper.hpp"
 #include "Runtime.hpp"
 #include "Util.hpp"
+#include "json_impl.hpp"
 #include "ppk_assert_impl.hpp"
+#include <cstddef>
+#include <cstdint>
 #include <cstring>
+#include <fstream>
+#include <vector>
 #include "generated/autoconf.h"
 
 namespace Shadow {
@@ -26,7 +31,7 @@ int Main(int argc, char** argv) {
 
 #if CONFIG_SHADOW_PRODUCTION_BUILD
 	return Shadow::StartProductionRuntime();
-#else\
+#else
 
 	if (argc > 1) {
 		if (strcmp(argv[1], "axe") == 0) {
@@ -38,6 +43,20 @@ int Main(int argc, char** argv) {
 			ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
 		} else if (strcmp(argv[1], "dev") == 0) {
 			ret = devEntry();
+		} else if (strcmp(argv[1], "sceneDecode") == 0) {
+			json sceneInput = JSON::readBsonFile(argv[2]);
+			std::ofstream outfile(argv[3]);
+			outfile << sceneInput.dump(2);
+			outfile.close();
+		} else if (strcmp(argv[1], "sceneEncode") == 0) {
+			WARN("Encoding %s to %s", argv[2], argv[3]);
+			std::ifstream infile(argv[2]);
+			std::vector<uint8_t> bson = json::to_bson(json::parse(infile));
+			std::ofstream outfile(argv[3]);
+			for (size_t i = 0; i < bson.size(); i++) {
+				outfile << bson[i];
+			}
+			outfile.close();
 		}
 	} else {
 		// return Shadow::StartRuntime();

@@ -1,5 +1,6 @@
 #include "Editor/ContentBrowser.hpp"
 #include "Debug/Logger.hpp"
+#include "Editor/Editor.hpp"
 #include "Editor/Project.hpp"
 #include "Util.hpp"
 #include "bgfx/bgfx.h"
@@ -280,6 +281,7 @@ void ContentBrowser::onUpdate() {
 			case fileTypes_ShadowEngineScene:
 				if (ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["scene"], 0, 0))) {
 					PRINT("load scene into editor: %s", file.fullpath.c_str());
+					loadScene(file.fullpath.c_str());
 				}
 				break;
 			case fileTypes_CSource:
