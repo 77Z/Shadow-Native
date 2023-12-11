@@ -87,6 +87,7 @@ void ContentBrowser::unload() {
 
 static std::string currentDir = "/";
 std::string ContentBrowser::getCurrentDir() { return currentDir; }
+void ContentBrowser::reloadCurrentDir() { loadDir(&activeFileIndex, getCurrentDir()); }
 
 void ContentBrowser::loadDir(std::vector<fileEntry>* indexToWrite, std::string dir) {
 	std::string dirToRead = Editor::getCurrentProjectPath() + "/Content/" + dir;
@@ -197,11 +198,32 @@ void ContentBrowser::drawPathNavigationRail() {
 	ImGui::PopStyleColor(3);
 }
 
+static std::string newDirPath = "";
+
 void ContentBrowser::onUpdate() {
 	ImGui::SetNextWindowSize(ImVec2(1600, 200), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Content Browser");
 
+	if (ImGui::BeginPopupModal("NewDirPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+		ImGui::InputText("dirname", &newDirPath);
+		if (ImGui::Button("Create")) {
+			std::filesystem::create_directory(Util::removeDupeSlashes(Editor::getCurrentProjectPath() + "/Content/" + getCurrentDir() + "/" + newDirPath));
+			reloadCurrentDir();
+			newDirPath.clear();
+			ImGui::CloseCurrentPopup();
+		}
+
+		ImGui::SameLine();
+
+		if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+		ImGui::EndPopup();
+	}
+
 	if (ImGui::BeginPopupContextItem("newfilepopup")) {
+		if (ImGui::Selectable("Directory")) {
+			ImGui::CloseCurrentPopup();
+			ImGui::OpenPopup("NewDirPopup");
+		}
 		if (ImGui::Selectable("C++ Source File"))
 			PRINT("New C++ File");
 		if (ImGui::Selectable("C++ Header File"))
@@ -216,9 +238,14 @@ void ContentBrowser::onUpdate() {
 			PRINT("Texture");
 		ImGui::EndPopup();
 	}
-
+	
 	if (ImGui::Button("+ Add"))
 		ImGui::OpenPopup("newfilepopup");
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("NEW DIR"))
+		ImGui::OpenPopup("NewDirPopup");
 
 	ImGui::SameLine();
 
@@ -237,7 +264,7 @@ void ContentBrowser::onUpdate() {
 	ImGui::SameLine();
 
 	if (ImGui::Button("Reload")) {
-		loadDir(&activeFileIndex, getCurrentDir());
+		reloadCurrentDir();
 	}
 
 	ImGui::SameLine();

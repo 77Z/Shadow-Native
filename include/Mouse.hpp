@@ -39,8 +39,26 @@ struct MouseState {
 class Mouse {
 public:
 
-Mouse(ShadowWindow& window);
-~Mouse();
+	Mouse(ShadowWindow* window);
+	~Mouse();
+
+	bool isLeftMouseDown();
+	bool isRightMouseDown();
+	double getMouseX() { return mouseX; }
+	double getMouseY() { return mouseY; }
+	double getMouseXDiff() { return mouseXdiff; }
+	double getMouseYDiff() { return mouseYdiff; }
+
+	void onUpdate();
+private:
+
+	ShadowWindow* window;
+
+	double lastMouseX, lastMouseY;
+	double mouseX = 0.0f;
+	double mouseY = 0.0f;
+	double mouseXdiff;
+	double mouseYdiff;
 };
 
 }

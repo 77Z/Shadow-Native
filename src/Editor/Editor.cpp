@@ -7,6 +7,7 @@
 #include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
 // #include "Mesh.hpp"
+#include "Mouse.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/EntityInspector.hpp"
@@ -321,6 +322,9 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	// io.FontGlobalScale = 1.5f;
 	io.IniFilename = "./Resources/editor.ini";
 
+	// Mouse must be inited before ImGui GLFW callbacks
+	Mouse mouse(&editorWindow);
+
 	ImGui::SetupTheme();
 
 	ImGui_Implbgfx_Init(2);
@@ -382,6 +386,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			// Resize viewport texture here???
 		}
 
+		mouse.onUpdate();
+
 		ImGui_Implbgfx_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
@@ -405,15 +411,13 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		if (mouseOverVport && ImGui::IsMouseDown(ImGuiMouseButton_Right)) editorWindow.lockCursor();
 		if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) editorWindow.unlockCursor();
 
-#if 0
-		Editor::notificationUpdate();
-		ImGui::Begin("AHHHHH");
+		ImGui::Begin("Mouse Data");
 
-		if (ImGui::Button("LOAD USERCODE")) {
-			UserCode::loadUserCode();
-		}
+		ImGui::Text("MOUSE X: %i Y: %i", (int)mouse.getMouseX(), (int)mouse.getMouseY());
+		ImGui::Text("Mouse Diff X: %i Y: %i", (int)mouse.getMouseXDiff(), (int)mouse.getMouseYDiff());
+		ImGui::Text("Mouse down: LEFT: %s RIGHT: %s", mouse.isLeftMouseDown() ? "true" : "false", mouse.isRightMouseDown() ? "true" : "false");
+		
 		ImGui::End();
-#endif
 
 		ImGui::Render();
 		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());

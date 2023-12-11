@@ -1,6 +1,5 @@
 #include "ShadowWindow.hpp"
 #include "Debug/Logger.hpp"
-#include "UserInput.hpp"
 #include "bx/platform.h"
 
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
@@ -19,10 +18,6 @@
 
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
-
-static void mouseInputPassthrough(GLFWwindow* window, int button, int action, int mods) {
-	Shadow::UserInput::mouseCallback(window, button, action, mods);
-}
 
 namespace Shadow {
 
@@ -76,8 +71,6 @@ void ShadowWindow::initWindow() {
 	window = glfwCreateWindow(width, height, windowTitle.c_str(), nullptr, nullptr);
 	glfwSetWindowUserPointer(window, this);
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
-
-	glfwSetMouseButtonCallback(window, mouseInputPassthrough);
 }
 
 void ShadowWindow::glfw_errorCallback(int error, const char* description) {

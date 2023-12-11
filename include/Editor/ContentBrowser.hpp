@@ -44,6 +44,7 @@ public:
 	void unload();
 	void loadDir(std::vector<fileEntry>* indexToWrite, std::string dir = "/");
 	std::string getCurrentDir();
+	void reloadCurrentDir();
 
 private:
 	std::unordered_map<const char*, bgfx::TextureHandle> fileTypeMap
