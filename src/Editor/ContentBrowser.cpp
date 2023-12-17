@@ -203,25 +203,9 @@ static std::string newDirPath = "";
 void ContentBrowser::onUpdate() {
 	ImGui::SetNextWindowSize(ImVec2(1600, 200), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Content Browser");
-
-	if (ImGui::BeginPopupModal("NewDirPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-		ImGui::InputText("dirname", &newDirPath);
-		if (ImGui::Button("Create")) {
-			std::filesystem::create_directory(Util::removeDupeSlashes(Editor::getCurrentProjectPath() + "/Content/" + getCurrentDir() + "/" + newDirPath));
-			reloadCurrentDir();
-			newDirPath.clear();
-			ImGui::CloseCurrentPopup();
-		}
-
-		ImGui::SameLine();
-
-		if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
-		ImGui::EndPopup();
-	}
-
+	
 	if (ImGui::BeginPopupContextItem("newfilepopup")) {
-		if (ImGui::Selectable("Directory")) {
-			ImGui::CloseCurrentPopup();
+		if (ImGui::Selectable("Directory", false, ImGuiSelectableFlags_DontClosePopups)) {
 			ImGui::OpenPopup("NewDirPopup");
 		}
 		if (ImGui::Selectable("C++ Source File"))
@@ -236,16 +220,30 @@ void ContentBrowser::onUpdate() {
 			PRINT("PREFAB");
 		if (ImGui::Selectable("Texture"))
 			PRINT("Texture");
+
+
+
+		if (ImGui::BeginPopupModal("NewDirPopup", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+			ImGui::InputText("dirname", &newDirPath);
+			if (ImGui::Button("Create")) {
+				std::filesystem::create_directory(Util::removeDupeSlashes(Editor::getCurrentProjectPath() + "/Content/" + getCurrentDir() + "/" + newDirPath));
+				reloadCurrentDir();
+				newDirPath.clear();
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::SameLine();
+
+			if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+			ImGui::EndPopup();
+		}
+
+
 		ImGui::EndPopup();
 	}
 	
 	if (ImGui::Button("+ Add"))
 		ImGui::OpenPopup("newfilepopup");
-
-	ImGui::SameLine();
-
-	if (ImGui::Button("NEW DIR"))
-		ImGui::OpenPopup("NewDirPopup");
 
 	ImGui::SameLine();
 

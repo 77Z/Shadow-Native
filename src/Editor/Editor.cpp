@@ -6,6 +6,7 @@
 #include "Editor/Notification.hpp"
 #include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
+#include "Editor/EditorParts/EditorParts.hpp"
 // #include "Mesh.hpp"
 #include "Mouse.hpp"
 #include "Scene/Components.hpp"
@@ -85,8 +86,7 @@ static void drawMainMenuBar() {
 			if (ImGui::MenuItem("Paste", "CTRL + V")) { }
 			ImGui::Separator();
 			if (ImGui::MenuItem("Project Preferences", "CTRL + SHIFT + ,")) {
-				PRINT("PROJECT PREFERENCES");
-				//TODO: I can't figure out this freaking popup
+				Shadow::Editor::EditorParts::showProjectPreferences();
 			}
 			ImGui::EndMenu();
 		}
@@ -260,6 +260,7 @@ static void drawEditorWindows() {
 	ImGui::ShowMetricsWindow();
 	drawViewportWindow();
 	drawDebugWindow();
+	Shadow::Editor::EditorParts::onUpdate();
 }
 
 static void sigintHandler(int signal) {
