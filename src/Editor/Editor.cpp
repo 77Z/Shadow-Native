@@ -418,7 +418,6 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 		if (mouseOverVport) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 
-		// TODO: This calls lockCursor a lot... is this a problem??
 		if (mouseOverVport && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) editorWindow.lockCursor();
 		if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) editorWindow.unlockCursor();
 

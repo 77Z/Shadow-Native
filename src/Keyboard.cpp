@@ -5,16 +5,21 @@
 
 namespace Shadow {
 
-	void Keyboard::glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-		PRINT("Top level callback!");
-		// for (auto callback : keyListeners)
+	static void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+		Keyboard* keyboard = static_cast<Keyboard*>(glfwGetWindowUserPointer(window));
+		for (auto callback : keyboard->keyListeners) {
+			callback();
+		}
 	}
 
 	void Keyboard::registerKeyCallback(keyFunction callback) {
-		keyListeners.push_back(&callback);
+		keyListeners.push_back(callback);
 	}
 
 	Keyboard::Keyboard(ShadowWindow* window): window(window) {
+
+		glfwSetWindowUserPointer(window->window, this);
+
 		glfwSetKeyCallback(window->window, glfwKeyCallback);
 
 		glfwButtonMap[GLFW_KEY_SPACE] =			KeyButton_Space;
