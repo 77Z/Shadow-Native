@@ -8,6 +8,7 @@
 #include "Editor/ProjectBrowser.hpp"
 #include "Editor/EditorParts/EditorParts.hpp"
 // #include "Mesh.hpp"
+#include "Keyboard.hpp"
 #include "Mouse.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
@@ -325,6 +326,15 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 	// Mouse must be inited before ImGui GLFW callbacks
 	Mouse mouse(&editorWindow);
+	Keyboard keyboard(&editorWindow);
+
+	keyboard.registerKeyCallback([]() {
+		PRINT("Listener Punch 1");
+	});
+
+	keyboard.registerKeyCallback([]() {
+		PRINT("Listener Punch 2");
+	});
 
 	ImGui::SetupTheme();
 
@@ -409,7 +419,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		if (mouseOverVport) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 
 		// TODO: This calls lockCursor a lot... is this a problem??
-		if (mouseOverVport && ImGui::IsMouseDown(ImGuiMouseButton_Right)) editorWindow.lockCursor();
+		if (mouseOverVport && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) editorWindow.lockCursor();
 		if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) editorWindow.unlockCursor();
 
 		ImGui::Begin("Mouse Data");
