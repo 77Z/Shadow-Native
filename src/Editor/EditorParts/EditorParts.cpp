@@ -2,6 +2,10 @@
 
 namespace Shadow::Editor::EditorParts {
 
+void init() {
+	projectPreferencesInit();
+}
+
 void onUpdate() {
 	projectPreferencesUpdate();
 }

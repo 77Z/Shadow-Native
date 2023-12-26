@@ -230,6 +230,18 @@ static void drawViewportWindow() {
 	ImGui::PopStyleVar(2);
 }
 
+static bgfx::TextureHandle playButtonTexture;
+
+static void drawToolbarWindow() {
+	ImGui::Begin("Toolbar");
+
+	ImGui::Text("Scene: %s", editorScene->sceneName.c_str());
+
+	ImGui::ImageButton(playButtonTexture, 0, 0, ImVec2(45, 45));
+
+	ImGui::End();
+}
+
 static void drawDebugWindow() {
 	ImGui::Begin("Dbg");
 
@@ -261,6 +273,7 @@ static void drawEditorWindows() {
 	ImGui::ShowDemoWindow();
 	ImGui::ShowMetricsWindow();
 	drawViewportWindow();
+	drawToolbarWindow();
 	drawDebugWindow();
 	Shadow::Editor::EditorParts::onUpdate();
 }
@@ -335,6 +348,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		}
 	});
 
+	Editor::EditorParts::init();
+
 	ImGui::SetupTheme();
 
 	ImGui_Implbgfx_Init(2);
@@ -351,6 +366,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	vportBuf = bgfx::createFrameBuffer(1, &vportTex, true);
 
 	shadowLogo = loadTexture("./Resources/logo.png");
+	playButtonTexture = loadTexture("./Resources/playButton.png");
 
 	/////////////////////////////////////////////
 
@@ -390,9 +406,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			auto bounds = editorWindow.getExtent();
 			width = bounds.width;
 			height = bounds.height;
-			bgfx::reset(
-				(uint32_t)width, (uint32_t)height, vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE);
-			bgfx::setViewRect(VIEWPORT_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
+			// bgfx::reset((uint32_t)width, (uint32_t)height, vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE);
+			// bgfx::setViewRect(VIEWPORT_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 
 			editorWindow.resetWindowResizedFlag();
 		}
@@ -422,8 +437,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 		if (mouseOverVport) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 
-		if (mouseOverVport && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) editorWindow.lockCursor();
-		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) editorWindow.unlockCursor();
+		if (mouseOverVport && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) editorWindow.lockCursor();
+		if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) editorWindow.unlockCursor();
 
 		ImGui::Begin("Mouse Data");
 
@@ -452,8 +467,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 		// Matrix
 		{
-			const bx::Vec3 at = { 0.0f, 0.0f, 0.0f };
-			const bx::Vec3 eye = { 0.0f, 0.0f, -5.0f };
+			// const bx::Vec3 at = { 0.0f, 0.0f, 0.0f };
+			// const bx::Vec3 eye = { 0.0f, 0.0f, -5.0f };
 			float editorViewMatrix[16];
 			// bx::mtxLookAt(editorViewMatrix, eye, at);
 			flyCamera.getViewMtx(editorViewMatrix);

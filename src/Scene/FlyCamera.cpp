@@ -10,6 +10,8 @@ static bool cameraForwardPressed = false;
 static bool cameraBackwardPressed = false;
 static bool cameraLeftPressed = false;
 static bool cameraRightPressed = false;
+static bool cameraUpPressed = false;
+static bool cameraDownPressed = false;
 
 namespace Shadow::SceneNamespace {
 
@@ -33,6 +35,12 @@ FlyCamera::FlyCamera(Mouse* mouse, Keyboard* keyboard)
 
 		if (key == KeyButton_D && down) cameraRightPressed = true;
 		if (key == KeyButton_D && !down) cameraRightPressed = false;
+
+		if (key == KeyButton_E && down) cameraUpPressed = true;
+		if (key == KeyButton_E && !down) cameraUpPressed = false;
+
+		if (key == KeyButton_Q && down) cameraDownPressed = true;
+		if (key == KeyButton_Q && !down) cameraDownPressed = false;
 	});
 }
 
@@ -63,7 +71,7 @@ void FlyCamera::update(float deltaTime, bool reset) {
 		// return;
 	}
 
-	mouseDown = mouse->isLeftMouseDown();
+	mouseDown = mouse->isRightMouseDown();
 
 	if (mouseDown) {
 		horizontalAngle += mouseSpeed * float(mouse->getMouseXDiff());
@@ -84,24 +92,12 @@ void FlyCamera::update(float deltaTime, bool reset) {
 
 	const bx::Vec3 up = bx::cross(right, direction);
 
-	if (cameraForwardPressed) {
-		eye = bx::mad(direction, deltaTime * moveSpeed, eye);
-	}
-
-	if (cameraBackwardPressed) {
-		eye = bx::mad(direction, -deltaTime * moveSpeed, eye);
-	}
-	
-	if (cameraLeftPressed) {
-		eye = bx::mad(right, deltaTime * moveSpeed, eye);
-	}
-
-	if (cameraRightPressed) {
-		eye = bx::mad(right, -deltaTime * moveSpeed, eye);
-	}
-
-	// Scroll wheel
-	// eye = bx::mad(direction, /*deltaZ * */ deltaTime * moveSpeed, eye);
+	if (cameraForwardPressed) eye = bx::mad(direction, deltaTime * moveSpeed, eye);
+	if (cameraBackwardPressed) eye = bx::mad(direction, -deltaTime * moveSpeed, eye);
+	if (cameraLeftPressed) eye = bx::mad(right, deltaTime * moveSpeed, eye);
+	if (cameraRightPressed) eye = bx::mad(right, -deltaTime * moveSpeed, eye);
+	if (cameraUpPressed) eye = bx::mad(up, deltaTime * moveSpeed, eye);
+	if (cameraDownPressed) eye = bx::mad(up, -deltaTime * moveSpeed, eye);
 
 	at = bx::add(eye, direction);
 	m_up = bx::cross(right, direction);

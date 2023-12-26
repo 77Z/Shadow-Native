@@ -49,8 +49,8 @@ public:
 	void* getNativeDisplayHandle();
 	float getContentScale();
 
-	void lockCursor() { PRINT("Locked?"); glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
-	void unlockCursor() { PRINT("Framed?"); glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
+	void lockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
+	void unlockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
 
 	std::string windowTitle;
 
