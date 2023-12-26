@@ -1,81 +1,126 @@
 #include "Scene/FlyCamera.hpp"
+#include "Debug/Logger.hpp"
+#include "Keyboard.hpp"
 #include "Mouse.hpp"
+#include "bx/constants.h"
+#include "bx/math.h"
 #include <cstdint>
 
-namespace Shadow::Scene {
-	
-FlyCamera::FlyCamera() {
+static bool cameraForwardPressed = false;
+static bool cameraBackwardPressed = false;
+static bool cameraLeftPressed = false;
+static bool cameraRightPressed = false;
+
+namespace Shadow::SceneNamespace {
+
+FlyCamera::FlyCamera(Mouse* mouse, Keyboard* keyboard)
+	: mouse(mouse)
+	, keyboard(keyboard)
+{
 	reset();
 	MouseState mouseState;
-	update(0.0f, mouseState, true);
+	update(0.0f, true);
+
+	keyboard->registerKeyCallback([](KeyButton_ key, bool down) {
+		if (key == KeyButton_W && down) cameraForwardPressed = true;
+		if (key == KeyButton_W && !down) cameraForwardPressed = false;
+
+		if (key == KeyButton_S && down) cameraBackwardPressed = true;
+		if (key == KeyButton_S && !down) cameraBackwardPressed = false;
+
+		if (key == KeyButton_A && down) cameraLeftPressed = true;
+		if (key == KeyButton_A && !down) cameraLeftPressed = false;
+
+		if (key == KeyButton_D && down) cameraRightPressed = true;
+		if (key == KeyButton_D && !down) cameraRightPressed = false;
+	});
 }
 
+FlyCamera::~FlyCamera() {}
+
 void FlyCamera::reset() {
-	mouseNow.mx = 0;
-	mouseNow.my = 0;
-	mouseNow.mz = 0;
-
-	mouseLast.mx = 0;
-	mouseLast.my = 0;
-	mouseLast.mz = 0;
-
 	eye.x = 0.0f;
 	eye.y = 0.0f;
 	eye.z = 0.0f;
 	at.x = 0.0f;
 	at.y = 0.0f;
 	at.z = 0.0f;
-	up.x = 0.0f;
-	up.y = 0.0f;
-	up.z = 0.0f;
+	m_up.x = 0.0f;
+	m_up.y = 0.0f;
+	m_up.z = 0.0f;
 
 	horizontalAngle = 0.01f;
 	verticalAngle = 0.0f;
 	mouseSpeed = 0.0020f;
 	gamepadSpeed = 0.04f;
-	mouseSpeed = 30.0f;
+	moveSpeed = 30.0f;
 	mouseDown = false;
 }
 
 
-void FlyCamera::update(float deltaTime, const MouseState& mouseState, bool reset) {
+void FlyCamera::update(float deltaTime, bool reset) {
 	if (reset) {
-		mouseLast.mx = mouseState.mx;
-		mouseLast.my = mouseState.my;
-		mouseLast.mz = mouseState.mz;
-		mouseNow = mouseLast;
-		mouseDown = false;
-
-		return;
+		// return;
 	}
 
-	if (!mouseDown) {
-		mouseLast.mx = mouseState.mx;
-		mouseLast.my = mouseState.my;
-	}
-
-	mouseDown = !!mouseState.buttons[MouseButton::Right];
+	mouseDown = mouse->isLeftMouseDown();
 
 	if (mouseDown) {
-		mouseNow.mx = mouseState.mx;
-		mouseNow.my = mouseState.my;
+		horizontalAngle += mouseSpeed * float(mouse->getMouseXDiff());
+		verticalAngle -= mouseSpeed * float(mouse->getMouseYDiff());
 	}
 
-	mouseLast.mz = mouseNow.mz;
-	mouseNow.mz = mouseState.mz;
+	const bx::Vec3 direction = {
+		bx::cos(verticalAngle) * bx::sin(horizontalAngle),
+		bx::sin(verticalAngle),
+		bx::cos(verticalAngle) * bx::cos(horizontalAngle),
+	};
 
-	const float deltaZ = float(mouseNow.mz - mouseLast.mz);
+	const bx::Vec3 right = {
+		bx::sin(horizontalAngle - bx::kPiHalf),
+		0.0f,
+		bx::cos(horizontalAngle - bx::kPiHalf)
+	};
 
-	if (mouseDown) {
-		const int32_t deltaX = mouseNow.mx - mouseLast.mx;
-		const int32_t deltaY = mouseNow.my - mouseLast.my;
+	const bx::Vec3 up = bx::cross(right, direction);
 
-		horizontalAngle += mouseSpeed * float(deltaX);
-		verticalAngle -= mouseSpeed * float(deltaY);
-
-		mouseLast.mx = mouseNow.mx;
-		mouseLast.my = mouseNow.my;
+	if (cameraForwardPressed) {
+		eye = bx::mad(direction, deltaTime * moveSpeed, eye);
 	}
+
+	if (cameraBackwardPressed) {
+		eye = bx::mad(direction, -deltaTime * moveSpeed, eye);
+	}
+	
+	if (cameraLeftPressed) {
+		eye = bx::mad(right, deltaTime * moveSpeed, eye);
+	}
+
+	if (cameraRightPressed) {
+		eye = bx::mad(right, -deltaTime * moveSpeed, eye);
+	}
+
+	// Scroll wheel
+	// eye = bx::mad(direction, /*deltaZ * */ deltaTime * moveSpeed, eye);
+
+	at = bx::add(eye, direction);
+	m_up = bx::cross(right, direction);
+}
+
+void FlyCamera::setPosition(const bx::Vec3& pos) {
+	eye = pos;
+}
+
+void FlyCamera::setVerticalAngle(float angle) {
+	verticalAngle = angle;
+}
+
+void FlyCamera::setHorizontalAngle(float angle) {
+	horizontalAngle = angle;
+}
+
+void FlyCamera::getViewMtx(float* viewMtx) {
+	bx::mtxLookAt(viewMtx, bx::load<bx::Vec3>(&eye.x), bx::load<bx::Vec3>(&at.x), bx::load<bx::Vec3>(&m_up.x) );
 }
 
 }

@@ -1,22 +1,29 @@
 #ifndef SHADOW_NATIVE_SCENE_FLY_CAMERA_HPP
 #define SHADOW_NATIVE_SCENE_FLY_CAMERA_HPP
 
+#include "Keyboard.hpp"
 #include "Mouse.hpp"
 #include "bx/bx.h"
 #include "bx/math.h"
 #include <cstdint>
 
-namespace Shadow::Scene {
+namespace Shadow::SceneNamespace {
 	
 class FlyCamera {
 public:
-	FlyCamera();
+	FlyCamera(Mouse* mouse, Keyboard* keyboard);
 	~FlyCamera();
 
 	void reset();
 
-	void update(float deltaTime, const MouseState& mouseState, bool reset);
+	void update(float deltaTime, bool reset);
 
+	void setPosition(const bx::Vec3& pos);
+
+	void setVerticalAngle(float angle);
+	void setHorizontalAngle(float angle);
+
+	void getViewMtx(float* viewMtx);
 
 	struct MouseCoords {
 		int32_t mx;
@@ -24,12 +31,12 @@ public:
 		int32_t mz;
 	};
 
-	MouseCoords mouseNow;
-	MouseCoords mouseLast;
+	// MouseCoords mouseNow;
+	// MouseCoords mouseLast;
 
 	bx::Vec3 eye = bx::InitZero;
 	bx::Vec3 at = bx::InitZero;
-	bx::Vec3 up = bx::InitZero;
+	bx::Vec3 m_up = bx::InitZero;
 	float horizontalAngle;
 	float verticalAngle;
 
@@ -38,6 +45,10 @@ public:
 	float moveSpeed;
 	
 	bool mouseDown;
+
+private:
+	Mouse* mouse;
+	Keyboard* keyboard;
 };
 
 }

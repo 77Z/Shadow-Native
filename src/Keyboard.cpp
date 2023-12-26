@@ -6,9 +6,14 @@
 namespace Shadow {
 
 	static void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+		if (key == GLFW_KEY_UNKNOWN) return;
+
 		Keyboard* keyboard = static_cast<Keyboard*>(glfwGetWindowUserPointer(window));
 		for (auto callback : keyboard->keyListeners) {
-			callback();
+			callback(
+				keyboard->glfwButtonMap[key],
+				action == GLFW_PRESS // || action == GLFW_REPEAT //
+			);
 		}
 	}
 
@@ -18,6 +23,7 @@ namespace Shadow {
 
 	Keyboard::Keyboard(ShadowWindow* window): window(window) {
 
+		//TODO: Potential crash if multiple keyboards are registered per window?
 		glfwSetWindowUserPointer(window->window, this);
 
 		glfwSetKeyCallback(window->window, glfwKeyCallback);

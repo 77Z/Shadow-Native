@@ -13,6 +13,7 @@
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/EntityInspector.hpp"
+#include "Scene/FlyCamera.hpp"
 #include "Scene/Scene.hpp"
 #include "Scene/SceneExplorer.hpp"
 #include "Scene/SceneSerializer.hpp"
@@ -328,12 +329,10 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	Mouse mouse(&editorWindow);
 	Keyboard keyboard(&editorWindow);
 
-	keyboard.registerKeyCallback([]() {
-		PRINT("Listener Punch 1");
-	});
-
-	keyboard.registerKeyCallback([]() {
-		PRINT("Listener Punch 2");
+	keyboard.registerKeyCallback([](KeyButton_ key, bool down) {
+		if (key == KeyButton_F && down) {
+			PRINT("Paying respects");
+		}
 	});
 
 	ImGui::SetupTheme();
@@ -360,6 +359,11 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	ContentBrowser contentBrowser;
 
 	editorScene = Shadow::CreateReference<Shadow::Scene>();
+
+	SceneNamespace::FlyCamera flyCamera = SceneNamespace::FlyCamera(&mouse, &keyboard);
+
+	flyCamera.setPosition({ 0.0f, 0.0f, -15.0f });
+	flyCamera.setVerticalAngle(0.0f);
 
 #if 0 // No more default loading scene
 	Reference<Scene> editorScene = CreateReference<Scene>();
@@ -418,8 +422,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 		if (mouseOverVport) ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 
-		if (mouseOverVport && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) editorWindow.lockCursor();
-		if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) editorWindow.unlockCursor();
+		if (mouseOverVport && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) editorWindow.lockCursor();
+		if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) editorWindow.unlockCursor();
 
 		ImGui::Begin("Mouse Data");
 
@@ -432,24 +436,27 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		ImGui::Render();
 		ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
 
-		{
+		
 			int64_t now = bx::getHPCounter();
 			static int64_t last = now;
 			const int64_t frameTime = now - last;
 			last = now;
 			const double freq = double(bx::getHPFrequency());
-			// const float deltaTime = float(frameTime / freq);
+			const float deltaTime = float(frameTime / freq);
 			time += (float)(frameTime + speed / freq);
 
 			bgfx::setUniform(u_time, &time);
-		}
+		
+
+		flyCamera.update(deltaTime, !mouseOverVport);
 
 		// Matrix
 		{
 			const bx::Vec3 at = { 0.0f, 0.0f, 0.0f };
 			const bx::Vec3 eye = { 0.0f, 0.0f, -5.0f };
 			float editorViewMatrix[16];
-			bx::mtxLookAt(editorViewMatrix, eye, at);
+			// bx::mtxLookAt(editorViewMatrix, eye, at);
+			flyCamera.getViewMtx(editorViewMatrix);
 			float editorProjectionMatrix[16];
 			bx::mtxProj(editorProjectionMatrix, 60.0f, vportWidth / vportHeight, 0.1f, 100.0f,
 				bgfx::getCaps()->homogeneousDepth);

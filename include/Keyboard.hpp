@@ -131,7 +131,7 @@ enum KeyButton_ {
 	KeyButton_Menu
 };
 
-typedef void (* keyFunction)();
+typedef void (* keyFunction)(KeyButton_ key, bool down);
 
 class Keyboard {
 public:
@@ -143,9 +143,9 @@ public:
 	void registerKeyCallback(keyFunction callback);
 
 	std::vector<keyFunction> keyListeners;
+	KeyButton_ glfwButtonMap[GLFW_KEY_LAST + 1];
 private:
 	ShadowWindow* window;
-	KeyButton_ glfwButtonMap[GLFW_KEY_LAST + 1];
 };
 
 }
