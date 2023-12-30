@@ -1,43 +1,12 @@
 #include "Configuration/EngineConfiguration.hpp"
-#include "Configuration/engineConfig.sec.hpp"
 #include "Debug/Logger.hpp"
+#include "json_impl.hpp"
 #include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <string>
 
-namespace Shadow {
-namespace EngineConfiguration {
-
-	EngineConfigFile getConfig() {
-		EngineConfigFile confFile;
-
-		std::ifstream input(engineConfigFileLoc);
-		std::string line;
-
-		while (std::getline(input, line)) {
-			if (line == "")
-				continue;
-			size_t sepPos = line.find(":");
-			std::string key = line.substr(0, sepPos);
-			std::string value = line.substr(sepPos + 1);
-
-			if (key == "lastOpenProject") {
-				confFile.lastOpenProject = value;
-			} else if (key == "projectBrowserWindowWidth") {
-				confFile.projectBrowserWindowBounds.width = std::stoi(value);
-			} else if (key == "projectBrowserWindowHeight") {
-				confFile.projectBrowserWindowBounds.height = std::stoi(value);
-			} else if (key == "editorWindowWidth") {
-				confFile.editorWindowBounds.width = std::stoi(value);
-			} else if (key == "editorWindowHeight") {
-				confFile.editorWindowBounds.height = std::stoi(value);
-			}
-		}
-
-		input.close();
-		return confFile;
-	}
+namespace Shadow::EngineConfiguration {
 
 	int initializeEngineConfig() {
 		const std::string configDir = getConfigDir();
@@ -49,14 +18,16 @@ namespace EngineConfiguration {
 
 		std::filesystem::create_directory(configDir);
 		std::filesystem::create_directory(configDir + "/Projects");
-    std::filesystem::create_directory(configDir + "/AXEProjects");
+		std::filesystem::create_directory(configDir + "/AXEProjects");
 
-		std::ofstream engineConfigFile(configDir + "/engineConfig.sec");
-		engineConfigFile.write(engineConfigSecData, strlen(engineConfigSecData));
-		engineConfigFile.close();
+		json engineConfigFile;
+
+		engineConfigFile["vscodeDefaultEditor"] = true;
+		engineConfigFile["alternativeEditor"] = "";
+
+		JSON::dumpJsonToBson(engineConfigFile, configDir + "/engineConfig.sec");
 
 		return 0;
 	}
 
-}
 }

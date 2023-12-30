@@ -6,12 +6,19 @@ namespace Shadow::Editor::EditorParts {
 // CALL THIS
 void init();
 void onUpdate();
+
 void showProjectPreferences();
 void hideProjectPreferences();
+
+void showEnginePreferences();
+void hideEnginePreferences();
 
 // DON'T CALL THIS
 void projectPreferencesInit();
 void projectPreferencesUpdate();
+
+void enginePreferencesInit();
+void enginePreferencesUpdate();
 
 }
 

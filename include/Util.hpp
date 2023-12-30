@@ -39,6 +39,8 @@ namespace Shadow::Util {
 std::string removeDupeSlashes(std::string input);
 std::vector<std::string> splitString(const std::string& str, char delimeter);
 
+void openURL(const std::string &url);
+
 }
 
 #endif /* SHADOW_NATIVE_UTIL_HPP */

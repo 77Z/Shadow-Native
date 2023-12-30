@@ -4,10 +4,12 @@ namespace Shadow::Editor::EditorParts {
 
 void init() {
 	projectPreferencesInit();
+	enginePreferencesInit();
 }
 
 void onUpdate() {
 	projectPreferencesUpdate();
+	enginePreferencesUpdate();
 }
 
 }

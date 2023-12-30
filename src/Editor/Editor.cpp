@@ -68,8 +68,6 @@ static void drawMainMenuBar() {
 		if (ImGui::BeginMenu("File")) {
 			if (ImGui::MenuItem("New Asset", "CTRL + N")) { }
 			ImGui::Separator();
-			if (ImGui::MenuItem("Engine Preferences", "CTRL + ,")) { }
-			ImGui::Separator();
 			if (ImGui::MenuItem("Close Project")) {
 				openProjectBrowserOnDeath = true;
 				refWindow->close();
@@ -90,6 +88,9 @@ static void drawMainMenuBar() {
 			if (ImGui::MenuItem("Project Preferences", "CTRL + SHIFT + ,")) {
 				Shadow::Editor::EditorParts::showProjectPreferences();
 			}
+			if (ImGui::MenuItem("Engine Preferences", "CTRL + ,")) {
+				Shadow::Editor::EditorParts::showEnginePreferences();
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("View")) {
@@ -105,6 +106,13 @@ static void drawMainMenuBar() {
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Help")) {
+			ImGui::Text("If you need help, just text me");
+
+			ImGui::Separator();
+			
+			if (ImGui::MenuItem("Shadow Engine Website")) {
+				Shadow::Util::openURL("https://shadow.77z.dev");
+			}
 			ImGui::EndMenu();
 		}
 

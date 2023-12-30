@@ -121,6 +121,8 @@ void ContentBrowser::loadDir(std::vector<fileEntry>* indexToWrite, std::string d
 			else if	(fileExt == "hpp")		{ fe.fileType = fileTypes_HppSource; fe.fileTypePrettyName = "C++ Header File"; fe.fileTypeColor = IM_COL32(56, 76, 255, 255); }
 			else if	(fileExt == "c")		{ fe.fileType = fileTypes_CSource; fe.fileTypePrettyName = "C Source File"; fe.fileTypeColor = IM_COL32(56, 76, 255, 255); }
 			else if	(fileExt == "scene")	{ fe.fileType = fileTypes_ShadowEngineScene; fe.fileTypePrettyName = "Shadow Engine Scene"; fe.fileTypeColor = IM_COL32(255, 184, 0, 255); }
+			else if	(fileExt == "ktx")		{ fe.fileType = fileTypes_KTXTexture; fe.fileTypePrettyName = "Khronos Texture"; fe.fileTypeColor = IM_COL32(106, 0, 255, 255); }
+			else if	(fileExt == "png")		{ fe.fileType = fileTypes_PNGTexture; fe.fileTypePrettyName = "PNG Texture"; fe.fileTypeColor = IM_COL32(106, 0, 255, 255); }
 			else { fe.fileType = fileTypes_Other; fe.fileTypePrettyName = "? Unknown file type ?"; fe.fileTypeColor = IM_COL32(113, 113, 113, 255); }
 		}
 

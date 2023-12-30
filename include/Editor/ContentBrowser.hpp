@@ -15,18 +15,14 @@ public:
 	ContentBrowser();
 	~ContentBrowser();
 
-#if 0 // I don't like working on these types of enums
-	struct fileTypes {
-		enum Enum { Folder, CppSource, HppSource, CSource, ShadowEngineScene };
-	};
-#endif
-
 	enum fileTypes_ {
 		fileTypes_Folder,
 		fileTypes_CppSource,
 		fileTypes_HppSource,
 		fileTypes_CSource,
 		fileTypes_ShadowEngineScene,
+		fileTypes_KTXTexture,
+		fileTypes_PNGTexture,
 		fileTypes_Other,
 	};
 
@@ -52,12 +48,10 @@ private:
 			  { "hpp", loadTexture("./Resources/icons/hppIcon.png") },
 			  { "folder", loadTexture("./Resources/icons/folderIcon.png") },
 			  { "scene", loadTexture("./Resources/icons/sceneIcon.png") },
+			  { "ktx", loadTexture("./Resources/icons/KTX Texture.png") },
+			  { "png", loadTexture("./Resources/icons/PNG Texture.png") },
 			  { "other", loadTexture("./Resources/icons/otherIcon.png")} };
 
-	// bgfx::TextureHandle cppIcon;
-	// bgfx::TextureHandle hppIcon;
-	// bgfx::TextureHandle folderIcon;
-	// bgfx::TextureHandle sceneIcon;
 
 	std::vector<fileEntry> activeFileIndex;
 

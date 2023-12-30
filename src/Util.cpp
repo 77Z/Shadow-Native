@@ -13,6 +13,7 @@
 
 #include <bimg/bimg.h>
 #include <bimg/decode.h>
+#include <cstdlib>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -218,6 +219,17 @@ std::vector<std::string> splitString(const std::string& str, char delimeter) {
 	}
 
 	return tokens;
+}
+
+void openURL(const std::string &url) {
+
+#if BX_PLATFORM_WINDOWS
+	// ! Untested
+	ShellExecuteA(nullptr, nullptr, url.c_str(), nullptr, nullptr, false);
+#elif !BX_PLATFORM_IOS
+	system(("xdg-open " + url).c_str());
+#endif
+
 }
 
 }
