@@ -1,14 +1,20 @@
 #include "Core.hpp"
 #include "Editor/Editor.hpp"
+#include "Editor/EditorParts/EditorParts.hpp"
 #include "Editor/Project.hpp"
+#include "Keyboard.hpp"
+#include "Mouse.hpp"
 #include "Scene/Scene.hpp"
 #include "Scene/SceneSerializer.hpp"
 #include "ShadowWindow.hpp"
 #include "bgfx/bgfx.h"
 #include "bx/bx.h"
+#include "imgui.h"
+#include "imgui/theme.hpp"
+#include "imgui/imgui_impl_bgfx.h"
+#include "imgui_impl_glfw.h"
 #include <csignal>
 #include <cstdint>
-
 
 #define EDITOR_UI_VIEW_ID 2
 #define EDITOR_VIEWPORT_VIEW_ID 10
@@ -44,7 +50,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	ShadowWindow editorWindow(1800, 900, "Shadow Editor");
 	editorWindowReference = &editorWindow;
 	std::signal(SIGINT, sigintHandler);
-
+	
 
 	bgfx::Init init;
 	init.type = bgfx::RendererType::Vulkan;
@@ -56,6 +62,38 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	bgfx::init(init);
 
 	resetViews();
+
+	Mouse mouse(&editorWindow);
+	Keyboard keyboard(&editorWindow);
+
+	// * ImGui Init
+	{
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags |=	ImGuiConfigFlags_DockingEnable
+					|	ImGuiConfigFlags_NavEnableKeyboard
+					|	ImGuiConfigFlags_NavEnableGamepad;
+		io.ConfigDockingTransparentPayload = true;
+
+		float sf = editorWindow.getContentScale();
+		io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
+		io.Fonts->AddFontDefault();
+		ImGui::GetStyle().ScaleAllSizes(sf);
+		io.IniFilename = "./Resources/editor.ini";
+
+		ImGui::SetupTheme();
+
+		ImGui_Implbgfx_Init(EDITOR_UI_VIEW_ID);
+		ImGui_ImplGlfw_InitForVulkan(editorWindow.window, true);
+		
+		Editor::EditorParts::init();
+	}
+
+	// * time uniform here
+
+	// * viewport texture and buffer
+
+	// * camera init
 
 	editorScene = Shadow::CreateReference<Shadow::Scene>();
 
@@ -73,10 +111,35 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			editorWindow.resetWindowResizedFlag();
 		}
 
+		mouse.onUpdate();
+
+		{
+			ImGui_Implbgfx_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+		}
+
+		ImGui::Begin("Window");
+		ImGui::Text("What's up motherfreakers");
+		ImGui::End();
+
+		{
+			ImGui::Render();
+			ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
+		}
+
+		// * Time diff uniform here
+
+		// * FlyCamera update
+
 		bgfx::frame();
 	}
 
 	editorScene->unload();
+
+	ImGui_ImplGlfw_Shutdown();
+	ImGui_Implbgfx_Shutdown();
+	ImGui::DestroyContext();
 
 	bgfx::shutdown();
 	editorWindow.shutdown();
