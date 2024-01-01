@@ -23,6 +23,7 @@ public:
 		fileTypes_ShadowEngineScene,
 		fileTypes_KTXTexture,
 		fileTypes_PNGTexture,
+		fileTypes_Prefab,
 		fileTypes_Other,
 	};
 
@@ -50,6 +51,7 @@ private:
 			  { "scene", loadTexture("./Resources/icons/sceneIcon.png") },
 			  { "ktx", loadTexture("./Resources/icons/KTX Texture.png") },
 			  { "png", loadTexture("./Resources/icons/PNG Texture.png") },
+			  { "prefab", loadTexture("./Resources/icons/prefab.png") },
 			  { "other", loadTexture("./Resources/icons/otherIcon.png")} };
 
 

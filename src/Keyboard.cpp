@@ -12,7 +12,7 @@ namespace Shadow {
 		for (auto callback : keyboard->keyListeners) {
 			callback(
 				keyboard->glfwButtonMap[key],
-				action == GLFW_PRESS // || action == GLFW_REPEAT //
+				action == GLFW_PRESS || action == GLFW_REPEAT
 			);
 		}
 	}

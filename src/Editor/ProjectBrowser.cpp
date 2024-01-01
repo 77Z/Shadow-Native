@@ -1,6 +1,5 @@
 #include "Editor/ProjectBrowser.hpp"
 #include "Configuration/EngineConfiguration.hpp"
-#include "Configuration/SECBuilder.hpp"
 #include "Core.hpp"
 #include "Debug/Logger.hpp"
 #include "Debug/Profiler.hpp"
@@ -139,15 +138,6 @@ static void createProject() {
 
 	ss.serialize(projDir + "/Content/default.scene");
 
-#if 0
-	Shadow::Configuration::SECBuilder projSec(projDir + "/project.sec");
-	projSec.add("name", projectName);
-	projSec.add("pkgId", packageID);
-	projSec.add("engineVer", "0.1.0");
-	projSec.add("default-scene", "default.scene");
-	projSec.write();
-#endif
-
 	// openEditorNow(projDir);
 }
 
@@ -240,7 +230,7 @@ static void drawProjectBrowser() {
 	ImGui::Separator();
 	ImGui::PopFont();
 
-	for (int i = 0; i < gblProjects.size(); i++) {
+	for (size_t i = 0; i < gblProjects.size(); i++) {
 		ProjectEntry project = gblProjects[i];
 		projectNode(project);
 	}
@@ -333,11 +323,12 @@ int Editor::startProjectBrowser() {
 	io.ConfigDockingTransparentPayload = true;
 
 	// TODO: in the future make this one file load into two fonts
-	mainFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f);
+	float sf = projectEditorWindow.getContentScale();
+	mainFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
 	headingFont
-		= io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 40.0f);
+		= io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 40.0f * sf);
 	io.Fonts->AddFontDefault();
-	io.FontGlobalScale = 1.3f;
+	ImGui::GetStyle().ScaleAllSizes(sf);
 	io.IniFilename = "./Resources/projectBrowser.ini";
 
 	ImGui::SetupTheme();

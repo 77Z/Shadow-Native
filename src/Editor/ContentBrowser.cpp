@@ -123,6 +123,7 @@ void ContentBrowser::loadDir(std::vector<fileEntry>* indexToWrite, std::string d
 			else if	(fileExt == "scene")	{ fe.fileType = fileTypes_ShadowEngineScene; fe.fileTypePrettyName = "Shadow Engine Scene"; fe.fileTypeColor = IM_COL32(255, 184, 0, 255); }
 			else if	(fileExt == "ktx")		{ fe.fileType = fileTypes_KTXTexture; fe.fileTypePrettyName = "Khronos Texture"; fe.fileTypeColor = IM_COL32(106, 0, 255, 255); }
 			else if	(fileExt == "png")		{ fe.fileType = fileTypes_PNGTexture; fe.fileTypePrettyName = "PNG Texture"; fe.fileTypeColor = IM_COL32(106, 0, 255, 255); }
+			else if (fileExt == "prefab")	{ fe.fileType = fileTypes_Prefab; fe.fileTypePrettyName = "Shadow Engine Prefab"; fe.fileTypeColor = IM_COL32(6, 141, 195, 255); }
 			else { fe.fileType = fileTypes_Other; fe.fileTypePrettyName = "? Unknown file type ?"; fe.fileTypeColor = IM_COL32(113, 113, 113, 255); }
 		}
 
@@ -293,6 +294,7 @@ void ContentBrowser::onUpdate() {
 				}
 				break;
 			}
+			case fileTypes_CSource:
 			case fileTypes_CppSource: {
 				if (ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["cpp"], 0, 0))) {
 					PRINT("Open Code Editor for file: %s", file.fullpath.c_str());
@@ -305,19 +307,31 @@ void ContentBrowser::onUpdate() {
 				}
 				break;
 			}
-			case fileTypes_ShadowEngineScene:
+			case fileTypes_ShadowEngineScene: {
 				if (ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["scene"], 0, 0))) {
 					PRINT("load scene into editor: %s", file.fullpath.c_str());
 					loadScene(file.fullpath.c_str());
 				}
 				break;
-			case fileTypes_CSource:
+			}
+			case fileTypes_KTXTexture: {
+				ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["ktx"], 0, 0));
+				break;
+			}
+			case fileTypes_PNGTexture: {
+				ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["png"], 0, 0));
+				break;
+			}
+			case fileTypes_Prefab: {
+				ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["prefab"], 0, 0));
+				break;
+			};
 			case fileTypes_Other: {
 				ImGui::ContentBrowser::fileNode(file, ImGui::toId(fileTypeMap["other"], 0, 0));
 				break;
 			}
-		}
-		
+				break;
+			}
 	}
 
 	ImGui::End();
