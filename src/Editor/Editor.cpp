@@ -1,14 +1,20 @@
 #include "Core.hpp"
+#include "Debug/Logger.hpp"
+#include "Editor/ContentBrowser.hpp"
 #include "Editor/Editor.hpp"
 #include "Editor/EditorParts/EditorParts.hpp"
 #include "Editor/Project.hpp"
 #include "Keyboard.hpp"
 #include "Mouse.hpp"
+#include "Scene/FlyCamera.hpp"
 #include "Scene/Scene.hpp"
 #include "Scene/SceneSerializer.hpp"
 #include "ShadowWindow.hpp"
+#include "Util.hpp"
 #include "bgfx/bgfx.h"
 #include "bx/bx.h"
+#include "bx/math.h"
+#include "bx/timer.h"
 #include "imgui.h"
 #include "imgui/theme.hpp"
 #include "imgui/imgui_impl_bgfx.h"
@@ -24,15 +30,18 @@ static bool vsync = false;
 static Shadow::ShadowWindow* editorWindowReference;
 static Shadow::Reference<Shadow::Scene> editorScene;
 
+static float viewportViewMatrix[16];
+static float viewportProjectionMatrix[16];
+
 static void sigintHandler(int signal) {
 	BX_UNUSED(signal);
 	editorWindowReference->close();
 }
 
 static void resetViews() {
-	bgfx::setViewClear(EDITOR_VIEWPORT_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x111111FF, 1.0f, 0);
+	// bgfx::setViewClear(EDITOR_VIEWPORT_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x111111FF, 1.0f, 0);
 	bgfx::setViewClear(EDITOR_UI_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x111111FF, 1.0f, 0);
-	bgfx::setViewRect(EDITOR_VIEWPORT_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
+	// bgfx::setViewRect(EDITOR_VIEWPORT_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 	bgfx::setViewRect(EDITOR_UI_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 }
 
@@ -57,17 +66,33 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	init.platformData.ndt = editorWindow.getNativeDisplayHandle();
 	init.platformData.nwh = editorWindow.getNativeWindowHandle();
 	init.resolution.width = (uint32_t)editorWindow.getExtent().width;
-	init.resolution.width = (uint32_t)editorWindow.getExtent().height;
+	init.resolution.height = (uint32_t)editorWindow.getExtent().height;
 	init.resolution.reset = vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE;
 	bgfx::init(init);
 
 	resetViews();
+	bgfx::setViewClear(EDITOR_VIEWPORT_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x111111FF, 1.0f, 0);
+	bgfx::setViewRect(EDITOR_VIEWPORT_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	Mouse mouse(&editorWindow);
-	Keyboard keyboard(&editorWindow);
+	// ! Keyboard breaks window resizing
+	// Keyboard keyboard(&editorWindow);
 
-	// * ImGui Init
-	{
+	// * time uniform
+	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
+
+	// * viewport texture and buffer
+	bgfx::TextureHandle viewportTexture = bgfx::createTexture2D(
+		(uint16_t)editorWindow.getExtent().width,
+		(uint16_t)editorWindow.getExtent().height,
+		false, 1, bgfx::TextureFormat::BGRA8,
+		BGFX_TEXTURE_RT | BGFX_SAMPLER_MIN_POINT | BGFX_SAMPLER_MAG_POINT
+	);
+	bgfx::FrameBufferHandle viewportFrameBuffer = bgfx::createFrameBuffer(1, &viewportTexture, true);
+
+	editorScene = Shadow::CreateReference<Shadow::Scene>();
+
+	{ // * ImGui Init
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO();
 		io.ConfigFlags |=	ImGuiConfigFlags_DockingEnable
@@ -86,16 +111,24 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		ImGui_Implbgfx_Init(EDITOR_UI_VIEW_ID);
 		ImGui_ImplGlfw_InitForVulkan(editorWindow.window, true);
 		
-		Editor::EditorParts::init();
+		Editor::EditorParts::init({
+			&editorWindow,
+			&viewportTexture,
+			editorScene,
+			viewportViewMatrix,
+			viewportProjectionMatrix
+		});
 	}
 
-	// * time uniform here
+	ContentBrowser contentBrowser;
 
-	// * viewport texture and buffer
+	bgfx::ProgramHandle program = loadProgram("test/vs_test.sc.spv", "test/fs_test.sc.spv");
+	// bgfx::ProgramHandle program = loadProgram("mesh/vs_mesh.sc.spv", "mesh/fs_mesh.sc.spv");
 
 	// * camera init
-
-	editorScene = Shadow::CreateReference<Shadow::Scene>();
+	SceneNamespace::FlyCamera flyCamera = SceneNamespace::FlyCamera(&mouse, nullptr);
+	flyCamera.setPosition({0.0f, 0.0f, -15.0f });
+	flyCamera.setVerticalAngle(0.0f);
 
 	while (!editorWindow.shouldClose()) {
 		editorWindow.pollEvents();
@@ -119,21 +152,59 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			ImGui::NewFrame();
 		}
 
-		ImGui::Begin("Window");
-		ImGui::Text("What's up motherfreakers");
-		ImGui::End();
+		Editor::EditorParts::onUpdate();
+
+		contentBrowser.onUpdate();
 
 		{
 			ImGui::Render();
 			ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
 		}
+		
+		{ // * Time calculations and u_time updating
+			float speed = 0.37f, time = 0.0f;
+			int64_t now = bx::getHPCounter();
+			static int64_t last = now;
+			const int64_t frameTime = now - last;
+			last = now;
+			const double freq = double(bx::getHPFrequency());
+			const float deltaTime = float(frameTime / freq);
+			time += (float)(frameTime + speed / freq);
+			bgfx::setUniform(u_time, &time);
 
-		// * Time diff uniform here
+			// * FlyCamera update
+			// flyCamera.update(deltaTime, !Editor::EditorParts::isMouseOverViewport());
+			flyCamera.update(deltaTime, false);
+		}
 
-		// * FlyCamera update
+
+		{ // * Viewport matrix updating
+			flyCamera.getViewMtx(viewportViewMatrix);
+
+			bx::mtxProj(viewportProjectionMatrix, 60.0f,
+				Editor::EditorParts::getViewportWidth() / Editor::EditorParts::getViewportHeight(),
+				0.1f, 100.0f, bgfx::getCaps()->homogeneousDepth);
+
+			bgfx::setViewName(EDITOR_VIEWPORT_VIEW_ID, "Editor Viewport");
+			bgfx::setViewTransform(EDITOR_VIEWPORT_VIEW_ID, viewportViewMatrix, viewportProjectionMatrix);
+			bgfx::setViewFrameBuffer(EDITOR_VIEWPORT_VIEW_ID, viewportFrameBuffer);
+
+			bgfx::touch(EDITOR_VIEWPORT_VIEW_ID);
+		}
+
+		editorScene->onUpdate(EDITOR_VIEWPORT_VIEW_ID, program);
 
 		bgfx::frame();
 	}
+
+	Editor::EditorParts::destroy();
+
+	contentBrowser.unload();
+
+	bgfx::destroy(u_time);
+	bgfx::destroy(viewportFrameBuffer);
+	bgfx::destroy(program);
+
 
 	editorScene->unload();
 

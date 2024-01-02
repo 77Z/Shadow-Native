@@ -24,6 +24,9 @@ namespace Shadow {
 	Keyboard::Keyboard(ShadowWindow* window): window(window) {
 
 		//TODO: Potential crash if multiple keyboards are registered per window?
+		// ! Turns out ShadowWindow also sets a user pointer so if you init
+		// ! a keyboard with a ShadowWindow, the keyboard breaks resizing
+		// ! functionality. I'm going to have to rethink this a bit...
 		glfwSetWindowUserPointer(window->window, this);
 
 		glfwSetKeyCallback(window->window, glfwKeyCallback);

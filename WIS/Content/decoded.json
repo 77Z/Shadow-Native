@@ -1,0 +1,49 @@
+{
+  "Entities": [
+    {
+      "components": [
+        {
+          "rx": 0.0,
+          "ry": 0.0,
+          "rz": 0.0,
+          "sx": 5.0,
+          "sy": 0.20000000298023224,
+          "sz": 5.0,
+          "tx": 0.0,
+          "ty": -1.5,
+          "type": "TransformComponent",
+          "tz": 0.0
+        },
+        {
+          "offset": 1.0,
+          "type": "CubeComponent"
+        }
+      ],
+      "tag": "Floor",
+      "uuid": "9cf81c8d-3678-445b-9ca6-7b737401ca60"
+    },
+    {
+      "components": [
+        {
+          "rx": 0.0,
+          "ry": 0.0,
+          "rz": 0.0,
+          "sx": 1.0,
+          "sy": 1.0,
+          "sz": 1.0,
+          "tx": 0.0,
+          "ty": 0.0,
+          "type": "TransformComponent",
+          "tz": 10.0
+        },
+        {
+          "offset": 1.0,
+          "type": "CubeComponent"
+        }
+      ],
+      "tag": "Cube",
+      "uuid": "8cf81c8d-3678-445b-9ca6-7b737401ca60"
+    }
+  ],
+  "SceneName": "Alternative Scene"
+}

@@ -23,6 +23,8 @@ FlyCamera::FlyCamera(Mouse* mouse, Keyboard* keyboard)
 	MouseState mouseState;
 	update(0.0f, true);
 
+	if (keyboard == nullptr) return;
+	
 	keyboard->registerKeyCallback([](KeyButton_ key, bool down) {
 		if (key == KeyButton_W && down) cameraForwardPressed = true;
 		if (key == KeyButton_W && !down) cameraForwardPressed = false;
@@ -68,7 +70,7 @@ void FlyCamera::reset() {
 
 void FlyCamera::update(float deltaTime, bool reset) {
 	if (reset) {
-		// return;
+		return;
 	}
 
 	mouseDown = mouse->isRightMouseDown();

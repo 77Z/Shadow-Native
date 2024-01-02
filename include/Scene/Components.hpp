@@ -83,6 +83,18 @@ struct CubeComponent {
 		: offset(offset) { }
 };
 
+struct ShaderComponent {
+	std::string frag;
+	std::string vert;
+
+	ShaderComponent() = default;
+	ShaderComponent(
+		const std::string& frag,
+		const std::string& vert)
+	: frag(frag)
+	, vert(vert) { }
+};
+
 }
 
 #endif /* SHADOW_NATIVE_SCENE_COMPONENTS_HPP */

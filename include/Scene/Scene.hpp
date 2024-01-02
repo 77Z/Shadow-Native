@@ -30,9 +30,13 @@ public:
 	bgfx::VertexBufferHandle vbh;
 	bgfx::IndexBufferHandle ibh;
 
+	bgfx::ProgramHandle fallbackProgram;
+	std::unordered_map<std::string, bgfx::ProgramHandle> programMap;
+
 	void onUpdate(bgfx::ViewId view, bgfx::ProgramHandle program);
 	void unload();
 
+	//TODO: Remove/refactor in the future?
 	std::unordered_map<uuids::uuid, entt::entity> entityMap;
 
 private:

@@ -36,6 +36,7 @@
 			"args": [
 				// "axeEditor"
 				// "dev"
+				"editorwis"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/bin/sdw/shadow-engine",

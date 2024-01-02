@@ -155,6 +155,11 @@ bool SceneSerializer::deserialize(const std::string filepath) {
 				PRINT("-------- Location: %s", ((std::string)component["location"]).c_str());
 
 				deserializedEntity.addComponent<MeshComponent>(((std::string)component["location"]).c_str());
+			} else if (type == "ShaderComponent") {
+				PRINT("-------- Frag shader: %s", ((std::string)component["frag"]).c_str());
+				PRINT("-------- Vert shader: %s", ((std::string)component["vert"]).c_str());
+
+				deserializedEntity.addComponent<ShaderComponent>((std::string)component["frag"], (std::string)component["vert"]);
 			}
 		}
 	}

@@ -2,11 +2,13 @@
 #include "Debug/Logger.hpp"
 #include <bgfx/bgfx.h>
 #include <cstdint>
+#include <utility>
 // #include <glm/fwd.hpp>
 // #include <glm/glm.hpp>
 
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
+#include "Util.hpp"
 #include "bx/math.h"
 #include "uuid_impl.hpp"
 
@@ -84,6 +86,7 @@ Scene::~Scene() { }
 void Scene::unload() {
 	bgfx::destroy(vbh);
 	bgfx::destroy(ibh);
+	bgfx::destroy(fallbackProgram);
 }
 
 void Scene::init() {
@@ -94,6 +97,8 @@ void Scene::init() {
 		.end();
 	vbh = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), pcvDecl);
 	ibh = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
+
+	fallbackProgram = loadProgram("test/vs_test.sc.spv", "test/fs_test.sc.spv");
 
 	/* struct MeshComponent {
 		float value;
@@ -149,10 +154,8 @@ void Scene::onUpdate(bgfx::ViewId viewid, bgfx::ProgramHandle program) {
 
 	auto view = m_Registry.view<CubeComponent>();
 	for (auto entity : view) {
-		// auto& transform = group.get<TransformComponent>(entity);
-		// auto& shape = group.get<ShapePusherComponent>(entity);
+		Entity thisEntity = {entity, this};
 
-		// auto& offset = m_Registry.get<CubeComponent>(entity);
 		auto& transform = m_Registry.get<TransformComponent>(entity);
 
 		float tfMtx[16];
@@ -170,7 +173,22 @@ void Scene::onUpdate(bgfx::ViewId viewid, bgfx::ProgramHandle program) {
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
 
-		bgfx::submit(viewid, program);
+		if (thisEntity.hasComponent<ShaderComponent>()) {
+			auto& shaderComponent = thisEntity.GetComponent<ShaderComponent>();
+			std::string programId = shaderComponent.frag + shaderComponent.vert;
+
+			if (programMap.find(programId) != programMap.end()) {
+				// Located program already loaded
+				bgfx::ProgramHandle loadedProgram = programMap.at(programId);
+				bgfx::submit(viewid, loadedProgram);
+			} else {
+				programMap.insert(std::pair<std::string, bgfx::ProgramHandle>(programId, loadProgram(shaderComponent.frag.c_str(), shaderComponent.vert.c_str())));
+				bgfx::submit(viewid, fallbackProgram);
+			}
+
+		} else {
+			bgfx::submit(viewid, fallbackProgram);
+		}
 	}
 
 	auto meshView = m_Registry.view<MeshComponent>();
