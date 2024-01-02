@@ -33,7 +33,7 @@ public:
 	bgfx::ProgramHandle fallbackProgram;
 	std::unordered_map<std::string, bgfx::ProgramHandle> programMap;
 
-	void onUpdate(bgfx::ViewId view, bgfx::ProgramHandle program);
+	void onUpdate(bgfx::ViewId view);
 	void unload();
 
 	//TODO: Remove/refactor in the future?

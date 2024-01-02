@@ -1,6 +1,7 @@
 #include "AXE/AXEEditor.hpp"
 #include "AXE/AXEProjectBrowser.hpp"
 #include "Configuration/EngineConfiguration.hpp"
+#include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
 #include "DevEntryPoint.hpp"
 #include "Editor/Editor.hpp"
@@ -32,6 +33,8 @@ int Main(int argc, char** argv) {
 #if CONFIG_SHADOW_PRODUCTION_BUILD
 	return Shadow::StartProductionRuntime();
 #else
+
+	EC_PRINT("All", "Welcome to Shadow Engine");
 
 	if (argc > 1) {
 		if (strcmp(argv[1], "axe") == 0) {

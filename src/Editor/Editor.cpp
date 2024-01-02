@@ -1,4 +1,5 @@
 #include "Core.hpp"
+#include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
 #include "Editor/ContentBrowser.hpp"
 #include "Editor/Editor.hpp"
@@ -55,6 +56,8 @@ void loadScene(const std::string &sceneFilePath) {
 int startEditor(Shadow::Editor::ProjectEntry project) {
 	Editor::setCurrentProjectName(project.name);
 	Editor::setCurrentProjectPath(project.path);
+
+	EC_NEWCAT("Editor");
 
 	ShadowWindow editorWindow(1800, 900, "Shadow Editor");
 	editorWindowReference = &editorWindow;
@@ -122,7 +125,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 	ContentBrowser contentBrowser;
 
-	bgfx::ProgramHandle program = loadProgram("test/vs_test.sc.spv", "test/fs_test.sc.spv");
+	// bgfx::ProgramHandle program = loadProgram("test/vs_test.sc.spv", "test/fs_test.sc.spv");
 	// bgfx::ProgramHandle program = loadProgram("mesh/vs_mesh.sc.spv", "mesh/fs_mesh.sc.spv");
 
 	// * camera init
@@ -153,6 +156,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		}
 
 		Editor::EditorParts::onUpdate();
+		EditorConsole::Frontend::onUpdate();
 
 		contentBrowser.onUpdate();
 
@@ -192,7 +196,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			bgfx::touch(EDITOR_VIEWPORT_VIEW_ID);
 		}
 
-		editorScene->onUpdate(EDITOR_VIEWPORT_VIEW_ID, program);
+		editorScene->onUpdate(EDITOR_VIEWPORT_VIEW_ID);
 
 		bgfx::frame();
 	}
@@ -203,7 +207,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 	bgfx::destroy(u_time);
 	bgfx::destroy(viewportFrameBuffer);
-	bgfx::destroy(program);
+	// bgfx::destroy(program);
 
 
 	editorScene->unload();

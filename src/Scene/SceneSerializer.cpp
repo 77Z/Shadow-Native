@@ -1,5 +1,6 @@
 #include "Scene/SceneSerializer.hpp"
 #include "Core.hpp"
+#include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
@@ -14,7 +15,9 @@
 namespace Shadow {
 
 SceneSerializer::SceneSerializer(const Reference<Scene>& scene)
-	: scene(scene) { }
+	: scene(scene) {
+		EC_NEWCAT("Scene Serializer");
+	}
 
 SceneSerializer::~SceneSerializer() { }
 
@@ -32,8 +35,8 @@ void SceneSerializer::serialize(const std::string filepath) {
 		serializeEntity(entity);
 	});
 
-	PRINT("Serializing scene to %s", filepath.c_str());
-	PRINT("Data: %s", sceneJson.dump(4).c_str());
+	EC_PRINT("Scene Serializer", "Serializing scene to %s", filepath.c_str());
+	EC_PRINT("Scene Serializer", "Data: %s", sceneJson.dump(4).c_str());
 
 	JSON::dumpJsonToBson(sceneJson, filepath);
 
@@ -108,38 +111,38 @@ bool SceneSerializer::deserialize(const std::string filepath) {
 
 	scene->sceneName = deserializedScene["SceneName"];
 
+	EC_PRINT("Scene Serializer", "Deserializing Scene: %s", scene->sceneName.c_str());
+
 	scene->m_Registry.each([this](auto entity) {
 		//TODO: more should happen here in the future
-		// unloading models etc.
+		// unloading models, shaders etc.
+		// We should have a method like this to unload everything
 		
-		// This is scene.get() because `scene` is a Reference
 		scene->destroyEntity({entity, scene.get()});
 	});
 	
-	// scene->destroyEntity(Entity entity)
-
 	for (auto entity : deserializedScene["Entities"]) {
 		std::string tag = entity["tag"];
 		uuids::uuid uuid = uuids::uuid::from_string((std::string)entity["uuid"]).value();
 
 		Entity deserializedEntity = scene->createEntityWithUUID(uuid, tag);
 
-		PRINT("Entity %s with ID %s :", tag.c_str(), uuids::to_string(uuid).c_str());
+		EC_PRINT("Scene Serializer", "Entity %s with ID %s :", tag.c_str(), uuids::to_string(uuid).c_str());
 
 		for (auto component : entity["components"]) {
 			std::string type = component["type"];
-			PRINT("---- Component type %s", type.c_str());
+			EC_PRINT("Scene Serializer", "---- Component type %s", type.c_str());
 
 			if (type == "TransformComponent") {
-				PRINT("-------- tx %.6f", (float)component["tx"]);
-				PRINT("-------- ty %.6f", (float)component["ty"]);
-				PRINT("-------- tz %.6f", (float)component["tz"]);
-				PRINT("-------- rx %.6f", (float)component["rx"]);
-				PRINT("-------- ry %.6f", (float)component["ry"]);
-				PRINT("-------- rz %.6f", (float)component["rz"]);
-				PRINT("-------- sx %.6f", (float)component["sx"]);
-				PRINT("-------- sy %.6f", (float)component["sy"]);
-				PRINT("-------- sz %.6f", (float)component["sz"]);
+				EC_PRINT("Scene Serializer", "-------- tx %.6f", (float)component["tx"]);
+				EC_PRINT("Scene Serializer", "-------- ty %.6f", (float)component["ty"]);
+				EC_PRINT("Scene Serializer", "-------- tz %.6f", (float)component["tz"]);
+				EC_PRINT("Scene Serializer", "-------- rx %.6f", (float)component["rx"]);
+				EC_PRINT("Scene Serializer", "-------- ry %.6f", (float)component["ry"]);
+				EC_PRINT("Scene Serializer", "-------- rz %.6f", (float)component["rz"]);
+				EC_PRINT("Scene Serializer", "-------- sx %.6f", (float)component["sx"]);
+				EC_PRINT("Scene Serializer", "-------- sy %.6f", (float)component["sy"]);
+				EC_PRINT("Scene Serializer", "-------- sz %.6f", (float)component["sz"]);
 
 				deserializedEntity.addComponent<TransformComponent>(
 					(float)component["tx"], (float)component["ty"], (float)component["tz"],
@@ -148,16 +151,16 @@ bool SceneSerializer::deserialize(const std::string filepath) {
 				);
 				
 			} else if (type == "CubeComponent") {
-				PRINT("-------- offset %.6f", (float)component["offset"]);
+				EC_PRINT("Scene Serializer", "-------- offset %.6f", (float)component["offset"]);
 
 				deserializedEntity.addComponent<CubeComponent>((float)component["offset"]);
 			} else if (type == "MeshComponent") {
-				PRINT("-------- Location: %s", ((std::string)component["location"]).c_str());
+				EC_PRINT("Scene Serializer", "-------- Location: %s", ((std::string)component["location"]).c_str());
 
 				deserializedEntity.addComponent<MeshComponent>(((std::string)component["location"]).c_str());
 			} else if (type == "ShaderComponent") {
-				PRINT("-------- Frag shader: %s", ((std::string)component["frag"]).c_str());
-				PRINT("-------- Vert shader: %s", ((std::string)component["vert"]).c_str());
+				EC_PRINT("Scene Serializer", "-------- Frag shader: %s", ((std::string)component["frag"]).c_str());
+				EC_PRINT("Scene Serializer", "-------- Vert shader: %s", ((std::string)component["vert"]).c_str());
 
 				deserializedEntity.addComponent<ShaderComponent>((std::string)component["frag"], (std::string)component["vert"]);
 			}

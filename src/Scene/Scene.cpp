@@ -150,7 +150,7 @@ void Scene::destroyEntity(Entity entity) {
 	m_Registry.destroy(entity);
 }
 
-void Scene::onUpdate(bgfx::ViewId viewid, bgfx::ProgramHandle program) {
+void Scene::onUpdate(bgfx::ViewId viewid) {
 
 	auto view = m_Registry.view<CubeComponent>();
 	for (auto entity : view) {
@@ -180,14 +180,17 @@ void Scene::onUpdate(bgfx::ViewId viewid, bgfx::ProgramHandle program) {
 			if (programMap.find(programId) != programMap.end()) {
 				// Located program already loaded
 				bgfx::ProgramHandle loadedProgram = programMap.at(programId);
-				bgfx::submit(viewid, loadedProgram);
+				// bgfx::submit(viewid, loadedProgram);
+				bgfx::submit(viewid, fallbackProgram);
 			} else {
+				WARN("Injected fresh program");
 				programMap.insert(std::pair<std::string, bgfx::ProgramHandle>(programId, loadProgram(shaderComponent.frag.c_str(), shaderComponent.vert.c_str())));
 				bgfx::submit(viewid, fallbackProgram);
 			}
 
 		} else {
 			bgfx::submit(viewid, fallbackProgram);
+			// WARN("No shader component, fallback program");
 		}
 	}
 
@@ -202,7 +205,7 @@ void Scene::onUpdate(bgfx::ViewId viewid, bgfx::ProgramHandle program) {
 			transform.rotation.x, transform.rotation.y, transform.rotation.z,
 			transform.translation.x, transform.translation.y, transform.translation.z);
 
-		mesh.mesh.submit(viewid, program, tfMtx);
+		mesh.mesh.submit(viewid, fallbackProgram, tfMtx);
 	}
 }
 

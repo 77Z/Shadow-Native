@@ -22,7 +22,7 @@ void onUpdate() {
 	// * Constant Windows
 	rootWindowUpdate();
 	ImGui::ShowMetricsWindow();
-	// ImGui::ShowDemoWindow();
+	ImGui::ShowDemoWindow();
 	viewportWindowUpdate();
 	resourcesWindowUpdate();
 }

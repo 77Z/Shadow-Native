@@ -1,54 +1,21 @@
 #ifndef SHADOW_NATIVE_DEBUG_EDITOR_CONSOLE_HPP
 #define SHADOW_NATIVE_DEBUG_EDITOR_CONSOLE_HPP
 
-#include "imgui.h"
-#include "imgui/imgui_memory_editor.h"
-#include <functional>
-#include <string>
-#include <vector>
+#define EC_NEWCAT(category) Shadow::EditorConsole::newCategory(category);
 
-#define SE_EMBED_CONSOLE_CREATE(name)
-#define SE_EMBED_CONSOLE_PRINT()
+#define EC_PRINT(category, fmt, ...) Shadow::EditorConsole::print(0, __FILE__, category, fmt, ##__VA_ARGS__)
+#define EC_WARN(category, fmt, ...) Shadow::EditorConsole::print(1, __FILE__, category, fmt, ##__VA_ARGS__)
+#define EC_ERROUT(category, fmt, ...) Shadow::EditorConsole::print(2, __FILE__, category, fmt, ##__VA_ARGS__)
 
-namespace Shadow {
-
-class EditorConsole {
-public:
-	EditorConsole();
-	~EditorConsole();
-
-	struct message {
-		message() = default;
-		message(const message&) = default;
-		message(const char* category, const char* data, void* bindata)
-			: category(category)
-			, data(data)
-			, bindata(bindata) { }
-
-		const char* category;
-		const char* data;
-		void* bindata;
-	};
-
+namespace Shadow::EditorConsole {
+	// Category names can't be any larger than 500 or so characters
+	void newCategory(const char* category);
+	void print(int severity, const char* caller, const char* category, const char* fmt, ...);
 	void clearLog();
-	void addLog(const char* category, const char* fmt, ...);
-	void addLogWithBinData(const char* category, void* binData, const char* fmt, ...);
-	void onUpdate(bool* p_open);
 
-	MemoryEditor edit;
-
-	void* data;
-
-	bool autoScroll = true;
-	std::string currentCategory;
-	std::vector<const char*> categories;
-	std::vector<message> items;
-	std::vector<const char*> commands;
-	std::vector<char*> history;
-	int historyPos = -1;
-	char inputBuf[256];
-};
-
+	namespace Frontend {
+		void onUpdate();
+	}
 }
 
 #endif /* SHADOW_NATIVE_DEBUG_EDITOR_CONSOLE_HPP */
