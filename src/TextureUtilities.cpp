@@ -59,7 +59,7 @@ namespace Shadow {
 		std::string out;
 		snappy::Uncompress((char*)data, sizeof(data), &out);
 
-		bimg::ImageContainer* imageContainer = bimg::imageParse(getAllocator(), data, sizeof(data));
+		bimg::ImageContainer* imageContainer = bimg::imageParse(getAllocator(), &out, out.size());
 		const bgfx::Memory* mem = bgfx::makeRef(imageContainer->m_data, imageContainer->m_size, imageReleaseCb, imageContainer);
 
 		// const bgfx::Memory* mem = bgfx::makeRef(missing_texture_exr, sizeof(missing_texture_exr));
