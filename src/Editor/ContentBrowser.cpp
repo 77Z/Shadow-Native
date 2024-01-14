@@ -48,6 +48,22 @@ bool fileNode(Shadow::ContentBrowser::fileEntry file, ImTextureID icon) {
 		ImGui::EndTooltip();
 	}
 
+	if (hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+		OpenPopup("fileNode ctx menu");
+		PRINT("BRuz");
+	}
+
+	if (ImGui::BeginPopup("fileNode ctx menu")) {
+		if (ImGui::Selectable("Open")) {
+			ImGui::EndPopup();
+			return true;
+		}
+		ImGui::Selectable("Delete");
+		ImGui::Selectable("Rename");
+
+		ImGui::EndPopup();
+	}
+
 	const ImU32 color
 		= GetColorU32(hovered ? IM_COL32(34, 34, 34, 255) : IM_COL32(20, 20, 20, 255));
 	RenderNavHighlight(boundingBox, id);
@@ -60,8 +76,7 @@ bool fileNode(Shadow::ContentBrowser::fileEntry file, ImTextureID icon) {
 	window->DrawList->AddImage(
 		icon, boundingBox.Min, ImVec2(boundingBox.Max.x, boundingBox.Max.y - 30));
 
-	// GetForegroundDrawList()->AddRect(
-	// 	boundingBox.Min, boundingBox.Max, IM_COL32(255, 0, 0, 255));
+	// GetForegroundDrawList()->AddRect(boundingBox.Min, boundingBox.Max, IM_COL32(255, 0, 0, 255));
 
 	ImGui::SameLine();
 	// return pressed;

@@ -1,6 +1,8 @@
 #include "ShadowWindow.hpp"
 #include "Debug/Logger.hpp"
+#include "ShadowWindowUserPointerCarePackage.hpp"
 #include "bx/platform.h"
+#include <vector>
 
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
 #define GLFW_EXPOSE_NATIVE_X11
@@ -69,7 +71,11 @@ void ShadowWindow::initWindow() {
 	glfwWindowHint(GLFW_DECORATED, (int)decorations);
 
 	window = glfwCreateWindow(width, height, windowTitle.c_str(), nullptr, nullptr);
-	glfwSetWindowUserPointer(window, this);
+
+	// windowUserPointers.push_back(this);
+	windowUserPointers["window"] = this;
+	glfwSetWindowUserPointer(window, &windowUserPointers);
+
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 }
 
@@ -78,7 +84,8 @@ void ShadowWindow::glfw_errorCallback(int error, const char* description) {
 }
 
 void ShadowWindow::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-	auto shadowWindow = reinterpret_cast<ShadowWindow*>(glfwGetWindowUserPointer(window));
+	auto userPointers = reinterpret_cast<UserPointersMap*>(glfwGetWindowUserPointer(window));
+	ShadowWindow* shadowWindow = static_cast<ShadowWindow*>(userPointers->at("window"));
 	shadowWindow->framebufferResized = true;
 	shadowWindow->width = width;
 	shadowWindow->height = height;

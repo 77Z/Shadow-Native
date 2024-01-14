@@ -2,13 +2,18 @@
 #include "Debug/Logger.hpp"
 #include "GLFW/glfw3.h"
 #include "ShadowWindow.hpp"
+#include "bx/bx.h"
+#include "ppk_assert_impl.hpp"
 
 namespace Shadow {
 
 	static void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+		BX_UNUSED(scancode);
+
 		if (key == GLFW_KEY_UNKNOWN) return;
 
-		Keyboard* keyboard = static_cast<Keyboard*>(glfwGetWindowUserPointer(window));
+		auto userPointers = reinterpret_cast<UserPointersMap*>(glfwGetWindowUserPointer(window));
+		Keyboard* keyboard = static_cast<Keyboard*>(userPointers->at("keyboard"));
 		for (auto callback : keyboard->keyListeners) {
 			callback(
 				keyboard->glfwButtonMap[key],
@@ -23,11 +28,9 @@ namespace Shadow {
 
 	Keyboard::Keyboard(ShadowWindow* window): window(window) {
 
-		//TODO: Potential crash if multiple keyboards are registered per window?
-		// ! Turns out ShadowWindow also sets a user pointer so if you init
-		// ! a keyboard with a ShadowWindow, the keyboard breaks resizing
-		// ! functionality. I'm going to have to rethink this a bit...
-		glfwSetWindowUserPointer(window->window, this);
+		// PPK_ASSERT(window->windowUserPointers["window"] == nullptr, "Keyboard already initialized on this window");
+
+		window->windowUserPointers["keyboard"] = this;
 
 		glfwSetKeyCallback(window->window, glfwKeyCallback);
 

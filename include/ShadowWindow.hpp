@@ -2,8 +2,13 @@
 #define SHADOW_NATIVE_SHADOW_WINDOW_HPP
 
 #include "Debug/Logger.hpp"
+#include "ShadowWindowUserPointerCarePackage.hpp"
 #include <GLFW/glfw3.h>
 #include <string>
+#include <unordered_map>
+#include <vector>
+
+typedef std::unordered_map<std::string, void*> UserPointersMap;
 
 namespace Shadow {
 class ShadowWindow {
@@ -53,6 +58,10 @@ public:
 	void unlockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
 
 	std::string windowTitle;
+
+	// std::vector<void*> windowUserPointers;
+	// ShadowWindowUserPointerCarePackage userPointerCarePackage;
+	UserPointersMap windowUserPointers;
 
 	// TODO: Make private
 	GLFWwindow* window;

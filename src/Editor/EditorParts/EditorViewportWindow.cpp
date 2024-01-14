@@ -44,13 +44,21 @@ void viewportWindowUpdate() {
 
 	mouseOverViewport = ImGui::IsWindowHovered();
 
+	ImGuiIO& io = ImGui::GetIO();
+
 	if (ImGui::IsWindowHovered()) {
 		ImGui::SetMouseCursor(ImGuiMouseCursor_Hand);
 
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) editorWindowRef->lockCursor();
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Right)) {
+			editorWindowRef->lockCursor();
+			io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+		}
 	}
 
-	if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) editorWindowRef->unlockCursor();
+	if (ImGui::IsMouseReleased(ImGuiMouseButton_Right)) {
+		editorWindowRef->unlockCursor();
+		io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+	}
 
 	vportMin = ImGui::GetWindowContentRegionMin();
 	vportMax = ImGui::GetWindowContentRegionMax();
@@ -63,7 +71,7 @@ void viewportWindowUpdate() {
 	vportWidth = vportMax.x - vportMin.x;
 	vportHeight = vportMax.y - vportMin.y;
 
-	ImGui::GetForegroundDrawList()->AddRect(vportMin, vportMax, IM_COL32(255, 255, 0, 255));
+	// ImGui::GetForegroundDrawList()->AddRect(vportMin, vportMax, IM_COL32(255, 255, 0, 255));
 
 	ImGui::Image(*viewportTextureRef, ImVec2(vportWidth, vportHeight));
 
@@ -72,7 +80,6 @@ void viewportWindowUpdate() {
 	float scale[3] = { 1.0f, 1.0f, 1.0f };
 	float mtx[16];
 	ImGuizmo::RecomposeMatrixFromComponents(translation, rotation, scale, mtx);
-	ImGuiIO& io = ImGui::GetIO();
 	ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 	ImGuizmo::Manipulate(viewportViewMatrix, viewportProjectionMatrix, ImGuizmo::TRANSLATE, ImGuizmo::LOCAL, mtx);
 

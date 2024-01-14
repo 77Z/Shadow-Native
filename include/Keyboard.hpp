@@ -138,8 +138,6 @@ public:
 	Keyboard(ShadowWindow* window);
 	~Keyboard();
 
-	// void glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-
 	void registerKeyCallback(keyFunction callback);
 
 	std::vector<keyFunction> keyListeners;

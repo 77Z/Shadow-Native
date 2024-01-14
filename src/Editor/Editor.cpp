@@ -78,8 +78,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	bgfx::setViewRect(EDITOR_VIEWPORT_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	Mouse mouse(&editorWindow);
-	// ! Keyboard breaks window resizing
-	// Keyboard keyboard(&editorWindow);
+	Keyboard keyboard(&editorWindow);
 
 	// * time uniform
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
@@ -129,7 +128,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	// bgfx::ProgramHandle program = loadProgram("mesh/vs_mesh.sc.spv", "mesh/fs_mesh.sc.spv");
 
 	// * camera init
-	SceneNamespace::FlyCamera flyCamera = SceneNamespace::FlyCamera(&mouse, nullptr);
+	SceneNamespace::FlyCamera flyCamera = SceneNamespace::FlyCamera(&mouse, &keyboard);
 	flyCamera.setPosition({0.0f, 0.0f, -15.0f });
 	flyCamera.setVerticalAngle(0.0f);
 
