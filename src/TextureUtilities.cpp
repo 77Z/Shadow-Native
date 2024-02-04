@@ -52,7 +52,7 @@ namespace Shadow {
 
 #endif
 
-
+#if 0
 		BX_UNUSED(width);
 		BX_UNUSED(height);
 		
@@ -71,6 +71,23 @@ namespace Shadow {
 			1,
 			bgfx::TextureFormat::RGBA8,
 			// bgfx::TextureFormat::RGBA16F,
+			BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE,
+			mem
+		);
+
+		#endif
+
+		const bgfx::Memory* mem = bgfx::alloc(width * height * sizeof(uint32_t));
+
+		uint32_t* pixels = (uint32_t*)mem->data;
+		bx::memSet(pixels, 0, mem->size);
+
+		return bgfx::createTexture2D(
+			width,
+			height,
+			false,
+			1,
+			bgfx::TextureFormat::RGBA8,
 			BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE,
 			mem
 		);

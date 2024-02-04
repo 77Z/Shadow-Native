@@ -1,4 +1,6 @@
+#include "Debug/TaskIndicator.hpp"
 #include "Editor/EditorParts/EditorParts.hpp"
+#include "Editor/Project.hpp"
 #include "Util.hpp"
 #include "bgfx/bgfx.h"
 #include "imgui.h"
@@ -99,6 +101,17 @@ static float drawTitlebar() {
 	}
 
 	drawMainMenuBar();
+
+	// * Running engine tasks
+
+	ImGui::SetCursorPos(ImVec2(100.0f, 30.0f));
+	ImGui::Text("%s", Editor::getCurrentProjectName().c_str());
+
+	const char* taskText = "engine task";
+	ImGui::SetCursorPos(ImVec2(titlebarMax.x - ImGui::CalcTextSize(taskText).x - 20.0f, 30.f));
+	ImGui::Text("%s", taskText);
+
+	TaskIndicator::addTask("const std::string &text");
 
 	// ? Do we even need this? The window title should already be drawn by OS decorations?
 	/* { // * Window title
