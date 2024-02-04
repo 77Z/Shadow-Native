@@ -4,16 +4,13 @@
 #include <string>
 #include <unordered_map>
 
-/// Adds a task indicator to the top of the editor, stays there until cleared with EC_TASKCLEAR
-#define EC_TASK()
-
-/// Clears a task using the return value of EC_TASK
-#define EC_TASKCLEAR()
-
 namespace Shadow::TaskIndicator {
 
+/// Adds a task indicator to the top of the editor, stays there until cleared with endTask
 int addTask(const std::string& text);
+/// Clears a task using the return value of addTask
 void endTask(int taskId);
+
 std::unordered_map<int, std::string> getActiveTasks();
 
 }

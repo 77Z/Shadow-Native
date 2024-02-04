@@ -38,6 +38,9 @@ void viewportWindowUpdate();
 void resourcesWindowInit();
 void resourcesWindowUpdate();
 
+void taskDisplayInit();
+void taskDisplayUpdate();
+
 }
 
 #endif /* SHADOW_NATIVE_EDITOR_EDITOR_PARTS_EDITOR_PARTS_HPP */

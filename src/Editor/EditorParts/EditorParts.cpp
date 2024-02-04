@@ -12,6 +12,7 @@ void init(EditorPartsCarePackage carePackage) {
 	rootWindowInit();
 	viewportWindowInit(carePackage);
 	resourcesWindowInit();
+	taskDisplayInit();
 }
 
 void onUpdate() {
@@ -25,6 +26,7 @@ void onUpdate() {
 	ImGui::ShowDemoWindow();
 	viewportWindowUpdate();
 	resourcesWindowUpdate();
+	taskDisplayUpdate();
 }
 
 void destroy() {
