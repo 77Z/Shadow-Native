@@ -24,7 +24,8 @@ int startAXEEditor(AXEProjectEntry project) {
 	RenderBootstrapper rb(&axeEditorWindow, bgfx::RendererType::Vulkan);
 
 	while (!axeEditorWindow.shouldClose()) {
-		axeEditorWindow.pollEvents();
+		//axeEditorWindow.pollEvents();
+    axeEditorWindow.waitEvents();
 
 		rb.startFrame();
 

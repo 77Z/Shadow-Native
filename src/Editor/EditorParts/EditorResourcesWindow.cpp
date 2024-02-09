@@ -1,6 +1,7 @@
 #include "Editor/EditorParts/EditorParts.hpp"
 #include "bgfx/bgfx.h"
 #include "bx/bx.h"
+#include "dummy.hpp"
 #include "imgui.h"
 #include <cstdint>
 
@@ -84,6 +85,10 @@ void resourcesWindowUpdate() {
 	resourceBar("  U", "Uniforms",				stats->numUniforms,				caps->limits.maxUniforms,				maxWidth, itemHeight);
 	resourceBar(" VB", "Vertex buffers",			stats->numVertexBuffers,		caps->limits.maxVertexBuffers,			maxWidth, itemHeight);
 	resourceBar(" VL", "Vertex layouts",			stats->numVertexLayouts,		caps->limits.maxVertexLayouts,			maxWidth, itemHeight);
+
+	if (ImGui::Button("Dummy func")) {
+		Shadow::dummy();
+	}
 
 	ImGui::End();
 }

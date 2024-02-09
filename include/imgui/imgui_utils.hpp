@@ -80,6 +80,11 @@ inline bool ImageButton(bgfx::TextureHandle _handle, const ImVec2& _size,
 	return ImageButton(_handle, IMGUI_FLAGS_ALPHA_BLEND, 0, _size, _uv0, _uv1, _bgCol, _tintCol);
 }
 
+// Spinners
+// https://github.com/ocornut/imgui/issues/1901
+
+bool Spinner(const char* label, float radius, int thickness, const ImU32& color);
+
 }
 
 #endif /* SHADOW_NATIVE_IMGUI_UTILS_HPP */
