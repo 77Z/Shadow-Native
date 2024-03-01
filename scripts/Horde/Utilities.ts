@@ -113,7 +113,10 @@ export function gatherFlags(target: Target, isRegularC: boolean): string {
 
 	// Include dirs
 	for (const include of target.IncludeDirs) {
-		flags.push(`-I../../../${target.BaseDir}/${include}`);
+		if (include.charAt(0) == "/")
+			flags.push(`-I${include}`);
+		else
+			flags.push(`-I../../../${target.BaseDir}/${include}`);
 	}
 
 	return flags.join(" ");

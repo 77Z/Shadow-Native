@@ -27,6 +27,7 @@ void onUpdate() {
 	viewportWindowUpdate();
 	resourcesWindowUpdate();
 	taskDisplayUpdate();
+	chunkerWindowUpdate();
 }
 
 void destroy() {

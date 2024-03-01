@@ -6,7 +6,7 @@
 
 namespace Shadow {
 
-struct FailableFunctionStatus {
+struct MethodStatus {
 	enum Enum { Success, Failure };
 };
 

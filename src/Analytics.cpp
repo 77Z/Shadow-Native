@@ -40,7 +40,7 @@ static std::string quickReadCommand(const char* cmd) {
 	return result;
 }
 
-/// ! ANALYTICS SHOULD RUN ON IT'S OWN THREAD
+/// ! ANALYTICS SHOULD RUN ON ITS OWN THREAD
 AnalyticsBroker::AnalyticsBroker() {
 	json trackingObj;
 	trackingObj["CPU_NAME"] = BX_CPU_NAME;

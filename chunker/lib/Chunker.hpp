@@ -1,37 +1,41 @@
-#pragma once
+#ifndef SHADOW_NATIVE_CHUNKER_HPP
+#define SHADOW_NATIVE_CHUNKER_HPP
 
+#include "Chunker.hpp.old"
+#include "Core.hpp"
 #include <cstdint>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
-namespace Chunker {
+namespace Shadow::Chunker {
 
-	enum CompressionType_ : uint8_t {
-		CompressionType_None = 0,
-		CompressionType_LZ4 = 1,
-		CompressionType_Snappy = 2
+enum CompressionType_ : uint8_t {
+	CompressionType_None = 0x00,
+	CompressionType_Snappy = 0x01
+};
+
+class Chunk {
+public:
+	Chunk();
+	~Chunk();
+
+	CompressionType_ compression = CompressionType_None;
+
+	MethodStatus::Enum deserializeChunkerFile(const char* chunkerFilePath);
+
+	/// Set the compression you'd like to use before calling this
+	MethodStatus::Enum serializeDirectory(const std::string& inputPath, const std::string& outputPath);
+
+private:
+	struct FileLocation {
+		uint64_t offset;
+		uint64_t size;
 	};
 
-	inline std::string CompressionTypeToString(CompressionType_ compressionType) {
-		switch(compressionType) {
-			case CompressionType_None: return "None";
-			case CompressionType_LZ4: return "LZ4";
-			case CompressionType_Snappy: return "Snappy";
-			default: return "WHAT";
-		}
-	}
-
-	struct FileIndex {
-		const char* filename;
-		Chunker::CompressionType_ compression;
-		uint32_t internalFilesize;
-		std::unordered_map<std::string, uint32_t> offsetMap;
-		std::unordered_map<std::string, uint32_t> sizeMap;
-	};
-
-	int chunkFolder(std::string folderpath, CompressionType_ compression, std::string outputFilePath);
-	Chunker::FileIndex indexChunk(const char* inputfile);
-	std::string readFile(Chunker::FileIndex index, const char* innerFile);
+	uint64_t TOCSize; // Combined size of Header + TOC
+	std::unordered_map<std::string, FileLocation> locationMap;
+};
 
 }
+
+#endif /* SHADOW_NATIVE_CHUNKER_HPP */

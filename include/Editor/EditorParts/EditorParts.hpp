@@ -41,6 +41,8 @@ void resourcesWindowUpdate();
 void taskDisplayInit();
 void taskDisplayUpdate();
 
+void chunkerWindowUpdate();
+
 }
 
 #endif /* SHADOW_NATIVE_EDITOR_EDITOR_PARTS_EDITOR_PARTS_HPP */
