@@ -7,6 +7,7 @@
 #include "Editor/Editor.hpp"
 #include "Editor/Project.hpp"
 #include "Editor/ProjectBrowser.hpp"
+#include "ModelViewer.hpp"
 #include "ProductionRuntime/RuntimeBootstrapper.hpp"
 #include "Runtime.hpp"
 #include "Util.hpp"
@@ -60,6 +61,8 @@ int Main(int argc, char** argv) {
 				outfile << bson[i];
 			}
 			outfile.close();
+		} else if (strcmp(argv[1], "ModelViewer") == 0) {
+			ModelViewer mdlview((std::string(argv[2])));
 		}
 	} else {
 		// return Shadow::StartRuntime();
