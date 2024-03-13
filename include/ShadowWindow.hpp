@@ -40,11 +40,13 @@ public:
 	bool shouldClose() { return glfwWindowShouldClose(window); }
 	void close() { glfwSetWindowShouldClose(window, GLFW_TRUE); }
 
-	// Polls contstantly, good for games
+	/// Polls contstantly, good for games
 	void pollEvents() { glfwPollEvents(); }
 
-	// Polls on user input, good for UI tools
+	/// Polls on user input, good for UI tools
 	void waitEvents() { glfwWaitEvents(); }
+	/// Post an empty event to update the screen
+	void postEmptyEvent() { glfwPostEmptyEvent(); }
 
 	WindowDimensions getExtent() { return { width, height }; };
 	bool wasWindowResized() { return framebufferResized; }
