@@ -9,7 +9,6 @@
 #include "Editor/ProjectBrowser.hpp"
 #include "ModelViewer.hpp"
 #include "ProductionRuntime/RuntimeBootstrapper.hpp"
-#include "Runtime.hpp"
 #include "Util.hpp"
 #include "json_impl.hpp"
 #include "ppk_assert_impl.hpp"
@@ -30,6 +29,8 @@ int Main(int argc, char** argv) {
 		return 1;
 
 	InitBXFilesystem();
+
+	return Shadow::StartProductionRuntime();
 
 #if CONFIG_SHADOW_PRODUCTION_BUILD
 	return Shadow::StartProductionRuntime();

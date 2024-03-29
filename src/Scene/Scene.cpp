@@ -158,6 +158,8 @@ void Scene::onUpdate(bgfx::ViewId viewid) {
 
 		auto& transform = m_Registry.get<TransformComponent>(entity);
 
+		WARN("THE SCENE IS IN FACT BEING UPDATED.");
+
 		float tfMtx[16];
 		bx::mtxSRT(tfMtx, 
 			transform.scale.x, transform.scale.y, transform.scale.z,

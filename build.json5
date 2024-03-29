@@ -1241,7 +1241,7 @@
 
 			IfDebug: {
 				Defines: [ "BX_CONFIG_DEBUG=1", "SHADOW_DEBUG_BUILD",
-					"_REENTRANT" // Mono Runtime
+					//"_REENTRANT" // Mono Runtime
 				],
 				CXXFLAGS: [ '-g' ]
 			},
@@ -1271,7 +1271,7 @@
 				"lib/bgfx/examples/common",
 				"lib/stb",
 				"lib/sdf",
-				"/usr/include/mono-2.0"
+				//"/usr/include/mono-2.0"
 				// "../vcpkg/packages/ms-gsl_x64-linux/include"
 				],
 
@@ -1305,7 +1305,9 @@
 			SrcExcludes: [],
 			LinkerFlags: [
 				"-lstdc++", "-lm", "-lGL", "-lX11", "-ldl", "-lpthread", "-lrt",
-				"-lvulkan", "-fvisibility=hidden", "-lmono-2.0" ],
+				"-lvulkan", "-fvisibility=hidden",
+        //"-lmono-2.0"
+        ],
 			
 			// InlineBuildLibs is a list of libraries that will be included in
 			// the build of the current target, but they must be built within

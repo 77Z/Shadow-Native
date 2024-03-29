@@ -1,0 +1,114 @@
+#include "Core.hpp"
+#include "Debug/EditorConsole.hpp"
+#include "Debug/Logger.hpp"
+#include "Mouse.hpp"
+#include "ProductionRuntime/RuntimeBootstrapper.hpp"
+#include "Scene/FlyCamera.hpp"
+#include "Scene/Scene.hpp"
+#include "Scene/SceneSerializer.hpp"
+#include "ShadowWindow.hpp"
+#include "bgfx/bgfx.h"
+#include "bgfx/defines.h"
+#include "bx/bx.h"
+#include "Keyboard.hpp"
+#include "imgui/theme.hpp"
+#include "imgui_impl_glfw.h"
+#include "imgui/imgui_impl_bgfx.h"
+
+#if BX_PLATFORM_OS_DESKTOP
+
+#define TEMP_VIEW_ID 0
+
+namespace Shadow {
+
+int StartProductionRuntime() {
+
+	ShadowWindow window(1280, 720, "WIS");
+	
+	bgfx::Init init;
+	init.type = bgfx::RendererType::Vulkan;
+	init.platformData.ndt = window.getNativeDisplayHandle();
+	init.platformData.nwh = window.getNativeWindowHandle();
+	
+	init.resolution.width = (uint32_t)window.getExtent().width;
+	init.resolution.width = (uint32_t)window.getExtent().height;
+	init.resolution.reset = BGFX_RESET_NONE;
+	bgfx::init(init);
+
+	bgfx::setViewClear(TEMP_VIEW_ID, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x111111FF, 1.0f, 0);
+	bgfx::setViewRect(TEMP_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
+
+	Mouse mouse(&window);
+	Keyboard keyboard(&window);
+
+	{	// ! Remove me
+		ImGui::CreateContext();
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+		io.ConfigDockingTransparentPayload = true;
+		float sf = window.getContentScale();
+		io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
+		io.Fonts->AddFontDefault();
+		ImGui::GetStyle().ScaleAllSizes(sf);
+		ImGui::SetupTheme();
+		ImGui_Implbgfx_Init(255);
+		ImGui_ImplGlfw_InitForVulkan(window.window, true);
+	}
+
+	Reference<Scene> scene = CreateReference<Scene>();
+	SceneSerializer ss(scene);
+	ss.deserialize("./default.scene");
+
+	SceneNamespace::FlyCamera flyCamera(&mouse, &keyboard);
+	flyCamera.setPosition({0.0f, 0.0f, -15.0f });
+	flyCamera.setVerticalAngle(0.0f);
+
+	while (!window.shouldClose()) {
+		window.pollEvents();
+
+		if (window.wasWindowResized()) {
+			bgfx::reset(
+				(uint32_t)window.getExtent().width, (uint32_t)window.getExtent().height, BGFX_RESET_VSYNC);
+			bgfx::setViewRect(TEMP_VIEW_ID, 0, 0, bgfx::BackbufferRatio::Equal);
+
+			window.resetWindowResizedFlag();
+		}
+
+		{	// ! Remove me
+			ImGui_Implbgfx_NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+		}
+
+		scene->onUpdate(TEMP_VIEW_ID);
+
+		mouse.onUpdate();
+
+		bgfx::setDebug(BGFX_DEBUG_TEXT);
+		bgfx::dbgTextClear();
+		bgfx::dbgTextPrintf(3, 1, 0x01, "SHADOW ENGINE");
+		bgfx::dbgTextPrintf(3, 2, 0x01, "Scene: %s", scene->sceneName.c_str());
+
+
+		{	// ! Remove me
+			EditorConsole::Frontend::onUpdate();
+			ImGui::Render();
+			ImGui_Implbgfx_RenderDrawLists(ImGui::GetDrawData());
+		}
+
+		bgfx::touch(TEMP_VIEW_ID);
+
+		bgfx::frame();
+	}
+
+	bgfx::shutdown();
+	window.shutdown();
+
+	return 0;
+}
+
+}
+
+#endif

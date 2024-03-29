@@ -6,10 +6,13 @@
 #include "ShadowWindow.hpp"
 #include "bgfx/bgfx.h"
 #include "imgui.h"
+#include "imgui/imgui_utils.hpp"
 #include "imgui_internal.h"
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <string>
+#include <vector>
 #include "Debug/EditorConsole.hpp"
 
 #include "ImZoomSlider.h"
@@ -25,14 +28,25 @@ public:
 	Track() {}
 	~Track() {}
 
-	void drawTrack(uint32_t visualIndex) {
+	void drawTrack(size_t visualIndex, std::vector<Track>* tracks) {
 		// Visual index is only used so the track knows where it is on the screen
 
 		ImGui::PushID(visualIndex);
 
 		const ImVec2 sliderSize(18.0f, 120.0f);
 
-		ImGui::SliderFloat("VOLUME", &volume, 0, 100);
+		// ImGui::SliderFloat("VOLUME", &volume, 0, 100);
+
+		ImGui::PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
+		ImGui::PushStyleColor(ImGuiCol_FrameBg, IM_COL32(0, 0, 0, 0));
+		ImGui::PushItemWidth(100.0f);
+		ImGui::InputText("##trackname", &trackName);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		if (ImGui::SmallButton("X")) {
+			tracks->erase(tracks->begin() + visualIndex);
+		}
+		ImGui::PopStyleColor(2);
 
 		const char* volAdjustPopupName = std::string("volumeadjust").append(std::to_string(visualIndex)).c_str();
 
@@ -59,9 +73,13 @@ public:
 		ImGui::PopID();
 	}
 
+	std::string trackName = "Untitled Track";
+
 	float balence = 0;
 	float volume = 100;
 };
+
+static std::vector<Track> tracks;
 
 int startAXEEditor(AXEProjectEntry project) {
 	ShadowWindow axeEditorWindow(1820, 1280, "AXE Editor");
@@ -71,6 +89,8 @@ int startAXEEditor(AXEProjectEntry project) {
 
 	Track t1;
 	Track t2;
+	tracks.push_back(t1);
+	tracks.push_back(t2);
 
 	while (!axeEditorWindow.shouldClose()) {
 		//axeEditorWindow.pollEvents();
@@ -128,8 +148,14 @@ int startAXEEditor(AXEProjectEntry project) {
 		const float reservedSpace = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
 		if (ImGui::BeginChild("TimelineRegion", ImVec2(0, -reservedSpace), ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar)) {
 			
-			t1.drawTrack(0);
-			t2.drawTrack(2);
+			for (size_t i = 0; i < tracks.size(); i++) {
+				tracks[i].drawTrack(i, &tracks);
+			}
+
+			if (ImGui::Button("+ Add Track")) {
+				Track temp;
+				tracks.push_back(temp);
+			}
 
 			ImGui::EndChild();
 		}
