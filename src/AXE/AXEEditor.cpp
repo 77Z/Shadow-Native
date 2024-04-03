@@ -93,8 +93,8 @@ int startAXEEditor(AXEProjectEntry project) {
 	tracks.push_back(t2);
 
 	while (!axeEditorWindow.shouldClose()) {
-		//axeEditorWindow.pollEvents();
-		axeEditorWindow.waitEvents();
+		axeEditorWindow.pollEvents();
+		// axeEditorWindow.waitEvents();
 
 		rb.startFrame();
 
@@ -117,8 +117,6 @@ int startAXEEditor(AXEProjectEntry project) {
 		ImGui::PopStyleColor();
 
 		ImGui::PopStyleVar(3);
-
-		ImGui::Text("Hello");
 
 		ImGui::SameLine();
 
@@ -157,11 +155,19 @@ int startAXEEditor(AXEProjectEntry project) {
 				tracks.push_back(temp);
 			}
 
-			ImGui::EndChild();
 		}
+			ImGui::EndChild();
 
 		ImZoomSlider::ImZoomSlider(0.f, staticDuration, uMin, uMax);
 
+
+		ImGui::End();
+
+		ImGui::Begin("AXE UI WINDOW");
+
+		ImGui::Spinner("##spinner", 25, 10, IM_COL32(255, 0, 0, 255));
+		ImGui::SameLine();
+		ImGui::Text("    Connecting to AXE");
 
 		ImGui::End();
 

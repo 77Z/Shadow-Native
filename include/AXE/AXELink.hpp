@@ -1,0 +1,12 @@
+#ifndef SHADOW_NATIVE_AXE_AXE_LINK_HPP
+#define SHADOW_NATIVE_AXE_AXE_LINK_HPP
+
+
+
+namespace Shadow::AXE {
+
+
+
+}
+
+#endif /* SHADOW_NATIVE_AXE_AXE_LINK_HPP */

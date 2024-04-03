@@ -30,7 +30,7 @@ int Main(int argc, char** argv) {
 
 	InitBXFilesystem();
 
-	return Shadow::StartProductionRuntime();
+	// return Shadow::StartProductionRuntime();
 
 #if CONFIG_SHADOW_PRODUCTION_BUILD
 	return Shadow::StartProductionRuntime();
