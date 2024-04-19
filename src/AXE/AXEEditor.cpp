@@ -4,18 +4,26 @@
 #include "ImSequencer.h"
 #include "RenderBootstrapper.hpp"
 #include "ShadowWindow.hpp"
+#include "Util.hpp"
 #include "bgfx/bgfx.h"
+#include "bgfx/defines.h"
+#include "bimg/bimg.h"
+#include "bx/error.h"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui_internal.h"
 #include <algorithm>
+#include <boost/interprocess/detail/os_file_functions.hpp>
+#include <boost/interprocess/mapped_region.hpp>
+#include <boost/interprocess/shared_memory_object.hpp>
 #include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
 #include "Debug/EditorConsole.hpp"
+#include "bimg/decode.h"
 
-#include "ImZoomSlider.h"
+// #include "ImZoomSlider.h"
 
 namespace Shadow::AXE {
 
@@ -82,7 +90,7 @@ public:
 static std::vector<Track> tracks;
 
 int startAXEEditor(AXEProjectEntry project) {
-	ShadowWindow axeEditorWindow(1820, 1280, "AXE Editor");
+	ShadowWindow axeEditorWindow(1500, 1000, "AXE Editor");
 	RenderBootstrapper rb(&axeEditorWindow, bgfx::RendererType::Vulkan, false);
 
 	uint32_t frame = 0;
@@ -91,6 +99,20 @@ int startAXEEditor(AXEProjectEntry project) {
 	Track t2;
 	tracks.push_back(t1);
 	tracks.push_back(t2);
+
+	using namespace boost::interprocess;
+	shared_memory_object shm(open_or_create, "axe_link_shm", read_only);
+	mapped_region region(shm, read_only);
+	bimg::ImageContainer* imgContainer = bimg::imageParse(getAllocator(), region.get_address(), region.get_size());
+	const bgfx::Memory* imgMem = bgfx::makeRef(imgContainer->m_data, imgContainer->m_size, imageReleaseCb, imgContainer);
+	bgfx::TextureHandle handle = bgfx::createTexture2D(
+		uint16_t(800),
+		uint16_t(600),
+		false,
+		1,
+		bgfx::TextureFormat::Enum(imgContainer->m_format),
+		BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE,
+		imgMem);
 
 	while (!axeEditorWindow.shouldClose()) {
 		axeEditorWindow.pollEvents();
@@ -158,7 +180,7 @@ int startAXEEditor(AXEProjectEntry project) {
 		}
 			ImGui::EndChild();
 
-		ImZoomSlider::ImZoomSlider(0.f, staticDuration, uMin, uMax);
+		// ImZoomSlider::ImZoomSlider(0.f, staticDuration, uMin, uMax);
 
 
 		ImGui::End();
@@ -168,6 +190,11 @@ int startAXEEditor(AXEProjectEntry project) {
 		ImGui::Spinner("##spinner", 25, 10, IM_COL32(255, 0, 0, 255));
 		ImGui::SameLine();
 		ImGui::Text("    Connecting to AXE");
+
+		ImGui::Image(
+			handle,
+			ImVec2(800, 600)
+		);
 
 		ImGui::End();
 

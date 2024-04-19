@@ -79,9 +79,9 @@ void viewportWindowUpdate() {
 	float rotation[3] = { 0.0f, 0.0f, 0.0f };
 	float scale[3] = { 1.0f, 1.0f, 1.0f };
 	float mtx[16];
-	ImGuizmo::RecomposeMatrixFromComponents(translation, rotation, scale, mtx);
-	ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-	ImGuizmo::Manipulate(viewportViewMatrix, viewportProjectionMatrix, ImGuizmo::TRANSLATE, ImGuizmo::LOCAL, mtx);
+	// ImGuizmo::RecomposeMatrixFromComponents(translation, rotation, scale, mtx);
+	// ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
+	// ImGuizmo::Manipulate(viewportViewMatrix, viewportProjectionMatrix, ImGuizmo::TRANSLATE, ImGuizmo::LOCAL, mtx);
 
 	ImGui::SetCursorPos(ImVec2(10, 30));
 	ImGui::Text("Scene: %s", editorSceneRef.get()->sceneName.c_str());

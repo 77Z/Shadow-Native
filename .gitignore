@@ -11,7 +11,8 @@ include/config
 include/generated
 scripts/deno
 node_modules
-AXEUI/nativeLink/build
+AXEUI/nativeLink/headers
+*.node
 
 # Rust
 debug/

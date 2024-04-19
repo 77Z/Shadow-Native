@@ -1,6 +1,6 @@
 const {app, BrowserWindow} = require("electron");
 const fs = require("fs");
-const nativeLink = require("./nativeLink/build/Release/AXENativeLink");
+const nativeLink = require("./nativeLink/AXENativeLink");
 
 app.disableHardwareAcceleration();
 
@@ -16,17 +16,24 @@ function createWindow() {
 		}
 	})
 
+	// window.loadURL(`${__dirname}/dom/index.html`);
 	window.loadURL("https://77z.dev");
 	window.webContents.on("paint", (e, dirty, image) => {
 		// fs.writeFileSync("out.png", image.toPNG());
-		
+		nativeLink.sendFrame(image.toPNG());
 	});
 
-	window.webContents.setFrameRate(200);
+	// window.webContents.sendInputEvent({
+	// 	type: "mouseDown",
+	// 	x: 10,
+	// 	y: 10,
+	// 	button: "left",
+	// })
+
+	window.webContents.setFrameRate(60);
 }
 
 app.whenReady().then(() => {
-	nativeLink.foobar();
 	createWindow();
 })
 

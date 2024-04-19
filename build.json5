@@ -1192,7 +1192,8 @@
 
 			IncludeDirs: [
 				"./lib",
-				"../lib/termcolor" ],
+				"../lib/termcolor",
+        "../include" ],
 
 			Sources: [ "*.cpp" ],
 			SrcExcludes: [],
