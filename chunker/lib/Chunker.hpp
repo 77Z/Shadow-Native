@@ -18,11 +18,12 @@ enum CompressionType_ : uint8_t {
 /// pass to the various Chunker methods at let those functions
 /// handle working with the struct
 struct Chunk {
+  std::string chunkFileLocation;
   const char* filename;
   Chunker::CompressionType_ compression;
-  uint32_t headerSize;
-  std::unordered_map<std::string, uint32_t> offsetMap;
-  std::unordered_map<std::string, uint32_t> sizeMap;
+  uint64_t headerSize;
+  std::unordered_map<std::string, uint64_t> offsetMap;
+  std::unordered_map<std::string, uint64_t> sizeMap;
 };
 
 // -- CHUNK CREATION -- //

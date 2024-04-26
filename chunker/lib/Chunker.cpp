@@ -1,21 +1,16 @@
 #include "Chunker.hpp"
 #include "Core.hpp"
-#include "Debug/EditorConsole.hpp"
+// #include "Debug/EditorConsole.hpp"
 #include <cstdint>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <string>
 
-#define CHUNKER_FORMAT_VERSION 0x02
+#define CHUNKER_FORMAT_VERSION 0x03
 
 namespace Shadow::Chunker {
 
-Chunk::Chunk() {
-	EC_NEWCAT("Chunker");
-}
-
-Chunk::~Chunk() {}
 
 MethodStatus::Enum Chunk::deserializeChunkerFile(const char* chunkerFilePath) {
 	return MethodStatus::Success;
@@ -25,7 +20,7 @@ MethodStatus::Enum Chunk::serializeDirectory(const std::string& inputPath, const
 
 	std::ifstream targetDir(inputPath);
 	if (!targetDir) {
-		EC_ERROUT("Chunker", "Failed to open dir: %s", inputPath.c_str());
+		// EC_ERROUT("Chunker", "Failed to open dir: %s", inputPath.c_str());
 		return MethodStatus::Failure;
 	}
 	targetDir.close();
@@ -53,7 +48,7 @@ MethodStatus::Enum Chunk::serializeDirectory(const std::string& inputPath, const
 	uint64_t offset = 0;
 	for (const std::filesystem::directory_entry& file : std::filesystem::recursive_directory_iterator(inputPath)) {
 		std::string filename = file.path().string();
-		EC_PRINT("Chunker", "%s", filename.c_str());
+		// EC_PRINT("Chunker", "%s", filename.c_str());
 	}
 
 	outputFile.close();
