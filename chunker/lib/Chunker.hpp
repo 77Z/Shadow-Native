@@ -12,17 +12,26 @@ enum CompressionType_ : uint8_t {
 	CompressionType_Snappy = 0x01
 };
 
+inline std::string CompressionTypeToString(CompressionType_ compressionType) {
+	switch(compressionType) {
+		case CompressionType_None: return "None";
+		case CompressionType_Snappy: return "Snappy";
+		default: return "?Unknown?";
+	}
+}
+
 /// It's recomended to leave the contents of this struct alone
 /// and at most read the filename. Instead, use this struct to
 /// pass to the various Chunker methods at let those functions
 /// handle working with the struct
 struct Chunk {
-  std::string chunkFileLocation;
-  const char* filename;
-  Chunker::CompressionType_ compression;
-  uint64_t headerSize;
-  std::unordered_map<std::string, uint64_t> offsetMap;
-  std::unordered_map<std::string, uint64_t> sizeMap;
+	std::string chunkFileLocation;
+	const char* filename;
+	uint8_t version;
+	Chunker::CompressionType_ compression;
+	uint64_t headerSize;
+	std::unordered_map<std::string, uint64_t> offsetMap;
+	std::unordered_map<std::string, uint64_t> sizeMap;
 };
 
 // -- CHUNK CREATION -- //
@@ -42,29 +51,6 @@ Chunk loadChunk(const char* chunkFileLocation);
 /// does not mean that the contents are text, it could be
 /// anything.
 std::string readFile(Chunk* chunk, const char* filename);
-
-
-// class Chunk {
-// public:
-// 	Chunk();
-// 	~Chunk();
-//
-// 	CompressionType_ compression = CompressionType_None;
-//
-// 	MethodStatus::Enum deserializeChunkerFile(const char* chunkerFilePath);
-//
-// 	/// Set the compression you'd like to use before calling this
-// 	MethodStatus::Enum serializeDirectory(const std::string& inputPath, const std::string& outputPath);
-//
-// private:
-// 	struct FileLocation {
-// 		uint64_t offset;
-// 		uint64_t size;
-// 	};
-//
-// 	uint64_t TOCSize; // Combined size of Header + TOC
-// 	std::unordered_map<std::string, FileLocation> locationMap;
-// };
 
 }
 

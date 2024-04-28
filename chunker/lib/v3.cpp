@@ -1,9 +1,12 @@
 #include "Chunker.hpp"
 #include "snappy.h"
 #include <cstdint>
+#include <cstdlib>
 #include <cstring>
 #include <filesystem>
 #include <fstream>
+#include <ios>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -15,12 +18,17 @@ namespace Shadow::Chunker {
 /// Returns 0 on failure, 1 on success
 int chunkDirectory(
 	const std::string& dirPath, CompressionType_ compression, const std::string& outputPath) {
+
 	std::ifstream operatingDir(dirPath);
-	if (!operatingDir)
+	if (!operatingDir) {
+		std::cerr << "Can't open directory" << std::endl;
 		return 0;
+	}
 	operatingDir.close();
 
-	std::fstream outputChunkFile(outputPath);
+	std::fstream outputChunkFile(outputPath, std::ios::out);
+
+	std::cout << "Writing to file " << outputPath << std::endl;
 
 	// * Magic header identifier
 	const char* magic = "SHADOW CHUNK"; // 12 bytes
@@ -31,7 +39,7 @@ int chunkDirectory(
 	outputChunkFile.write((char*)&versionNumber, sizeof(versionNumber));
 
 	// * Compression Type
-	outputChunkFile.write((char*)compression, sizeof(compression));
+	outputChunkFile.write((char*)&compression, sizeof(compression));
 
 	// * Header size
 	const uint64_t headerTemplate = 0x0000000000000000; // 64-bit
@@ -114,6 +122,7 @@ int chunkDirectory(
 	return 1;
 }
 
+// TODO: convert to const std::string???
 Chunk loadChunk(const char* chunkFileLocation) {
 	Chunk chunk;
 
@@ -128,21 +137,25 @@ Chunk loadChunk(const char* chunkFileLocation) {
 	char headerVerificationBuf[13];
 	file.read(headerVerificationBuf, 12);
 	headerVerificationBuf[12] = '\0';
-	if (strcmp(headerVerificationBuf, "SHADOW CHUNK") != 0)
-		throw ""; // TODO: fix
+	if (strcmp(headerVerificationBuf, "SHADOW CHUNK") != 0) {
+		std::cerr << "Header doesn't match! Is this a chunker file??" << std::endl;
+		abort();
+	}
 
 	// Version verification
-	file.seekg(13);
+	file.seekg(12);
 	uint8_t versionBuf = 0x00;
 	file.read((char*)&versionBuf, 1);
 	if (versionBuf != CHUNKER_FORMAT_VERSION) {
-		throw "Wrong version";
+		std::cerr << "Wrong chunk version!" << std::endl;
+		abort();
 	}
+	chunk.version = versionBuf;
 
 	chunk.filename = chunkFileLocation;
 
 	// Detect compression type
-	file.seekg(14);
+	file.seekg(13);
 	CompressionType_ compressionBuf = CompressionType_None;
 	file.read((char*)&compressionBuf, 1);
 	chunk.compression = compressionBuf;
@@ -153,7 +166,7 @@ Chunk loadChunk(const char* chunkFileLocation) {
 	file.read((char*)&headerSizeBuf, sizeof(headerSizeBuf));
 	chunk.headerSize = headerSizeBuf;
 
-	file.seekg(24);
+	file.seekg(22);
 
 	// TODO: fix later
 	while (file.tellg() < chunk.headerSize) {
