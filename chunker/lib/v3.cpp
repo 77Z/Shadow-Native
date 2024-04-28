@@ -11,195 +11,198 @@
 #define CHUNKER_FORMAT_VERSION 0x03
 
 namespace Shadow::Chunker {
-  
-  /// Returns 0 on failure, 1 on success
-  int chunkDirectory(const std::string &dirPath, CompressionType_ compression, const std::string &outputPath) {
-    std::ifstream operatingDir(dirPath);
-    if (!operatingDir) return 0;
-    operatingDir.close();
 
-    std::fstream outputChunkFile(outputPath);
+/// Returns 0 on failure, 1 on success
+int chunkDirectory(
+	const std::string& dirPath, CompressionType_ compression, const std::string& outputPath) {
+	std::ifstream operatingDir(dirPath);
+	if (!operatingDir)
+		return 0;
+	operatingDir.close();
 
-    // * Magic header identifier
-    const char* magic = "SHADOW CHUNK"; // 12 bytes
-    outputChunkFile.write(magic, strlen(magic));
+	std::fstream outputChunkFile(outputPath);
 
-    // * Chunker version number
-    const uint8_t versionNumber = CHUNKER_FORMAT_VERSION;
-    outputChunkFile.write((char*)&versionNumber, sizeof(versionNumber));
+	// * Magic header identifier
+	const char* magic = "SHADOW CHUNK"; // 12 bytes
+	outputChunkFile.write(magic, strlen(magic));
 
-    // * Compression Type
-    outputChunkFile.write((char*)compression, sizeof(compression));
+	// * Chunker version number
+	const uint8_t versionNumber = CHUNKER_FORMAT_VERSION;
+	outputChunkFile.write((char*)&versionNumber, sizeof(versionNumber));
 
-    // * Header size
-    const uint64_t headerTemplate = 0x0000000000000000; // 64-bit
-    outputChunkFile.write((char*)&headerTemplate, sizeof(headerTemplate));
+	// * Compression Type
+	outputChunkFile.write((char*)compression, sizeof(compression));
 
+	// * Header size
+	const uint64_t headerTemplate = 0x0000000000000000; // 64-bit
+	outputChunkFile.write((char*)&headerTemplate, sizeof(headerTemplate));
 
-    // * Table of Contents
-    uint64_t offset = 0;
-    // Iterate through every file in the provided directory
-    for (const std::filesystem::directory_entry& file : std::filesystem::recursive_directory_iterator(dirPath)) {
-      std::string filename = file.path().string();
+	// * Table of Contents
+	uint64_t offset = 0;
+	// Iterate through every file in the provided directory
+	for (const std::filesystem::directory_entry& file :
+		std::filesystem::recursive_directory_iterator(dirPath)) {
+		std::string filename = file.path().string();
 
-      // Loading the file data only to get its size
-      std::ifstream iteratedFile(filename);
-      std::stringstream ss;
-      ss << iteratedFile.rdbuf();
-      std::string fileData = ss.str();
-      std::string applicableFileData;
+		// Loading the file data only to get its size
+		std::ifstream iteratedFile(filename);
+		std::stringstream ss;
+		ss << iteratedFile.rdbuf();
+		std::string fileData = ss.str();
+		std::string applicableFileData;
 
-      if (compression == CompressionType_Snappy) {
-        snappy::Compress(fileData.data(), fileData.size(), &applicableFileData);
-      } else {
-        applicableFileData = fileData;
-      }
+		if (compression == CompressionType_Snappy) {
+			snappy::Compress(fileData.data(), fileData.size(), &applicableFileData);
+		} else {
+			applicableFileData = fileData;
+		}
 
-      // Write the filename, stating the size of the filename string beforehand
-      // as a uint32_t
-      uint32_t filenameSize = filename.size();
-      outputChunkFile.write((char*)&filenameSize, sizeof(filenameSize));
-      outputChunkFile.write(filename.c_str(), filenameSize);
+		// Write the filename, stating the size of the filename string beforehand
+		// as a uint32_t
+		uint32_t filenameSize = filename.size();
+		outputChunkFile.write((char*)&filenameSize, sizeof(filenameSize));
+		outputChunkFile.write(filename.c_str(), filenameSize);
 
-      // Write file offset as a uint64_t
-      outputChunkFile.write((char*)&offset, sizeof(offset));
+		// Write file offset as a uint64_t
+		outputChunkFile.write((char*)&offset, sizeof(offset));
 
-      // Write file size as a uint64_t
-      uint64_t encodedFilesize = (uint64_t)applicableFileData.size();
-      outputChunkFile.write((char*)&encodedFilesize, sizeof(encodedFilesize));
+		// Write file size as a uint64_t
+		uint64_t encodedFilesize = (uint64_t)applicableFileData.size();
+		outputChunkFile.write((char*)&encodedFilesize, sizeof(encodedFilesize));
 
-      // Add current file size to offset to shift offset
-      offset = offset + encodedFilesize;
+		// Add current file size to offset to shift offset
+		offset = offset + encodedFilesize;
 
-      iteratedFile.close();
-    }
+		iteratedFile.close();
+	}
 
-    // Overwrite the 8 bytes at 0x14, the headerSize, that stores the size of
-    // the Chunk metadata and the Table of Contents.
-    // Seek to end
-    outputChunkFile.seekg(0, std::ios::end);
-    uint64_t headerSizeToWrite = outputChunkFile.tellg();
-    outputChunkFile.seekg(14);
-    outputChunkFile.write((char*)&headerSizeToWrite, sizeof(headerSizeToWrite));
+	// Overwrite the 8 bytes at 0x14, the headerSize, that stores the size of
+	// the Chunk metadata and the Table of Contents.
+	// Seek to end
+	outputChunkFile.seekg(0, std::ios::end);
+	uint64_t headerSizeToWrite = outputChunkFile.tellg();
+	outputChunkFile.seekg(14);
+	outputChunkFile.write((char*)&headerSizeToWrite, sizeof(headerSizeToWrite));
 
+	// 2nd iteration over all the files to add their data to the Chunk file
+	for (const std::filesystem::directory_entry& file :
+		std::filesystem::recursive_directory_iterator(dirPath)) {
+		std::string filename = file.path().string();
 
-    // 2nd iteration over all the files to add their data to the Chunk file
-    for (const std::filesystem::directory_entry& file : std::filesystem::recursive_directory_iterator(dirPath)) {
-      std::string filename = file.path().string();
+		// Retreive file contents
+		std::ifstream iteratedFile(filename);
+		std::stringstream ss;
+		ss << iteratedFile.rdbuf();
+		std::string fileData = ss.str();
+		std::string applicableFileData;
 
-      // Retreive file contents
-      std::ifstream iteratedFile(filename);
-      std::stringstream ss;
-      ss << iteratedFile.rdbuf();
-      std::string fileData = ss.str();
-      std::string applicableFileData;
+		if (compression == CompressionType_Snappy) {
+			snappy::Compress(fileData.data(), fileData.size(), &applicableFileData);
+		} else {
+			applicableFileData = fileData;
+		}
 
-      if (compression == CompressionType_Snappy) {
-        snappy::Compress(fileData.data(), fileData.size(), &applicableFileData);
-      } else {
-        applicableFileData = fileData;
-      }
+		outputChunkFile.seekg(0, std::ios::end);
+		// Using << because data can contain nullchars
+		outputChunkFile << applicableFileData;
 
-      outputChunkFile.seekg(0, std::ios::end);
-      // Using << because data can contain nullchars
-      outputChunkFile << applicableFileData;
+		iteratedFile.close();
+	}
 
-      iteratedFile.close();
-    }
+	outputChunkFile.close();
 
-    outputChunkFile.close();
+	return 1;
+}
 
-    return 1;
-  }
+Chunk loadChunk(const char* chunkFileLocation) {
+	Chunk chunk;
 
-  Chunk loadChunk(const char *chunkFileLocation) {
-    Chunk chunk;
+	chunk.chunkFileLocation = (std::string)chunkFileLocation;
 
-    chunk.chunkFileLocation = (std::string)chunkFileLocation;
-    
-    std::ifstream file(chunkFileLocation, std::ios::binary | std::ios::in);
-    if (!file) throw ""; //TODO: Fix
+	std::ifstream file(chunkFileLocation, std::ios::binary | std::ios::in);
+	if (!file)
+		throw ""; // TODO: Fix
 
-    // Header verification
-    file.seekg(0);
-    char headerVerificationBuf[13];
-    file.read(headerVerificationBuf, 12);
-    headerVerificationBuf[12] = '\0';
-    if (strcmp(headerVerificationBuf, "SHADOW CHUNK") != 0)
-      throw ""; // TODO: fix
-    
-    // Version verification
-    file.seekg(13);
-    uint8_t versionBuf = 0x00;
-    file.read((char*)&versionBuf, 1);
-    if (versionBuf != CHUNKER_FORMAT_VERSION) {
-      throw "Wrong version";
-    }
-    
-    chunk.filename = chunkFileLocation;
+	// Header verification
+	file.seekg(0);
+	char headerVerificationBuf[13];
+	file.read(headerVerificationBuf, 12);
+	headerVerificationBuf[12] = '\0';
+	if (strcmp(headerVerificationBuf, "SHADOW CHUNK") != 0)
+		throw ""; // TODO: fix
 
-    // Detect compression type
-    file.seekg(14);
-    CompressionType_ compressionBuf = CompressionType_None;
-    file.read((char*)&compressionBuf, 1);
-    chunk.compression = compressionBuf;
+	// Version verification
+	file.seekg(13);
+	uint8_t versionBuf = 0x00;
+	file.read((char*)&versionBuf, 1);
+	if (versionBuf != CHUNKER_FORMAT_VERSION) {
+		throw "Wrong version";
+	}
 
-    // Read headerSize
-    file.seekg(14);
-    uint64_t headerSizeBuf = 0;
-    file.read((char*)&headerSizeBuf, sizeof(headerSizeBuf));
-    chunk.headerSize = headerSizeBuf;
+	chunk.filename = chunkFileLocation;
 
-    file.seekg(24);
+	// Detect compression type
+	file.seekg(14);
+	CompressionType_ compressionBuf = CompressionType_None;
+	file.read((char*)&compressionBuf, 1);
+	chunk.compression = compressionBuf;
 
-    //TODO: fix later
-    while (file.tellg() < chunk.headerSize) {
-      // Read filename size
-      uint32_t filenameSizeBuffer = 0;
-      file.read((char*)&filenameSizeBuffer, sizeof(filenameSizeBuffer));
+	// Read headerSize
+	file.seekg(14);
+	uint64_t headerSizeBuf = 0;
+	file.read((char*)&headerSizeBuf, sizeof(headerSizeBuf));
+	chunk.headerSize = headerSizeBuf;
 
-      // Read filename
-      std::string filename;
-      filename.resize(filenameSizeBuffer);
-      file.read(&filename[0], filenameSizeBuffer);
+	file.seekg(24);
 
-      // Read file offset
-      uint64_t fileOffsetBuf = 0;
-      file.read((char*)&fileOffsetBuf, sizeof(fileOffsetBuf));
+	// TODO: fix later
+	while (file.tellg() < chunk.headerSize) {
+		// Read filename size
+		uint32_t filenameSizeBuffer = 0;
+		file.read((char*)&filenameSizeBuffer, sizeof(filenameSizeBuffer));
 
-      // Read file size
-      uint64_t fileSizeBuf = 0;
-      file.read((char*)&fileSizeBuf, sizeof(fileSizeBuf));
+		// Read filename
+		std::string filename;
+		filename.resize(filenameSizeBuffer);
+		file.read(&filename[0], filenameSizeBuffer);
 
-      // add to index
-      chunk.offsetMap[filename] = fileOffsetBuf;
-      chunk.sizeMap[filename] = fileSizeBuf;
-    }
+		// Read file offset
+		uint64_t fileOffsetBuf = 0;
+		file.read((char*)&fileOffsetBuf, sizeof(fileOffsetBuf));
 
-    return chunk;
-  }
+		// Read file size
+		uint64_t fileSizeBuf = 0;
+		file.read((char*)&fileSizeBuf, sizeof(fileSizeBuf));
 
-  // TODO: Should the user of the method pass a pointer to a file that this
-  // method can then utilize? It would stop the repeat opening and closing of
-  // chunker files.
-  std::string readFile(Chunk *chunk, const char *filename) {
+		// add to index
+		chunk.offsetMap[filename] = fileOffsetBuf;
+		chunk.sizeMap[filename] = fileSizeBuf;
+	}
 
-    std::ifstream file(chunk->chunkFileLocation);
+	return chunk;
+}
 
-    std::vector<char> returnBuf(chunk->sizeMap[filename]);
+// TODO: Should the user of the method pass a pointer to a file that this
+// method can then utilize? It would stop the repeat opening and closing of
+// chunker files.
+std::string readFile(Chunk* chunk, const char* filename) {
 
-    file.seekg(chunk->offsetMap[filename] + chunk->headerSize);
-    file.read(returnBuf.data(), returnBuf.size());
+	std::ifstream file(chunk->chunkFileLocation);
 
-    std::string result;
+	std::vector<char> returnBuf(chunk->sizeMap[filename]);
 
-    if (chunk->compression == CompressionType_Snappy) {
-      std::string toBeDecompressed = std::string(returnBuf.data(), returnBuf.size());
-      snappy::Uncompress(toBeDecompressed.data(), toBeDecompressed.size(), &result);
-    } else {
-      result = std::string(returnBuf.data(), returnBuf.size());
-    }
+	file.seekg(chunk->offsetMap[filename] + chunk->headerSize);
+	file.read(returnBuf.data(), returnBuf.size());
 
-    return result;
-  }
+	std::string result;
+
+	if (chunk->compression == CompressionType_Snappy) {
+		std::string toBeDecompressed = std::string(returnBuf.data(), returnBuf.size());
+		snappy::Uncompress(toBeDecompressed.data(), toBeDecompressed.size(), &result);
+	} else {
+		result = std::string(returnBuf.data(), returnBuf.size());
+	}
+
+	return result;
+}
 }

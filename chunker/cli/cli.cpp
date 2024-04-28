@@ -1,10 +1,43 @@
-#include <iostream>
+#include <cstdio>
 #include <string.h>
-#include "Chunker.hpp"
+#include "../lib/Chunker.hpp"
+#include "../../include/generated/autoconf.h"
+#include "../../include/Debug/Logger.hpp"
+#include <bx/commandline.h>
+
+void printVersion() {
+	printf("Chunker CLI\n"
+		"CLI interface for the Chunker file streaming system\n"
+		"Built for Shadow Engine version %s\n"
+		"Commit: %s\n"
+		, SHADOW_VERSION_STRING
+		, SHADOW_COMMIT_HASH
+	);
+}
+
+void printHelp() {
+	printVersion();
+
+	printf(
+		"\n"
+	);
+}
 
 int main(int argc, char** argv) {
 
-	int status = 0;
+	bx::CommandLine cmdLine(argc, argv);
+
+	if (cmdLine.hasArg('v', "version")) {
+		printVersion();
+		return 0;
+	}
+
+	if (cmdLine.hasArg('h', "help")) {
+		printHelp();
+		return 1;
+	}
+
+	/* int status = 0;
 
 	if (argc == 1) {
 		std::cout << R"(Shadow Engine Chunker CLI
@@ -49,5 +82,5 @@ r: dump the contents of a file in a chunk to stdout
 		return 1;
 	}
 
-	return status;
+	return status; */
 }

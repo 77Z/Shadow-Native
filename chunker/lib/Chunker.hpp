@@ -1,7 +1,6 @@
 #ifndef SHADOW_NATIVE_CHUNKER_HPP
 #define SHADOW_NATIVE_CHUNKER_HPP
 
-#include "Core.hpp"
 #include <cstdint>
 #include <string>
 #include <unordered_map>
