@@ -51,8 +51,10 @@ type shaderOptimization = 0 | 1 | 2 | 3;
 export async function generateShaderBuildFiles(
 	conf: BuildFile,
 	buildDir: string,
+	skip: boolean = false
 ) {
 	if (!conf.Shaders.Enabled) return;
+	if (skip) return;
 	PRINT("Generating build files for Shaders");
 
 	const shaderOutDir = buildDir + "/Shaders";

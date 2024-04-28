@@ -12,8 +12,8 @@
 	CXX: "clang++",
 	AR: "ar",
 
-	// CC: "clang",
-	// CXX: "clang++",
+	// Pass CXX and CC through ccache
+	CompilerCaching: true,
 	
 	// You can use the following to format this string:
 	// {dbg} - Debug or Release
@@ -227,13 +227,13 @@
 			//TODO: Move -g to debug only??
 			CXXFLAGS: [
 				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
-				"-g", "-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
+				"-m64", "-fno-rtti", "-fno-exceptions", "-Wshadow",
 				"-mfpmath=sse", "-msse4.2", "-Wunused-value", "-Wundef",
 				"-Wlogical-op", "-fPIC" ],
 
 			IfDebug: {
 				Defines: [ "BX_CONFIG_DEBUG=1" ],
-				CXXFLAGS: []
+				CXXFLAGS: [ "-g" ]
 			},
 			IfRelease: {
 				Defines: [ "BX_CONFIG_DEBUG=0" ],
@@ -718,6 +718,32 @@
 			SrcExcludes: [
 				"*_test.cc", "util/testutil.cc", "util/env_windows.cc" ]
 		},
+		{ Name: "chunker",
+			PrettyName: "Chunker Library",
+			Type: "StaticLib",
+			BaseDir: "chunker/lib",
+			Artifact: "libchunker.a",
+
+			std: "c++20",
+			Defines: [],
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+				"-m64", "-Wshadow", "-mfpmath=sse", "-msse4.2",
+				"-Wunused-value", "-Wundef", "-fPIC" ],
+
+			IfDebug: {
+				Defines: [],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [ "." ],
+			Sources: [ "v3.cpp" ],
+			SrcExcludes: []
+		},
 
 		{ Name: "examples",
 			PrettyName: "Examples",
@@ -1160,46 +1186,33 @@
 		{ Name: "chunker-cli",
 			PrettyName: "Chunker CLI Tool",
 			Type: "Executable",
-			Language: "C++", // deprecated
-			BaseDir: "chunker",
+			BaseDir: "chunker/cli",
 			Artifact: "chunker",
 
 			std: "c++17",
 			Defines: [],
 			CXXFLAGS: [
-				"-Wall",
-				"-Wextra",
-				"-ffast-math",
-				"-fomit-frame-pointer",
-				"-fno-rtti",
-				"-fno-exceptions",
-				"-Wshadow",
-				"-mfpmath=sse",
-				"-msse4.2",
-				"-Wunused-value",
-				"-Wundef",
-				"-Wlogical-op"
-				],
+				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+				"-m64", "-Wshadow", "-mfpmath=sse", "-msse4.2",
+				"-Wunused-value", "-Wundef", "-fPIC" ],
 
 			IfDebug: {
-				Defines: [ "_DEBUG" ],
+				Defines: [
+					"SHADOW_DEBUG_BUILD", "BX_CONFIG_DEBUG=1", "_DEBUG" ],
 				CXXFLAGS: [ '-g' ]
 			},
 			IfRelease: {
-				Defines: [ "NDEBUG" ],
+				Defines: [ "BX_CONFIG_DEBUG=0", "NDEBUG" ],
 				CXXFLAGS: [ '-O3' ]
 			},
 
-			IncludeDirs: [
-				"./lib",
-				"../lib/termcolor",
-        "../include" ],
+			IncludeDirs: [ "../../lib/bx/include", "../../lib/termcolor" ],
 
 			Sources: [ "*.cpp" ],
 			SrcExcludes: [],
 			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl" ],
 
-			InlineBuildLibs: [ "snappy" ],
+			InlineBuildLibs: [ "bx", "snappy", "chunker" ],
 			
 			Libs: [],
 		},
@@ -1307,8 +1320,7 @@
 			LinkerFlags: [
 				"-lstdc++", "-lm", "-lGL", "-lX11", "-ldl", "-lpthread", "-lrt",
 				"-lvulkan", "-fvisibility=hidden",
-        //"-lmono-2.0"
-        ],
+			],
 			
 			// InlineBuildLibs is a list of libraries that will be included in
 			// the build of the current target, but they must be built within
@@ -1333,7 +1345,7 @@
 					["../geometryc/geometryc", "{targetDir}/geometryc"],
 					["../geometryv/geometryv", "{targetDir}/geometryv"],
 					["../bin2c/bin2c", "{targetDir}/bin2c"],
-					["../chunker-cli/chunker", "{targetDir}/chunker"],
+					// ["../chunker-cli/chunker", "{targetDir}/chunker"],
 				]
 			}
 		},

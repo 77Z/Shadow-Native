@@ -18,7 +18,7 @@ import { generateShadowEngineConfig } from "./ShadowConfigGen.ts";
 import { generateShaderBuildFiles } from "./Shaders.ts";
 
 export const cliFlags = parse(Deno.args, {
-	boolean: ["help", "verbose", "version", "v", "clean", "confgen"],
+	boolean: ["help", "verbose", "version", "v", "clean", "confgen", "noshaders"],
 	string: ["config", "target"],
 });
 
@@ -29,15 +29,15 @@ if (cliFlags.version || cliFlags.v) {
 	Deno.exit();
 }
 
-const conf = JSON5.parse(Deno.readTextFileSync(
-	cliFlags.config ? cliFlags.config : "./build.json5",
-)) as BuildFile;
+const configFileName = cliFlags.config ? cliFlags.config : "./build.json5";
+const conf = JSON5.parse(Deno.readTextFileSync(configFileName)) as BuildFile;
 
 const localVersion = conf.LocalVersion ? "-" + conf.LocalVersion : "";
 export const ProductVersion = conf.Version + localVersion;
 const CC: string = conf.CC;
 const CXX: string = conf.CXX;
 const AR: string = conf.AR;
+const compilerCacheString = conf.CompilerCaching ? "ccache " : "";
 export const debugBuild: boolean = conf.DebugBuild;
 const buildDir = formatUnicorn(`./bin/${conf.BuildDir}`, {
 	version: ProductVersion,
@@ -58,7 +58,7 @@ await mkIfNotExist(buildDir);
 
 await Promise.all([
 	generateShadowEngineConfig(conf),
-	generateShaderBuildFiles(conf, buildDir),
+	generateShaderBuildFiles(conf, buildDir, cliFlags.noshaders),
 ]);
 
 interface MakefileTarget {
@@ -104,11 +104,11 @@ ccflags = ${gatherFlags(target, true)}
 
 	ninjaTargetContent += `# Rules
 rule cc
- command     = ${CC} $ccflags -c -o $out $in
+ command     = ${compilerCacheString}${CC} $ccflags -c -o $out $in
  description = Compiling C object $out
 
 rule cxx
- command     = ${CXX} $flags -c -o $out $in
+ command     = ${compilerCacheString}${CXX} $flags -c -o $out $in
  description = Compiling C++ object $out
 
 rule static_link
@@ -116,10 +116,16 @@ rule static_link
  description = Linking static target $out
 
 rule link
- command     = ${CXX} -o $out $in $libs $flags
+ command     = ${compilerCacheString}${CXX} -o $out $in $libs $flags
  description = Linking target $out
 
+rule regenerate_build
+ command     = ../../../Horde --config ${configFileName} --target ${target.Name}
+ description = Regenerating build files
+
 # Build files
+
+build build.ninja: regenerate_build ../../../${configFileName}
 
 `;
 

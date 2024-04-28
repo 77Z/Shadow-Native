@@ -48,6 +48,7 @@ export interface BuildFile {
 	CC: string;
 	CXX: string;
 	AR: string;
+	CompilerCaching: boolean;
 	BuildDir: string;
 	DebugBuild: boolean;
 	// deno-lint-ignore no-explicit-any

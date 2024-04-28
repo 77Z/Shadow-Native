@@ -1,5 +1,7 @@
 #!/bin/sh
 
+cd `dirname $BASH_SOURCE`
+
 ./scripts/deno run --allow-read --allow-write --allow-run ./scripts/Horde/main.ts $@
 
 # ./scripts/deno run --inspect-brk --allow-read --allow-write --allow-run ./scripts/Horde/main.ts $@

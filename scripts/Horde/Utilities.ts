@@ -73,7 +73,9 @@ Options:
 --config [file.json5]  : Path to a json5 file that contains the Horde
                          configuration you'd like to use for compiling
 --clean                : Deletes BuildDir
---confgen              : Generate engine configuration only`,
+--confgen              : Generate engine configuration only
+--noshaders            : Skip shader build file generation (overides
+                         Shaders.Enabled setting in config file)`,
 	);
 	Deno.exit();
 }
