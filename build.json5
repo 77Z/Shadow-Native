@@ -1345,7 +1345,7 @@
 					["../geometryc/geometryc", "{targetDir}/geometryc"],
 					["../geometryv/geometryv", "{targetDir}/geometryv"],
 					["../bin2c/bin2c", "{targetDir}/bin2c"],
-					// ["../chunker-cli/chunker", "{targetDir}/chunker"],
+					["../chunker-cli/chunker", "{targetDir}/chunker"],
 				]
 			}
 		},
