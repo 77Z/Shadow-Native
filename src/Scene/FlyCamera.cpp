@@ -1,5 +1,4 @@
 #include "Scene/FlyCamera.hpp"
-#include "Debug/Logger.hpp"
 #include "Keyboard.hpp"
 #include "Mouse.hpp"
 #include "bx/constants.h"
@@ -25,7 +24,9 @@ FlyCamera::FlyCamera(Mouse* mouse, Keyboard* keyboard)
 
 	if (keyboard == nullptr) return;
 	
-	keyboard->registerKeyCallback([](KeyButton_ key, bool down) {
+	keyboard->registerKeyCallback([](KeyButton_ key, bool down, KeyModifiers_ mods) {
+		BX_UNUSED(mods);
+
 		if (key == KeyButton_W && down) cameraForwardPressed = true;
 		if (key == KeyButton_W && !down) cameraForwardPressed = false;
 

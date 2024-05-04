@@ -17,9 +17,16 @@ void hideProjectPreferences();
 void showEnginePreferences();
 void hideEnginePreferences();
 
+void showRawSceneEditor();
+void hideRawSceneEditor();
+
 float getViewportWidth();
 float getViewportHeight();
 bool isMouseOverViewport();
+
+void openCommandCenter();
+void closeCommandCenter();
+void toggleCommandCenter();
 
 // DON'T CALL THIS
 void projectPreferencesInit();
@@ -27,6 +34,9 @@ void projectPreferencesUpdate();
 
 void enginePreferencesInit();
 void enginePreferencesUpdate();
+
+void rawSceneEditorInit();
+void rawSceneEditorUpdate();
 
 void rootWindowInit();
 void rootWindowUpdate();
@@ -42,6 +52,9 @@ void taskDisplayInit();
 void taskDisplayUpdate();
 
 void chunkerWindowUpdate();
+
+void commandCenterInit(EditorPartsCarePackage carePackage);
+void commandCenterUpdate();
 
 }
 

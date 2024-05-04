@@ -158,8 +158,6 @@ void Scene::onUpdate(bgfx::ViewId viewid) {
 
 		auto& transform = m_Registry.get<TransformComponent>(entity);
 
-		WARN("THE SCENE IS IN FACT BEING UPDATED.");
-
 		float tfMtx[16];
 		bx::mtxSRT(tfMtx, 
 			transform.scale.x, transform.scale.y, transform.scale.z,
@@ -182,12 +180,12 @@ void Scene::onUpdate(bgfx::ViewId viewid) {
 			if (programMap.find(programId) != programMap.end()) {
 				// Located program already loaded
 				bgfx::ProgramHandle loadedProgram = programMap.at(programId);
-				// bgfx::submit(viewid, loadedProgram);
-				bgfx::submit(viewid, fallbackProgram);
+				bgfx::submit(viewid, loadedProgram);
 			} else {
 				WARN("Injected fresh program");
-				programMap.insert(std::pair<std::string, bgfx::ProgramHandle>(programId, loadProgram(shaderComponent.frag.c_str(), shaderComponent.vert.c_str())));
-				bgfx::submit(viewid, fallbackProgram);
+				bgfx::ProgramHandle newProgram = loadProgram(shaderComponent.frag.c_str(), shaderComponent.vert.c_str());
+				programMap.insert(std::pair<std::string, bgfx::ProgramHandle>(programId, newProgram));
+				bgfx::submit(viewid, newProgram);
 			}
 
 		} else {

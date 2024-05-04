@@ -129,8 +129,10 @@ Chunk loadChunk(const char* chunkFileLocation) {
 	chunk.chunkFileLocation = (std::string)chunkFileLocation;
 
 	std::ifstream file(chunkFileLocation, std::ios::binary | std::ios::in);
-	if (!file)
-		throw ""; // TODO: Fix
+	if (!file) {
+		std::cerr << "Cannot open chunker file for reading" << std::endl;
+		abort();
+	}
 
 	// Header verification
 	file.seekg(0);

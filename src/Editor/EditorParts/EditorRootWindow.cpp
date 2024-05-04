@@ -87,7 +87,7 @@ static float drawTitlebar() {
 	auto* fgDrawList = ImGui::GetForegroundDrawList();
 	bgDrawList->AddRectFilled(titlebarMin, titlebarMax, IM_COL32(255, 0, 0, 255));
 	// DEBUG TITLEBAR BOUNDS
-	fgDrawList->AddRect(titlebarMin, titlebarMax, IM_COL32(255, 255, 0, 255));
+	// fgDrawList->AddRect(titlebarMin, titlebarMax, IM_COL32(255, 255, 0, 255));
 
 	{ // * Logo
 		const int logoWidth = 48;

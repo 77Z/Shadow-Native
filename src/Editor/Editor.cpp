@@ -1,3 +1,4 @@
+#include "CommandCenterBackend.hpp"
 #include "Core.hpp"
 #include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
@@ -62,7 +63,62 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	ShadowWindow editorWindow(1800, 900, "Shadow Editor");
 	editorWindowReference = &editorWindow;
 	std::signal(SIGINT, sigintHandler);
+
+	CMD_CTR_NEWCMD("Text Editor: Open", "Bruh", []() {
+		WARN("TEXT EDITOR OPEN");
+		
+	});
+
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
 	
+	/* CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	});
+
+	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
+		WARN("OPENED SCENE IN TEXT EDITOR");
+	}); */
 
 	bgfx::Init init;
 	init.type = bgfx::RendererType::Vulkan;
@@ -115,6 +171,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		
 		Editor::EditorParts::init({
 			&editorWindow,
+			&keyboard,
 			&viewportTexture,
 			editorScene,
 			viewportViewMatrix,

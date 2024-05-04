@@ -17,7 +17,8 @@ namespace Shadow {
 		for (auto callback : keyboard->keyListeners) {
 			callback(
 				keyboard->glfwButtonMap[key],
-				action == GLFW_PRESS || action == GLFW_REPEAT
+				action == GLFW_PRESS || action == GLFW_REPEAT,
+				keyboard->glfwModifierMap[mods]
 			);
 		}
 	}
@@ -154,6 +155,11 @@ namespace Shadow {
 		glfwButtonMap[GLFW_KEY_RIGHT_ALT] = 	KeyButton_RightAlt;
 		glfwButtonMap[GLFW_KEY_RIGHT_SUPER] = 	KeyButton_RightSuper;
 		glfwButtonMap[GLFW_KEY_MENU] = 			KeyButton_Menu;
+
+		glfwModifierMap[GLFW_MOD_SHIFT] = KeyModifiers_Shift;
+		glfwModifierMap[GLFW_MOD_CONTROL] = KeyModifiers_Control;
+		glfwModifierMap[GLFW_MOD_ALT] = KeyModifiers_Alt;
+		glfwModifierMap[GLFW_MOD_SUPER] = KeyModifiers_Super;
 	}
 	 
 	Keyboard::~Keyboard() {}

@@ -7,6 +7,14 @@
 
 namespace Shadow {
 
+enum KeyModifiers_ {
+	KeyModifiers_None = 0,
+	KeyModifiers_Shift = 1,
+	KeyModifiers_Control = 2,
+	KeyModifiers_Alt = 4,
+	KeyModifiers_Super = 8
+};
+
 enum KeyButton_ {
 	KeyButton_None = 0,
 	KeyButton_Space,
@@ -131,7 +139,7 @@ enum KeyButton_ {
 	KeyButton_Menu
 };
 
-typedef void (* keyFunction)(KeyButton_ key, bool down);
+typedef void (* keyFunction)(KeyButton_ key, bool down, KeyModifiers_ mods);
 
 class Keyboard {
 public:
@@ -142,6 +150,7 @@ public:
 
 	std::vector<keyFunction> keyListeners;
 	KeyButton_ glfwButtonMap[GLFW_KEY_LAST + 1];
+	KeyModifiers_ glfwModifierMap[9];
 private:
 	ShadowWindow* window;
 };
