@@ -70,11 +70,11 @@ void FlyCamera::reset() {
 
 
 void FlyCamera::update(float deltaTime, bool reset) {
-	if (reset) {
+	mouseDown = mouse->isRightMouseDown();
+  
+	if (reset && !mouseDown) {
 		return;
 	}
-
-	mouseDown = mouse->isRightMouseDown();
 
 	if (mouseDown) {
 		horizontalAngle += mouseSpeed * float(mouse->getMouseXDiff());

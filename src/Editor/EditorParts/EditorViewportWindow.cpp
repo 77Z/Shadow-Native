@@ -87,6 +87,8 @@ void viewportWindowUpdate() {
 	ImGui::Text("Scene: %s", editorSceneRef.get()->sceneName.c_str());
 	ImGui::SetCursorPosX(10);
 	ImGui::Text("View Matrix [0]: %.3f", viewportViewMatrix[0]);
+	ImGui::SetCursorPosX(10);
+	ImGui::Text("Mouse: %s", mouseOverViewport ? "true" : "false");
 
 	ImGui::End();
 	ImGui::PopStyleVar(2);

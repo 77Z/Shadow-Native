@@ -73,53 +73,6 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		WARN("OPENED SCENE IN TEXT EDITOR");
 	});
 	
-	/* CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	});
-
-	CMD_CTR_NEWCMD("Scene: Open Scene in Text Editor", "desc", []() {
-		WARN("OPENED SCENE IN TEXT EDITOR");
-	}); */
-
 	bgfx::Init init;
 	init.type = bgfx::RendererType::Vulkan;
 	init.platformData.ndt = editorWindow.getNativeDisplayHandle();
@@ -233,8 +186,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			bgfx::setUniform(u_time, &time);
 
 			// * FlyCamera update
-			// flyCamera.update(deltaTime, !Editor::EditorParts::isMouseOverViewport());
-			flyCamera.update(deltaTime, false);
+			flyCamera.update(deltaTime, !Editor::EditorParts::isMouseOverViewport());
+			// flyCamera.update(deltaTime, false);
 		}
 
 
