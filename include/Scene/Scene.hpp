@@ -33,6 +33,9 @@ public:
 	bgfx::ProgramHandle fallbackProgram;
 	std::unordered_map<std::string, bgfx::ProgramHandle> programMap;
 
+	bgfx::ProgramHandle shadedObjectProgram;
+	bgfx::ProgramHandle shadowProgram;
+
 	void onUpdate(bgfx::ViewId view);
 	void unload();
 

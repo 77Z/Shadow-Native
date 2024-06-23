@@ -1,0 +1,33 @@
+#ifndef SHADOW_NATIVE_AXEUI_SHMLINK
+#define SHADOW_NATIVE_AXEUI_SHMLINK
+
+#include "node/v8-function.h"
+#include "node/v8-isolate.h"
+#include "node/v8-persistent-handle.h"
+#include <boost/interprocess/shared_memory_object.hpp>
+#include <node/node.h>
+#include <node/node_object_wrap.h>
+#include <node/v8-function-callback.h>
+#include <node/v8-value.h>
+
+namespace Shadow::AXEUI {
+
+class SHMLink : public node::ObjectWrap {
+public:
+	static void Init(v8::Isolate* isolate);
+	static void NewInstance(const v8::FunctionCallbackInfo<v8::Value>& args);
+
+private:
+	explicit SHMLink();
+	~SHMLink();
+
+	static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+	static void SendFrame(const v8::FunctionCallbackInfo<v8::Value>& args);
+	static v8::Global<v8::Function> constructor;
+
+	boost::interprocess::shared_memory_object shm;
+};
+
+}
+
+#endif /* SHADOW_NATIVE_AXEUI_SHMLINK */

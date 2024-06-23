@@ -5,6 +5,7 @@
 #include <bx/bounds.h>
 #include <cstdint>
 
+#include <string>
 #include <tinystl/allocator.h>
 #include <tinystl/vector.h>
 namespace stl = tinystl;
@@ -68,6 +69,8 @@ public:
 		uint16_t _numMatrices = 1) const;
 
 	bgfx::VertexLayout m_layout;
+
+	std::string m_filepath = "";
 
 	void load(const char* _filePath, bool _ramcopy = false);
 

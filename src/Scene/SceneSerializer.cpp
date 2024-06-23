@@ -5,6 +5,7 @@
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
 #include "Scene/Scene.hpp"
+#include "Util.hpp"
 #include "json_impl.hpp"
 #include "uuid.h"
 #include "uuid_impl.hpp"
@@ -163,6 +164,13 @@ bool SceneSerializer::deserialize(const std::string filepath) {
 				EC_PRINT("Scene Serializer", "-------- Vert shader: %s", ((std::string)component["vert"]).c_str());
 
 				deserializedEntity.addComponent<ShaderComponent>((std::string)component["frag"], (std::string)component["vert"]);
+			} else if (type == "ShaderHandleComponent") {
+				EC_PRINT("Scene Serializer", "-------- Frag shader: %s", ((std::string)component["frag"]).c_str());
+				EC_PRINT("Scene Serializer", "-------- Vert shader: %s", ((std::string)component["vert"]).c_str());
+				EC_PRINT("Scene Serializer", "-------- Will be loaded into a single program");
+
+				auto& e = deserializedEntity.addComponent<ShaderProgramComponent>();
+				e.handle = loadProgram(((std::string)component["frag"]).c_str(), ((std::string)component["vert"]).c_str());
 			}
 		}
 	}

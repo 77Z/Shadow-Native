@@ -1,6 +1,7 @@
 #ifndef SHADOW_NATIVE_SCENE_ENTITY_HPP
 #define SHADOW_NATIVE_SCENE_ENTITY_HPP
 
+#include "Debug/Logger.hpp"
 #include "Scene/Components.hpp"
 #include "Scene/Scene.hpp"
 #include "ppk_assert_impl.hpp"

@@ -2,6 +2,7 @@
 #define SHADOW_NATIVE_SCENE_COMPONENTS_HPP
 
 #include "Mesh.hpp"
+#include "bgfx/bgfx.h"
 #include "bx/math.h"
 #include "uuid_impl.hpp"
 #include <cstddef>
@@ -93,6 +94,12 @@ struct ShaderComponent {
 		const std::string& vert)
 	: frag(frag)
 	, vert(vert) { }
+};
+
+struct ShaderProgramComponent {
+	bgfx::ProgramHandle handle = BGFX_INVALID_HANDLE;
+
+	ShaderProgramComponent() = default;
 };
 
 }

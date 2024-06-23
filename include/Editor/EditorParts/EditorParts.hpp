@@ -56,6 +56,8 @@ void chunkerWindowUpdate();
 void commandCenterInit(EditorPartsCarePackage carePackage);
 void commandCenterUpdate();
 
+void sceneOutlineUpdate();
+
 }
 
 #endif /* SHADOW_NATIVE_EDITOR_EDITOR_PARTS_EDITOR_PARTS_HPP */

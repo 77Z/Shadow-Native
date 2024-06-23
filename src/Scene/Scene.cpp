@@ -3,8 +3,6 @@
 #include <bgfx/bgfx.h>
 #include <cstdint>
 #include <utility>
-// #include <glm/fwd.hpp>
-// #include <glm/glm.hpp>
 
 #include "Scene/Components.hpp"
 #include "Scene/Entity.hpp"
@@ -87,6 +85,8 @@ void Scene::unload() {
 	bgfx::destroy(vbh);
 	bgfx::destroy(ibh);
 	bgfx::destroy(fallbackProgram);
+	bgfx::destroy(shadedObjectProgram);
+	bgfx::destroy(shadowProgram);
 }
 
 void Scene::init() {
@@ -98,7 +98,12 @@ void Scene::init() {
 	vbh = bgfx::createVertexBuffer(bgfx::makeRef(cubeVertices, sizeof(cubeVertices)), pcvDecl);
 	ibh = bgfx::createIndexBuffer(bgfx::makeRef(cubeTriList, sizeof(cubeTriList)));
 
-	fallbackProgram = loadProgram("test/vs_test.sc.spv", "test/fs_test.sc.spv");
+	// fallbackProgram = loadProgram("test/vs_test.sc.spv", "test/fs_test.sc.spv");
+	// fallbackProgram = loadProgram("editorPreview/vs_editorPreview_shaded.sc.spv", "editorPreview/fs_editorPreview_shaded.sc.spv");
+	fallbackProgram = loadProgram("debug_color/vs_debug_color.sc.spv", "debug_color/fs_debug_color.sc.spv");
+
+	shadedObjectProgram = loadProgram("shadows/simpleShadowMaps/vs_object.sc.spv", "shadows/simpleShadowMaps/fs_object.sc.spv");
+	shadowProgram = loadProgram("shadows/simpleShadowMaps/vs_shadow.sc.spv", "shadows/simpleShadowMaps/fs_shadow.sc.spv");
 
 	/* struct MeshComponent {
 		float value;
@@ -173,7 +178,10 @@ void Scene::onUpdate(bgfx::ViewId viewid) {
 		bgfx::setVertexBuffer(0, vbh);
 		bgfx::setIndexBuffer(ibh);
 
-		if (thisEntity.hasComponent<ShaderComponent>()) {
+		// TODO: Dumb solution
+		// Delete this.
+		// Use new ShaderHandleComponent that loads upon deserialization
+		/*if (thisEntity.hasComponent<ShaderComponent>()) {
 			auto& shaderComponent = thisEntity.GetComponent<ShaderComponent>();
 			std::string programId = shaderComponent.frag + shaderComponent.vert;
 
@@ -191,6 +199,14 @@ void Scene::onUpdate(bgfx::ViewId viewid) {
 		} else {
 			bgfx::submit(viewid, fallbackProgram);
 			// WARN("No shader component, fallback program");
+		}*/
+
+		if (thisEntity.hasComponent<ShaderProgramComponent>()) {
+			auto& shaderProgramComponent = thisEntity.GetComponent<ShaderProgramComponent>();
+			
+			bgfx::submit(viewid, shaderProgramComponent.handle);
+		} else {
+			bgfx::submit(viewid, fallbackProgram);
 		}
 	}
 

@@ -1,0 +1,90 @@
+#include "SHMLink.hpp"
+#include "node/node.h"
+#include "node/v8-function.h"
+#include "node/v8-isolate.h"
+#include "node/v8-local-handle.h"
+#include "node/v8-persistent-handle.h"
+#include <boost/interprocess/creation_tags.hpp>
+#include <boost/interprocess/shared_memory_object.hpp>
+#include <iostream>
+#include <node/v8-context.h>
+#include <node/v8-function-callback.h>
+#include <node/v8-object.h>
+#include <node/v8-primitive.h>
+#include <node/v8-template.h>
+#include <node/v8-value.h>
+
+namespace Shadow::AXEUI {
+
+// Not thread safe
+v8::Global<v8::Function> SHMLink::constructor;
+
+SHMLink::SHMLink() {
+	using namespace boost::interprocess;
+
+	std::cout << "class initialized" << std::endl;
+	shm = shared_memory_object(open_only, "axe_link_shm", read_write);
+	shm.truncate(100000);
+}
+
+SHMLink::~SHMLink() {}
+
+void SHMLink::Init(v8::Isolate *isolate) {
+	v8::Local<v8::FunctionTemplate> tpl = v8::FunctionTemplate::New(isolate, New);
+	tpl->SetClassName(v8::String::NewFromUtf8(isolate, "SHMLink").ToLocalChecked());
+	tpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+	// Prototype
+	NODE_SET_PROTOTYPE_METHOD(tpl, "SendFrame", SendFrame);
+
+	v8::Local<v8::Context> context = isolate->GetCurrentContext();
+	constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
+
+	node::AddEnvironmentCleanupHook(isolate, [](void*) {
+		constructor.Reset();
+	}, nullptr);
+}
+
+void SHMLink::New(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	v8::Isolate* isolate = args.GetIsolate();
+	v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
+	if (args.IsConstructCall()) {
+		// invoked as constructor: 'new SHMLink(...)'
+
+		// get constructor args here
+
+		SHMLink* obj = new SHMLink();
+		obj->Wrap(args.This());
+		args.GetReturnValue().Set(args.This());
+
+	} else {
+		// invoked as method call 'SHMLink(...)'
+		// turning it into a constructor
+		const int argc = 0;
+		v8::Local<v8::Value> argv[argc] = { /* args[0] */ };
+		v8::Local<v8::Function> cons = v8::Local<v8::Function>::New(isolate, constructor);
+		v8::Local<v8::Object> instance = cons->NewInstance(context, argc, argv).ToLocalChecked();
+		args.GetReturnValue().Set(instance);
+	}
+}
+
+void SHMLink::NewInstance(const v8::FunctionCallbackInfo<v8::Value> &args) {
+	v8::Isolate* isolate = args.GetIsolate();
+
+	const unsigned argc = 0;
+	v8::Local<v8::Value> argv[argc] = { /* args[0] */};
+	v8::Local<v8::Function> cons = v8::Local<v8::Function>::New(isolate, constructor);
+	v8::Local<v8::Context> context = isolate->GetCurrentContext();
+	v8::Local<v8::Object> instance = cons->NewInstance(context, argc, argv).ToLocalChecked();
+
+	args.GetReturnValue().Set(instance);
+}
+
+void SHMLink::SendFrame(const v8::FunctionCallbackInfo<v8::Value>& args) {
+	v8::Isolate* isolate = args.GetIsolate();
+
+	std::cout << "Sending frame" << std::endl;
+}
+
+}

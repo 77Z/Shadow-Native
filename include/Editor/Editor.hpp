@@ -42,6 +42,8 @@ void loadScene(const std::string& sceneFilePath);
 
 int startEditor(Shadow::Editor::ProjectEntry project);
 
+Reference<Scene> getCurrentScene();
+
 }
 
 #endif /* SHADOW_NATIVE_EDITOR_EDITOR_HPP */

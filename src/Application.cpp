@@ -38,6 +38,9 @@ int Main(int argc, char** argv) {
 
 	EC_PRINT("All", "Welcome to Shadow Engine");
 
+	// PPK_ASSERT(true, "eval true");
+	// PPK_ASSERT(false, "eval false");
+
 	if (argc > 1) {
 		if (strcmp(argv[1], "axe") == 0) {
 			ret = Shadow::AXE::startAXEProjectBrowser();

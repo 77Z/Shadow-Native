@@ -1,5 +1,3 @@
-// API meant to be called by UserCode and NOT internal code
-
 #include "API/ShadowAPI.hpp"
 #include "Debug/Logger.hpp"
 #include <string>

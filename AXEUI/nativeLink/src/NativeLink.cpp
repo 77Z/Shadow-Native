@@ -18,7 +18,7 @@ static bool linkConnected = false;
 // static boost::interprocess::shared_memory_object* gblShm;
 
 static boost::interprocess::shared_memory_object sharedMem(
-	boost::interprocess::open_only,
+	boost::interprocess::open_or_create,
 	"axe_link_shm",
 	boost::interprocess::read_write
 );

@@ -4,7 +4,8 @@
 #include "bgfx/bgfx.h"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
-#include "ImGuizmo.h"
+#include "../../lib/bgfx/3rdparty/dear-imgui/widgets/gizmo.h"
+#include "IconsFontAwesome5.h"
 
 namespace Shadow::Editor::EditorParts {
 
@@ -75,13 +76,25 @@ void viewportWindowUpdate() {
 
 	ImGui::Image(*viewportTextureRef, ImVec2(vportWidth, vportHeight));
 
+
 	float translation[3] = { 0.0f, 0.0f, 0.0f };
 	float rotation[3] = { 0.0f, 0.0f, 0.0f };
-	float scale[3] = { 1.0f, 1.0f, 1.0f };
+
 	float mtx[16];
-	// ImGuizmo::RecomposeMatrixFromComponents(translation, rotation, scale, mtx);
-	// ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
-	// ImGuizmo::Manipulate(viewportViewMatrix, viewportProjectionMatrix, ImGuizmo::TRANSLATE, ImGuizmo::LOCAL, mtx);
+	float scale[3] = { 1.5f, 1.5f, 1.5f };
+
+	ImGuizmo::RecomposeMatrixFromComponents(translation, rotation, scale, mtx);
+
+	ImGuizmo::SetRect(vportMin.x, vportMin.y, vportWidth, vportHeight);
+
+	// ImGuizmo::DrawGrid(viewportViewMatrix, viewportProjectionMatrix, mtx, 5);
+
+	// ImGuizmo::DrawCubes(viewportViewMatrix, viewportProjectionMatrix, mtx, 10);
+
+	ImGuizmo::Manipulate(viewportViewMatrix, viewportProjectionMatrix, ImGuizmo::TRANSLATE, ImGuizmo::LOCAL, mtx);
+
+	ImGuizmo::DecomposeMatrixToComponents(mtx, translation, rotation, scale);
+
 
 	ImGui::SetCursorPos(ImVec2(10, 30));
 	ImGui::Text("Scene: %s", editorSceneRef.get()->sceneName.c_str());

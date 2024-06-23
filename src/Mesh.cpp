@@ -5,7 +5,9 @@
 #include <bgfx/bgfx.h>
 #include <bx/math.h>
 #include <bx/readerwriter.h>
+#include <bgfx/../../src/vertexlayout.h>
 
+#include <cstdlib>
 #include <tinystl/allocator.h>
 #include <tinystl/string.h>
 #include <tinystl/vector.h>
@@ -27,16 +29,16 @@ void Group::reset() {
 
 Mesh::Mesh(const char* _filePath, bool _ramcopy) { load(_filePath, _ramcopy); }
 
-namespace special {
-	int32_t read(bx::ReaderI* _reader, bgfx::VertexLayout& _layout, bx::Error* _err);
-}
-
 void Mesh::load(const char* _filePath, bool _ramcopy) {
+	m_filepath = (std::string)_filePath;
+
 	bx::FileReaderI* reader = getFileReader();
 
 	// TODO: This will probably continue on even if the file can't be loaded
-	if (!bx::open(reader, _filePath))
-		ERROUT("Failed to open file");
+	if (!bx::open(reader, _filePath)) {
+		ERROUT("Failed to read mesh file: %s", _filePath);
+		abort();
+	}
 
 	constexpr uint32_t kChunkVertexBuffer = BX_MAKEFOURCC('V', 'B', ' ', 0x1);
 	constexpr uint32_t kChunkVertexBufferCompressed = BX_MAKEFOURCC('V', 'B', 'C', 0x0);
@@ -60,7 +62,8 @@ void Mesh::load(const char* _filePath, bool _ramcopy) {
 			read(reader, group.m_aabb, &err);
 			read(reader, group.m_obb, &err);
 
-			bx::read(reader, m_layout, &err);
+			// ! The type of read method matters !!
+			bgfx::read(reader, m_layout, &err);
 
 			uint16_t stride = m_layout.getStride();
 

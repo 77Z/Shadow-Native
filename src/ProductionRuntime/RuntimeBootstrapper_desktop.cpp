@@ -1,6 +1,7 @@
 #include "Core.hpp"
 #include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
+#include "Mesh.hpp"
 #include "Mouse.hpp"
 #include "ProductionRuntime/RuntimeBootstrapper.hpp"
 #include "RenderBootstrapper.hpp"
@@ -8,6 +9,7 @@
 #include "Scene/Scene.hpp"
 #include "Scene/SceneSerializer.hpp"
 #include "ShadowWindow.hpp"
+#include "Util.hpp"
 #include "bgfx/bgfx.h"
 #include "bgfx/defines.h"
 #include "bx/bx.h"
@@ -39,12 +41,19 @@ int StartProductionRuntime() {
 	flyCamera.setPosition({0.0f, 0.0f, -15.0f });
 	flyCamera.setVerticalAngle(0.0f);
 
+	//TODO: REMOVE
+	bgfx::ProgramHandle meshPgrm = loadProgram("mesh/vs_mesh.sc.spv", "mesh/fs_mesh.sc.spv");
+	Mesh mesh("./Resources/cube.bin");
+
 	while (!window.shouldClose()) {
 		window.pollEvents();
 
 		rb.startFrame();
 		
 		scene->onUpdate(TEMP_VIEW_ID);
+
+		float mtx[16];
+		mesh.submit(TEMP_VIEW_ID, meshPgrm, mtx);
 
 		mouse.onUpdate();
 
@@ -58,6 +67,9 @@ int StartProductionRuntime() {
 		rb.endFrame();
 	}
 
+	bgfx::destroy(meshPgrm);
+	mesh.unload();
+	scene->unload();
 	rb.shutdown();
 	window.shutdown();
 

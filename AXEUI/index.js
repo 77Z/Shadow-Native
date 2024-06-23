@@ -20,7 +20,8 @@ function createWindow() {
 	window.loadURL("https://77z.dev");
 	window.webContents.on("paint", (e, dirty, image) => {
 		// fs.writeFileSync("out.png", image.toPNG());
-		nativeLink.sendFrame(image.toPNG());
+		// nativeLink.sendFrame(image.toPNG());
+		nativeLink.sendFrame(image.toBitmap());
 	});
 
 	// window.webContents.sendInputEvent({

@@ -33,6 +33,7 @@ void onUpdate() {
 	taskDisplayUpdate();
 	chunkerWindowUpdate();
 	commandCenterUpdate();
+	sceneOutlineUpdate();
 }
 
 void destroy() {

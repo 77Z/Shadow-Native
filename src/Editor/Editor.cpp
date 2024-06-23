@@ -23,6 +23,8 @@
 #include "imgui_impl_glfw.h"
 #include <csignal>
 #include <cstdint>
+#include "../../lib/bgfx/3rdparty/dear-imgui/widgets/gizmo.h"
+#include "IconsFontAwesome5.h"
 
 #define EDITOR_UI_VIEW_ID 2
 #define EDITOR_VIEWPORT_VIEW_ID 10
@@ -52,6 +54,10 @@ namespace Shadow {
 void loadScene(const std::string &sceneFilePath) {
 	SceneSerializer ss(editorScene);
 	ss.deserialize(sceneFilePath);
+}
+
+Reference<Scene> getCurrentScene() {
+	return editorScene;
 }
 
 int startEditor(Shadow::Editor::ProjectEntry project) {
@@ -92,6 +98,10 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	// * time uniform
 	bgfx::UniformHandle u_time = bgfx::createUniform("u_time", bgfx::UniformType::Vec4);
 
+	// * picking uniforms
+	bgfx::UniformHandle u_tint = bgfx::createUniform("u_tint", bgfx::UniformType::Vec4);
+	bgfx::UniformHandle u_id = bgfx::createUniform("u_id", bgfx::UniformType::Vec4);
+
 	// * viewport texture and buffer
 	bgfx::TextureHandle viewportTexture = bgfx::createTexture2D(
 		(uint16_t)editorWindow.getExtent().width,
@@ -113,9 +123,19 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 
 		float sf = editorWindow.getContentScale();
 		io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
-		io.Fonts->AddFontDefault();
+		// io.Fonts->AddFontDefault();
 		ImGui::GetStyle().ScaleAllSizes(sf);
 		io.IniFilename = "./Resources/editor.ini";
+
+		// Icons
+		const float iconFontSize = 50.0f /* base font size */ * 2.0f / 3.0f;
+		static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+		ImFontConfig icon_config;
+		icon_config.MergeMode = true;
+		icon_config.PixelSnapH = true;
+		icon_config.GlyphMinAdvanceX = iconFontSize;
+		io.Fonts->AddFontFromFileTTF("./Resources/VFontAwesome.ttf", iconFontSize, &icon_config, icon_ranges);
+		// io.Fonts->AddFontFromFileTTF("./Resources/" FONT_ICON_FILE_NAME_FAS, iconFontSize, &icon_config, icon_ranges);
 
 		ImGui::SetupTheme();
 
@@ -162,6 +182,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			ImGui_Implbgfx_NewFrame();
 			ImGui_ImplGlfw_NewFrame();
 			ImGui::NewFrame();
+
+			ImGuizmo::BeginFrame();
 		}
 
 		Editor::EditorParts::onUpdate();
@@ -215,6 +237,8 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 	contentBrowser.unload();
 
 	bgfx::destroy(u_time);
+	bgfx::destroy(u_tint);
+	bgfx::destroy(u_id);
 	bgfx::destroy(viewportFrameBuffer);
 	// bgfx::destroy(program);
 

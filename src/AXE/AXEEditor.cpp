@@ -89,6 +89,11 @@ public:
 
 static std::vector<Track> tracks;
 
+void updateTexture(bgfx::TextureHandle& handle, bimg::ImageContainer* imgContainer) {
+	const bgfx::Memory* imgMem = bgfx::makeRef(imgContainer->m_data, imgContainer->m_size, imageReleaseCb, imgContainer);
+	bgfx::updateTexture2D(handle, 0, 0, 0, 0, uint16_t(800), uint16_t(600), imgMem);
+}
+
 int startAXEEditor(AXEProjectEntry project) {
 	ShadowWindow axeEditorWindow(1500, 1000, "AXE Editor");
 	RenderBootstrapper rb(&axeEditorWindow, bgfx::RendererType::Vulkan, false);
@@ -111,7 +116,7 @@ int startAXEEditor(AXEProjectEntry project) {
 		false,
 		1,
 		bgfx::TextureFormat::Enum(imgContainer->m_format),
-		BGFX_TEXTURE_NONE | BGFX_SAMPLER_NONE,
+		BGFX_TEXTURE_RT,
 		imgMem);
 
 	while (!axeEditorWindow.shouldClose()) {
@@ -195,6 +200,8 @@ int startAXEEditor(AXEProjectEntry project) {
 			handle,
 			ImVec2(800, 600)
 		);
+
+		updateTexture(handle, imgContainer);
 
 		ImGui::End();
 
