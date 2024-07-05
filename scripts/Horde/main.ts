@@ -124,10 +124,14 @@ rule regenerate_build
  description = Regenerating build files
 
 # Build files
+`;
 
+	if (conf.SelfRegeneration) {
+		ninjaTargetContent += `
 build build.ninja: regenerate_build ../../../${configFileName}
 
-`;
+`
+	}
 
 	const sources: string[] = await gatherSources(target);
 	const objs: string[] = [];

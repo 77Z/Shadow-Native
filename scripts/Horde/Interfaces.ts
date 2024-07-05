@@ -49,6 +49,7 @@ export interface BuildFile {
 	CXX: string;
 	AR: string;
 	CompilerCaching: boolean;
+	SelfRegeneration: boolean;
 	BuildDir: string;
 	DebugBuild: boolean;
 	// deno-lint-ignore no-explicit-any
