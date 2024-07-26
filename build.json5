@@ -16,7 +16,7 @@
 	CompilerCaching: true,
 
 	// Regenerate Ninja build files upon becoming out of date with this file
-	SelfRegeneration: true,
+	SelfRegeneration: false,
 	
 	// You can use the following to format this string:
 	// {dbg} - Debug or Release
@@ -1301,6 +1301,7 @@
 				"lib/imgui/imgui_widgets.cpp",
 				"lib/imgui/backends/imgui_impl_glfw.cpp",
 				"lib/imgui/backends/imgui_impl_vulkan.cpp",
+				"lib/imgui/backends/imgui_impl_opengl3.cpp",
 				"lib/ImGuizmo/GraphEditor.cpp",
 				"lib/ImGuizmo/ImCurveEdit.cpp",
 				"lib/ImGuizmo/ImGradient.cpp",

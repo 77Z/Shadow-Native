@@ -23,11 +23,12 @@
 
 namespace Shadow {
 
-ShadowWindow::ShadowWindow(int width, int height, std::string title, bool decorations)
+ShadowWindow::ShadowWindow(int width, int height, std::string title, bool decorations, bool openGlAPI)
 	: width(width)
 	, height(height)
 	, windowTitle(title)
-	, decorations(decorations) {
+	, decorations(decorations)
+	, openGlAPI(openGlAPI) {
 	initWindow();
 }
 
@@ -65,8 +66,10 @@ float ShadowWindow::getContentScale() {
 void ShadowWindow::initWindow() {
 	glfwSetErrorCallback(glfw_errorCallback);
 
-	glfwInit();
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	if (!glfwInit()) ERROUT("GLFW FAILED TO INIT, EXPECT FAILURE FROM HERE");
+	if (!openGlAPI) {
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	}
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	glfwWindowHint(GLFW_DECORATED, (int)decorations);
 

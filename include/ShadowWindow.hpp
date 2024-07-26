@@ -13,7 +13,7 @@ typedef std::unordered_map<std::string, void*> UserPointersMap;
 namespace Shadow {
 class ShadowWindow {
 public:
-	ShadowWindow(int width, int height, std::string title, bool decorations = true);
+	ShadowWindow(int width, int height, std::string title, bool decorations = true, bool openGlAPI = false);
 	~ShadowWindow();
 
 	ShadowWindow(const ShadowWindow&) = delete;
@@ -65,7 +65,7 @@ public:
 	// ShadowWindowUserPointerCarePackage userPointerCarePackage;
 	UserPointersMap windowUserPointers;
 
-	// TODO: Make private
+	/// Access underlying GLFWwindow handle
 	GLFWwindow* window;
 
 private:
@@ -78,6 +78,7 @@ private:
 	int height;
 	bool framebufferResized = false;
 	bool decorations = true;
+	bool openGlAPI = false;
 };
 }
 

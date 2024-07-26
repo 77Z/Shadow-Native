@@ -93,7 +93,7 @@ void updateTexture(bgfx::TextureHandle& handle, bimg::ImageContainer* imgContain
 	const bgfx::Memory* imgMem = bgfx::makeRef(imgContainer->m_data, imgContainer->m_size, imageReleaseCb, imgContainer);
 	bgfx::updateTexture2D(handle, 0, 0, 0, 0, uint16_t(800), uint16_t(600), imgMem);
 }
-
+/* 
 int startAXEEditor(AXEProjectEntry project) {
 	ShadowWindow axeEditorWindow(1500, 1000, "AXE Editor");
 	RenderBootstrapper rb(&axeEditorWindow, bgfx::RendererType::Vulkan, false);
@@ -219,6 +219,6 @@ int startAXEEditor(AXEProjectEntry project) {
 	rb.shutdown();
 
 	return 0;
-}
+} */
 
 }

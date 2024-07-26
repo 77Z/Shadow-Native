@@ -18,6 +18,7 @@
 #include <fstream>
 #include <vector>
 #include "generated/autoconf.h"
+#include <Editor/SlimEditor.hpp>
 
 namespace Shadow {
 int Main(int argc, char** argv) {
@@ -67,6 +68,8 @@ int Main(int argc, char** argv) {
 			outfile.close();
 		} else if (strcmp(argv[1], "ModelViewer") == 0) {
 			ModelViewer mdlview((std::string(argv[2])));
+		} else if (strcmp(argv[1], "SlimEditor") == 0) {
+			Editor::startSlimEditor(std::string(argv[2]));
 		}
 	} else {
 		// return Shadow::StartRuntime();
