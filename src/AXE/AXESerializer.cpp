@@ -10,6 +10,9 @@ namespace Shadow::AXE {
 
 bool serializeSong(const Song* song) {
 	json output;
+	output["name"] = song->name;
+	output["artist"] = song->artist;
+	output["album"] = song->album;
 	output["bpm"] = song->bpm;
 	output["key"] = song->key;
 	output["timeSignature"] = song->timeSignature;
@@ -45,6 +48,9 @@ bool deserializeSong(Song* song) {
 	json decodedSong = json::from_bson(infile);
 	infile.close();
 
+	song->name = decodedSong["name"];
+	song->artist = decodedSong["artist"];
+	song->album = decodedSong["album"];
 	song->bpm = decodedSong["bpm"];
 	song->key = decodedSong["key"];
 	song->timeSignature[0] = decodedSong["timeSignature"][0];

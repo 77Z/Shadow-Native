@@ -48,8 +48,12 @@ struct Track {
 };
 
 struct Song {
+	std::string name = "";
+	std::string artist = "";
+	std::string album = "";
+
 	float bpm = 120.0f;
-	int key;
+	int key = 0;
 	int timeSignature[2] = { 4, 4 };
 
 	std::vector<Track> tracks;

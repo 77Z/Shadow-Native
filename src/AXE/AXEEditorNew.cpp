@@ -124,6 +124,7 @@ int startAXEEditor(AXEProjectEntry project) {
 
 	// IMGUI_ENABLE_FREETYPE in imconfig to use Freetype for higher quality font rendering
 	float sf = window.getContentScale();
+	// float sf = 1.5;
 	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
 	ImGui::GetStyle().ScaleAllSizes(sf);
 
@@ -166,6 +167,8 @@ int startAXEEditor(AXEProjectEntry project) {
 						ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Loaded project from computer"});
 					}
 					ImGui::Separator();
+					ImGui::CheckboxFlags("Drag windows out", &ImGui::GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable);
+					ImGui::Separator();
 					if (ImGui::MenuItem("Exit")) window.close();
 					ImGui::EndMenu();
 				}
@@ -200,9 +203,27 @@ int startAXEEditor(AXEProjectEntry project) {
 			ImGui::End();
 		}
 
+		// Project Metadata
+		{
+			ImGui::Begin("Project Metadata");
+
+			ImGui::Text("%s", project.name.c_str());
+			ImGui::Text("%s", project.path.c_str());
+
+			ImGui::End();
+		}
+
 		// Timeline
 		{
 			ImGui::Begin("Timeline");
+
+			// For middle click drag
+			ImVec2 mouseDelta = ImGui::GetIO().MouseDelta;
+			ImVec2 scrollDelta = ImVec2(-mouseDelta.x, -mouseDelta.y);
+
+			if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
+				ImGui::SetScrollY(ImGui::GetScrollY() + scrollDelta.y);
+			}
 
 			int trackIt = 0;
 			for (auto& track : songInfo.tracks) {
@@ -228,24 +249,31 @@ int startAXEEditor(AXEProjectEntry project) {
 				songInfo.tracks.push_back(newTrack);
 			}
 
-			// ImVec2 windowPadding = ImGui::GetStyle().WindowPadding;
-			
-			ImGui::SetCursorPos(ImVec2(260.0f, 28.0f));
+			ImGui::SetCursorPos(ImVec2(260.0f * sf, 30.0f));
 
 			trackIt = 0;
-			ImGui::BeginChild("timelineScroller", ImVec2(ImGui::GetWindowWidth() - 270.0f * sf, ImGui::GetWindowHeight() - 40.0f * sf), false, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
+			ImGui::BeginChild("timelineScroller", ImVec2(ImGui::GetWindowWidth() - 270.0f, 2000.0f), false, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
+
+			if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
+				ImGui::SetScrollX(ImGui::GetScrollX() + scrollDelta.x);
+			}
+
 			for (auto& track : songInfo.tracks) {
 				ImGui::PushID(trackIt);
-				ImGui::BeginChild("track", ImVec2(500.0f * sf, 130.0f * sf));
+				ImGui::BeginChild("track", ImVec2(1000.0f * sf, 130.0f * sf));
 
 				ImGui::Text("I am the data for track %s at index %i", track.name.c_str(), trackIt);
 
 				// Clips render pipeline here
 
+
 				ImGui::EndChild();
 				ImGui::PopID();
 				trackIt++;
 			}
+
+			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(0.0f, 0.0f), ImVec2(100.0f, 100.0f), IM_COL32(255, 0, 0, 255));
+
 			ImGui::EndChild();
 
 			ImGui::End();
@@ -258,7 +286,7 @@ int startAXEEditor(AXEProjectEntry project) {
 		if (editorState.showImGuiMetrics) ImGui::ShowMetricsWindow(&editorState.showImGuiMetrics);
 		if (editorState.showImGuiStackTool) ImGui::ShowStackToolWindow(&editorState.showImGuiStackTool);
 
-		// ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 
 		// Rendering
 		ImGui::Render();
