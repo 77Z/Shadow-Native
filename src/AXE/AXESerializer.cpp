@@ -23,6 +23,9 @@ bool serializeSong(const Song* song) {
 			
 		}
 
+		trackObj["balence"] = track.balence;
+		trackObj["volume"] = track.volume;
+
 		output["tracks"].push_back(trackObj);
 	}
 
@@ -50,6 +53,9 @@ bool deserializeSong(Song* song) {
 	for (auto& track : decodedSong["tracks"]) {
 		Track tempTrack;
 		tempTrack.name = track["name"];
+
+		tempTrack.balence = track["balence"];
+		tempTrack.volume = track["volume"];
 
 		EC_PRINT(EC_THIS, "Decoding track: %s", tempTrack.name.c_str());
 

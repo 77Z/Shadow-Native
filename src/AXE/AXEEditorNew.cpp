@@ -2,6 +2,7 @@
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include <string>
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
@@ -13,6 +14,8 @@
 #include "Debug/EditorConsole.hpp"
 #include "AXETypes.hpp"
 #include "AXESerializer.hpp"
+#include "ImGuiNotify.hpp"
+#include "Keyboard.hpp"
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -79,6 +82,33 @@ int startAXEEditor(AXEProjectEntry project) {
 	glfwMakeContextCurrent(window.window);
 	glfwSwapInterval(1); // Enable vsync
 
+	Keyboard keyboard(&window);
+
+	// Keyboard Shortcuts
+	keyboard.registerKeyCallback([](KeyButton_ key, bool down, KeyModifiers_ mods) {
+		if (mods == KeyModifiers_Control
+			&& key == KeyButton_S
+			&& down) {
+				serializeSong(&songInfo);
+				ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Project Saved"});
+			}
+
+		if (mods == KeyModifiers_Control
+			&& key == KeyButton_L
+			&& down) {
+				songInfo.tracks.clear();
+				deserializeSong(&songInfo);
+				ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Loaded project from computer"});
+			}
+
+		// TODO: This don't work
+		if (mods == (KeyModifiers_Control | KeyModifiers_Shift)
+			&& key == KeyButton_Q
+			&& down) {
+				ImGui::InsertNotification({ImGuiToastType::Success, 3000, "Bruh"});
+			}
+	});
+
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -104,6 +134,7 @@ int startAXEEditor(AXEProjectEntry project) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		// Header and Menubar
 		{
 			ImGuiViewport* viewport = ImGui::GetMainViewport();
 			ImGui::SetNextWindowPos(viewport->Pos);
@@ -125,11 +156,14 @@ int startAXEEditor(AXEProjectEntry project) {
 
 			if (ImGui::BeginMenuBar()) {
 				if (ImGui::BeginMenu("File")) {
-					if (ImGui::MenuItem("Save Project")) {
+					if (ImGui::MenuItem("Save Project", "CTRL + S")) {
 						serializeSong(&songInfo);
+						ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Project Saved"});
 					}
-					if (ImGui::MenuItem("Load")) {
+					if (ImGui::MenuItem("Load", "CTRL + L")) {
+						songInfo.tracks.clear();
 						deserializeSong(&songInfo);
+						ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Loaded project from computer"});
 					}
 					ImGui::Separator();
 					if (ImGui::MenuItem("Exit")) window.close();
@@ -166,24 +200,56 @@ int startAXEEditor(AXEProjectEntry project) {
 			ImGui::End();
 		}
 
-		ImGui::Begin("Timeline");
+		// Timeline
+		{
+			ImGui::Begin("Timeline");
 
-		ImGui::BeginChild("timelineScroller", ImVec2(ImGui::GetWindowWidth() + 1000.0f, ImGui::GetWindowHeight()), false, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
+			int trackIt = 0;
+			for (auto& track : songInfo.tracks) {
+				ImGui::PushID(trackIt);
+				ImGui::BeginChild("trackProps", ImVec2(250.0f, 130.0f));
 
-		int trackIt = 0;
-		for (auto& track : songInfo.tracks) {
-			ImGui::PushID(trackIt);
+				ImGui::Text("%i", trackIt);
+				ImGui::PushItemWidth(200.0f);
+				ImGui::InputText("##trackname", &track.name);
+				ImGui::SameLine();
+				if (ImGui::SmallButton("X")) songInfo.tracks.erase(songInfo.tracks.begin() + trackIt);
+				ImGui::SliderFloat("VOL", &track.volume, 0.0f, 100.0f);
+				ImGui::SliderFloat("BAL", &track.balence, -1.0f, 1.0f);
+				
+				ImGui::EndChild();
+				ImGui::PopID();
+				trackIt++;
+			}
 
-			ImGui::Text("%s", track.name.c_str());
-			ImGui::InputText("##trackname", &track.name);
+			if (ImGui::Button("+ Add Track")) {
+				Track newTrack;
+				newTrack.name = "Untitled Track " + std::to_string(trackIt + 1);
+				songInfo.tracks.push_back(newTrack);
+			}
+
+			// ImVec2 windowPadding = ImGui::GetStyle().WindowPadding;
 			
-			ImGui::PopID();
-			trackIt++;
+			ImGui::SetCursorPos(ImVec2(260.0f, 28.0f));
+
+			trackIt = 0;
+			ImGui::BeginChild("timelineScroller", ImVec2(ImGui::GetWindowWidth() - 270.0f, ImGui::GetWindowHeight() - 40.0f), false, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
+			for (auto& track : songInfo.tracks) {
+				ImGui::PushID(trackIt);
+				ImGui::BeginChild("track", ImVec2(500.0f, 130.0f));
+
+				ImGui::Text("I am the data for track %s at index %i", track.name.c_str(), trackIt);
+
+				ImGui::EndChild();
+				ImGui::PopID();
+				trackIt++;
+			}
+			ImGui::EndChild();
+
+			ImGui::End();
 		}
 
-		ImGui::EndChild();
-
-		ImGui::End();
+		ImGui::RenderNotifications();
 
 		if (editorState.showShadowEngineConsole) EditorConsole::Frontend::onUpdate();
 		if (editorState.showImGuiConsole) ImGui::ShowDebugLogWindow(&editorState.showImGuiConsole);

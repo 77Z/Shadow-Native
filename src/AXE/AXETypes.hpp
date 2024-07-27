@@ -42,6 +42,9 @@ struct Track {
 	std::vector<Clip> clips;
 	std::vector<Automation> automations;
 	std::vector<Bookmark> bookmarks;
+
+	float balence = 0.0f;	// -1 L : +1 R
+	float volume = 100.0f;	// 0 - 100
 };
 
 struct Song {
