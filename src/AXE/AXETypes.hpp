@@ -33,8 +33,8 @@ struct Automation {};
 
 struct Clip {
 	std::string name;
-	// std::vector<Automation> automations;
 	std::string baseAudioSource;
+	// std::vector<Automation> automations;
 };
 
 struct Track {

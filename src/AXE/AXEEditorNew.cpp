@@ -185,9 +185,9 @@ int startAXEEditor(AXEProjectEntry project) {
 				ImGui::EndMenuBar();
 			}
 
-			ImGui::PushItemWidth(100.0f);
+			ImGui::PushItemWidth(100.0f * sf);
 			ImGui::InputFloat("BPM", &songInfo.bpm, 1.0f, 5.0f);
-			ImGui::PushItemWidth(120.0f);
+			ImGui::PushItemWidth(120.0f * sf);
 			ImGui::SameLine();
 			ImGui::InputInt2("Time Signature", songInfo.timeSignature);
 			ImGui::SameLine();
@@ -195,7 +195,7 @@ int startAXEEditor(AXEProjectEntry project) {
 			const char* keyName = (songInfo.key >= 0 && songInfo.key < Keys_Count) ? keysPretty[songInfo.key] : "? Unknown ?";
 			ImGui::SliderInt("Key", &songInfo.key, 0, Keys_Count - 1, keyName);
 
-			ImGui::SetCursorPosY(55.0f);
+			ImGui::SetCursorPosY(55.0f * sf);
 			ImGui::DockSpace(ImGui::GetID("AXEDockspace"));
 			ImGui::End();
 		}
@@ -207,10 +207,10 @@ int startAXEEditor(AXEProjectEntry project) {
 			int trackIt = 0;
 			for (auto& track : songInfo.tracks) {
 				ImGui::PushID(trackIt);
-				ImGui::BeginChild("trackProps", ImVec2(250.0f, 130.0f));
+				ImGui::BeginChild("trackProps", ImVec2(250.0f * sf, 130.0f * sf));
 
 				ImGui::Text("%i", trackIt);
-				ImGui::PushItemWidth(200.0f);
+				ImGui::PushItemWidth(200.0f * sf);
 				ImGui::InputText("##trackname", &track.name);
 				ImGui::SameLine();
 				if (ImGui::SmallButton("X")) songInfo.tracks.erase(songInfo.tracks.begin() + trackIt);
@@ -233,12 +233,14 @@ int startAXEEditor(AXEProjectEntry project) {
 			ImGui::SetCursorPos(ImVec2(260.0f, 28.0f));
 
 			trackIt = 0;
-			ImGui::BeginChild("timelineScroller", ImVec2(ImGui::GetWindowWidth() - 270.0f, ImGui::GetWindowHeight() - 40.0f), false, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
+			ImGui::BeginChild("timelineScroller", ImVec2(ImGui::GetWindowWidth() - 270.0f * sf, ImGui::GetWindowHeight() - 40.0f * sf), false, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
 			for (auto& track : songInfo.tracks) {
 				ImGui::PushID(trackIt);
-				ImGui::BeginChild("track", ImVec2(500.0f, 130.0f));
+				ImGui::BeginChild("track", ImVec2(500.0f * sf, 130.0f * sf));
 
 				ImGui::Text("I am the data for track %s at index %i", track.name.c_str(), trackIt);
+
+				// Clips render pipeline here
 
 				ImGui::EndChild();
 				ImGui::PopID();
@@ -256,7 +258,7 @@ int startAXEEditor(AXEProjectEntry project) {
 		if (editorState.showImGuiMetrics) ImGui::ShowMetricsWindow(&editorState.showImGuiMetrics);
 		if (editorState.showImGuiStackTool) ImGui::ShowStackToolWindow(&editorState.showImGuiStackTool);
 
-		ImGui::ShowDemoWindow();
+		// ImGui::ShowDemoWindow();
 
 		// Rendering
 		ImGui::Render();
