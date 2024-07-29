@@ -6,10 +6,10 @@
 
 namespace Shadow::AXE {
 
-bool serializeSong(const Song* song);
+bool serializeSong(const Song* song, const std::string& filepath);
 
 /// Loads specified BSON encoded file into a Song object
-bool deserializeSong(Song* song);
+bool deserializeSong(Song* song, const std::string& filepath);
 
 }
 

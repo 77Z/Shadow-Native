@@ -1,3 +1,5 @@
+#include "AXENodeEditor.hpp"
+#include "Debug/Logger.hpp"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
@@ -16,6 +18,16 @@
 #include "AXESerializer.hpp"
 #include "ImGuiNotify.hpp"
 #include "Keyboard.hpp"
+#include "miniaudio.h"
+
+// Forward declarations
+namespace Shadow::Util {
+void openURL(const std::string &url);
+}
+namespace Shadow::AXE {
+void updateHelpWindow(bool& p_open);
+void bootstrapSong(const Song* song, const ma_engine* audioEngine);
+}
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
 // To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
@@ -45,6 +57,7 @@ static Song songInfo;
 
 // Not persistent
 struct {
+	float lastKnownMasterVol = -1.0f;
 
 	// Window states
 	bool showShadowEngineConsole = false;
@@ -52,9 +65,44 @@ struct {
 	bool showImGuiMetrics = false;
 	bool showImGuiStackTool = false;
 	bool showClipboardBuffer = false;
+	bool showProjectMetadata = false;
+	bool showHelpDocs = false;
+	bool showNodeEditor = true;
+	bool showNodeEditorDebugger = false;
 } editorState;
 
-int startAXEEditor(AXEProjectEntry project) {
+int startAXEEditor(std::string projectFile) {
+
+	ma_result result;
+	ma_engine engine;
+	result = ma_engine_init(nullptr, &engine);
+	if (result != MA_SUCCESS) {
+		ERROUT("Failed to initialize ShadowAudio engine!!");
+		return 1;
+	}
+
+	deserializeSong(&songInfo, projectFile);
+	bootstrapSong(&songInfo, &engine);
+
+	// ma_device* device = ma_engine_get_device(&engine);
+	ma_sound sound;
+	result = ma_sound_init_from_file(&engine, "/home/vince/Downloads/music/brainless.flac", songInfo.decodeOnLoad ? MA_SOUND_FLAG_DECODE : 0, nullptr, nullptr, &sound);
+
+	ma_uint64 length;
+	ma_data_source_get_length_in_pcm_frames(&sound, &length);
+
+	ma_context context;
+	ma_context_init(nullptr, 0, nullptr, &context);
+	ma_device_info* pPlaybackDeviceInfos;
+    ma_uint32 playbackDeviceCount;
+    ma_device_info* pCaptureDeviceInfos;
+    ma_uint32 captureDeviceCount;
+    ma_uint32 iDevice;
+	ma_context_get_devices(&context, &pPlaybackDeviceInfos, &playbackDeviceCount, &pCaptureDeviceInfos, &captureDeviceCount);
+	for (iDevice = 0; iDevice < playbackDeviceCount; iDevice++)
+		EC_WARN("All", "   %u: %s\n", iDevice, pCaptureDeviceInfos[iDevice].name);
+
+
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 	// GL ES 2.0 + GLSL 100
 	const char* glsl_version = "#version 100";
@@ -85,11 +133,11 @@ int startAXEEditor(AXEProjectEntry project) {
 	Keyboard keyboard(&window);
 
 	// Keyboard Shortcuts
-	keyboard.registerKeyCallback([](KeyButton_ key, bool down, KeyModifiers_ mods) {
+	keyboard.registerKeyCallback([&](KeyButton_ key, bool down, KeyModifiers_ mods) {
 		if (mods == KeyModifiers_Control
 			&& key == KeyButton_S
 			&& down) {
-				serializeSong(&songInfo);
+				serializeSong(&songInfo, projectFile);
 				ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Project Saved"});
 			}
 
@@ -97,7 +145,8 @@ int startAXEEditor(AXEProjectEntry project) {
 			&& key == KeyButton_L
 			&& down) {
 				songInfo.tracks.clear();
-				deserializeSong(&songInfo);
+				deserializeSong(&songInfo, projectFile);
+				bootstrapSong(&songInfo, &engine);
 				ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Loaded project from computer"});
 			}
 
@@ -125,8 +174,16 @@ int startAXEEditor(AXEProjectEntry project) {
 	// IMGUI_ENABLE_FREETYPE in imconfig to use Freetype for higher quality font rendering
 	float sf = window.getContentScale();
 	// float sf = 1.5;
-	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
+
+	ImFontConfig fontCfg;
+	fontCfg.OversampleH = 4;
+	fontCfg.OversampleV = 4;
+	fontCfg.PixelSnapH = false;
+
+	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf, &fontCfg);
 	ImGui::GetStyle().ScaleAllSizes(sf);
+
+	AXENodeEditor nodeEditor;
 
 	while (!window.shouldClose()) {
 		window.pollEvents();
@@ -158,13 +215,8 @@ int startAXEEditor(AXEProjectEntry project) {
 			if (ImGui::BeginMenuBar()) {
 				if (ImGui::BeginMenu("File")) {
 					if (ImGui::MenuItem("Save Project", "CTRL + S")) {
-						serializeSong(&songInfo);
+						serializeSong(&songInfo, projectFile);
 						ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Project Saved"});
-					}
-					if (ImGui::MenuItem("Load", "CTRL + L")) {
-						songInfo.tracks.clear();
-						deserializeSong(&songInfo);
-						ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Loaded project from computer"});
 					}
 					ImGui::Separator();
 					ImGui::CheckboxFlags("Drag windows out", &ImGui::GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable);
@@ -175,6 +227,9 @@ int startAXEEditor(AXEProjectEntry project) {
 				if (ImGui::BeginMenu("Edit")) {
 					ImGui::MenuItem("Copy", "CTRL + C");
 					ImGui::MenuItem("Paste", "CTRL + V");
+					ImGui::Separator();
+					ImGui::MenuItem("Project Metadata", nullptr, &editorState.showProjectMetadata);
+					ImGui::MenuItem("Node Editor", nullptr, &editorState.showNodeEditor);
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu("Debug Tools")) {
@@ -183,6 +238,19 @@ int startAXEEditor(AXEProjectEntry project) {
 					ImGui::MenuItem("UI Metrics", nullptr, &editorState.showImGuiMetrics);
 					ImGui::MenuItem("UI Stack Tool", nullptr, &editorState.showImGuiStackTool);
 					ImGui::MenuItem("Clipboard Buffer", nullptr, &editorState.showClipboardBuffer);
+					if (ImGui::MenuItem("Reload Song", "CTRL + L")) {
+						songInfo.tracks.clear();
+						deserializeSong(&songInfo, projectFile);
+						bootstrapSong(&songInfo, &engine);
+						ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Loaded project from computer"});
+					}
+					ImGui::MenuItem("Node Editor Debugger", nullptr, &editorState.showNodeEditorDebugger);
+					ImGui::EndMenu();
+				}
+				if (ImGui::BeginMenu("Help!")) {
+					ImGui::MenuItem("ShadowAudio information and help", nullptr, &editorState.showHelpDocs);
+					ImGui::Text("If you need help, just text me");
+					if (ImGui::MenuItem("Shadow Engine Website")) Util::openURL("https://shadow.77z.dev");
 					ImGui::EndMenu();
 				}
 				ImGui::EndMenuBar();
@@ -198,17 +266,71 @@ int startAXEEditor(AXEProjectEntry project) {
 			const char* keyName = (songInfo.key >= 0 && songInfo.key < Keys_Count) ? keysPretty[songInfo.key] : "? Unknown ?";
 			ImGui::SliderInt("Key", &songInfo.key, 0, Keys_Count - 1, keyName);
 
+			ImGui::SameLine();
+			ImGui::SliderFloat("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
+
 			ImGui::SetCursorPosY(55.0f * sf);
 			ImGui::DockSpace(ImGui::GetID("AXEDockspace"));
 			ImGui::End();
 		}
 
-		// Project Metadata
-		{
-			ImGui::Begin("Project Metadata");
+		//TODO: change this to callback sliders
+		if (songInfo.masterVolume != editorState.lastKnownMasterVol) {
+			ma_engine_set_volume(&engine, songInfo.masterVolume);
+			EC_PRINT("All", "Changed master volume to %.3f", songInfo.masterVolume);
+			editorState.lastKnownMasterVol = songInfo.masterVolume;
+		}
 
-			ImGui::Text("%s", project.name.c_str());
-			ImGui::Text("%s", project.path.c_str());
+		//ShadowAudio window
+		{
+			ImGui::Begin("ShadowAudio");
+
+			if (ImGui::Button("Play sound")) {
+				// ma_engine_play_sound(&engine, "./Resources/sound.wav", nullptr);
+				ma_sound_seek_to_pcm_frame(&sound, 0);
+				ma_sound_start(&sound);
+			}
+
+			ImGui::Text("Engine milis: %llu", ma_engine_get_time_in_milliseconds(&engine));
+			ImGui::Text("Engine PCM Frames: %llu", ma_engine_get_time_in_pcm_frames(&engine));
+			ImGui::Text("loaded sound length in pcm frames: %llu", length);
+
+			if (ImGui::Button("Set engine timer to 0")) {
+				ma_engine_set_time_in_pcm_frames(&engine, 0);
+			}
+
+			ImGui::End();
+		}
+
+		// Project Metadata
+		if (editorState.showProjectMetadata) {
+			ImGui::Begin("Project Metadata", &editorState.showProjectMetadata, ImGuiWindowFlags_NoCollapse);
+
+			ImGui::Text("Project file path:\n%s", projectFile.c_str());
+
+			ImGui::InputText("Song name", &songInfo.name);
+			ImGui::TextUnformatted("^^^ Doesn't affect project file name ^^^");
+			ImGui::InputText("Artist", &songInfo.artist);
+			ImGui::InputText("Album", &songInfo.album);
+
+			ImGui::Checkbox("Decode on load", &songInfo.decodeOnLoad);
+			if (ImGui::BeginItemTooltip()) {
+				ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+				ImGui::TextUnformatted(
+					"This setting controls how audio data is loaded into memory. When left "
+					"unchecked, audio data is loaded directly from the filesystem bit-for-bit into "
+					"memory, and is decoded on the fly when it is needed. This saves space in "
+					"memory if you're running low or have a lot of audio to process, but in more "
+					"complicated processing scenerios this can cause defects, delays, stutters, "
+					"and other artifacts in your audio.\nChecking this box will tell ShadowAudio "
+					"to decode the audio ahead of time, which takes up more memory, but lessens "
+					"the strain on the audio thread during playback.\n!!! This requires you to "
+					"restart AXE in order for the change to take effect !!!");
+				ImGui::PopTextWrapPos();
+				ImGui::EndTooltip();
+			}
+
+			ImGui::TextUnformatted("Remember CTRL + S to save your changes!!");
 
 			ImGui::End();
 		}
@@ -217,6 +339,11 @@ int startAXEEditor(AXEProjectEntry project) {
 		{
 			ImGui::Begin("Timeline");
 
+			// ImDrawList uses screen coords NOT window coords
+			ImDrawList* drawList = ImGui::GetWindowDrawList();
+			ImVec2 canvasPos = ImGui::GetCursorScreenPos();
+			// ImVec2 canvasSize = ImGui::GetContentRegionAvail();
+
 			// For middle click drag
 			ImVec2 mouseDelta = ImGui::GetIO().MouseDelta;
 			ImVec2 scrollDelta = ImVec2(-mouseDelta.x, -mouseDelta.y);
@@ -224,6 +351,8 @@ int startAXEEditor(AXEProjectEntry project) {
 			if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
 				ImGui::SetScrollY(ImGui::GetScrollY() + scrollDelta.y);
 			}
+
+			ImGui::SetCursorPosY(60.0f);
 
 			int trackIt = 0;
 			for (auto& track : songInfo.tracks) {
@@ -237,6 +366,8 @@ int startAXEEditor(AXEProjectEntry project) {
 				if (ImGui::SmallButton("X")) songInfo.tracks.erase(songInfo.tracks.begin() + trackIt);
 				ImGui::SliderFloat("VOL", &track.volume, 0.0f, 100.0f);
 				ImGui::SliderFloat("BAL", &track.balence, -1.0f, 1.0f);
+
+				ImGui::Checkbox("Muted", &track.muted);
 				
 				ImGui::EndChild();
 				ImGui::PopID();
@@ -249,7 +380,7 @@ int startAXEEditor(AXEProjectEntry project) {
 				songInfo.tracks.push_back(newTrack);
 			}
 
-			ImGui::SetCursorPos(ImVec2(260.0f * sf, 30.0f));
+			ImGui::SetCursorPos(ImVec2(260.0f * sf, 60.0f));
 
 			trackIt = 0;
 			ImGui::BeginChild("timelineScroller", ImVec2(ImGui::GetWindowWidth() - 270.0f, 2000.0f), false, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
@@ -272,21 +403,34 @@ int startAXEEditor(AXEProjectEntry project) {
 				trackIt++;
 			}
 
-			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(0.0f, 0.0f), ImVec2(100.0f, 100.0f), IM_COL32(255, 0, 0, 255));
-
 			ImGui::EndChild();
+
+			// Draw scrubber
+			float frame = 20.0f;
+			ImGui::SetCursorPosY(30.0f);
+			ImGui::InputFloat("Frame", &frame);
+			float scrubberWindowPos = 260 + frame;
+			drawList->AddTriangleFilled(
+				ImVec2(canvasPos.x + scrubberWindowPos - 10.0f, canvasPos.y - 55.0f),
+				ImVec2(canvasPos.x + scrubberWindowPos + 10.0f, canvasPos.y - 55.0f),
+				ImVec2(canvasPos.x + scrubberWindowPos, canvasPos.y + 60.0f),
+				IM_COL32(255, 0, 0, 255)
+			);
+			drawList->AddRectFilled(ImVec2(canvasPos.x + scrubberWindowPos, canvasPos.y + 60.0f), ImVec2(canvasPos.x + scrubberWindowPos + 2.0f, 10000.0f), IM_COL32(255, 0, 0, 255));
 
 			ImGui::End();
 		}
-
-		ImGui::RenderNotifications();
 
 		if (editorState.showShadowEngineConsole) EditorConsole::Frontend::onUpdate();
 		if (editorState.showImGuiConsole) ImGui::ShowDebugLogWindow(&editorState.showImGuiConsole);
 		if (editorState.showImGuiMetrics) ImGui::ShowMetricsWindow(&editorState.showImGuiMetrics);
 		if (editorState.showImGuiStackTool) ImGui::ShowStackToolWindow(&editorState.showImGuiStackTool);
 
-		ImGui::ShowDemoWindow();
+		// ImGui::ShowDemoWindow();
+		updateHelpWindow(editorState.showHelpDocs);
+		nodeEditor.onUpdate(editorState.showNodeEditor);
+		nodeEditor.updateDebugMenu(editorState.showNodeEditorDebugger);
+		ImGui::RenderNotifications();
 
 		// Rendering
 		ImGui::Render();
@@ -311,9 +455,14 @@ int startAXEEditor(AXEProjectEntry project) {
 		glfwSwapBuffers(window.window);
 	}
 
+	nodeEditor.shutdown();
+
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
+
+	ma_sound_uninit(&sound);
+	ma_engine_uninit(&engine);
 
 	window.shutdown();
 

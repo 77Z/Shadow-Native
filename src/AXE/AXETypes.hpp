@@ -1,8 +1,10 @@
 #ifndef SHADOW_NATIVE_AXE_AXE_TYPES_HPP
 #define SHADOW_NATIVE_AXE_AXE_TYPES_HPP
 
+#include <cstdint>
 #include <string>
 #include <vector>
+#include "miniaudio.h"
 
 namespace Shadow::AXE {
 
@@ -24,6 +26,10 @@ enum Keys_ {
 	Keys_Count
 };
 
+struct NodeGraph {
+	ma_node_graph graph;
+};
+
 struct Bookmark {
 	float position;
 	std::string name;
@@ -35,6 +41,13 @@ struct Clip {
 	std::string name;
 	std::string baseAudioSource;
 	// std::vector<Automation> automations;
+
+	uint64_t position;
+
+	float balence = 0.0f;	// -1 L : +1 R
+	float volume = 100.0f;	// 0 - 100
+
+	bool muted = false;
 };
 
 struct Track {
@@ -45,6 +58,9 @@ struct Track {
 
 	float balence = 0.0f;	// -1 L : +1 R
 	float volume = 100.0f;	// 0 - 100
+
+	bool muted = false;
+	// should solo be here??
 };
 
 struct Song {
@@ -52,9 +68,13 @@ struct Song {
 	std::string artist = "";
 	std::string album = "";
 
+	bool decodeOnLoad = true;
+	// Async loading and/or streaming?
+
 	float bpm = 120.0f;
 	int key = 0;
 	int timeSignature[2] = { 4, 4 };
+	float masterVolume = 1.0f; // 0-1 with anything over 1 amplifying
 
 	std::vector<Track> tracks;
 };

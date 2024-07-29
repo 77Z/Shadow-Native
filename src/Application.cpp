@@ -31,23 +31,17 @@ int Main(int argc, char** argv) {
 
 	InitBXFilesystem();
 
-	// return Shadow::StartProductionRuntime();
-
 #if CONFIG_SHADOW_PRODUCTION_BUILD
 	return Shadow::StartProductionRuntime();
 #else
 
 	EC_PRINT("All", "Welcome to Shadow Engine");
 
-	// PPK_ASSERT(true, "eval true");
-	// PPK_ASSERT(false, "eval false");
-
 	if (argc > 1) {
 		if (strcmp(argv[1], "axe") == 0) {
 			ret = Shadow::AXE::startAXEProjectBrowser();
 		} else if (strcmp(argv[1], "axeEditor") == 0) {
-			ret = Shadow::AXE::startAXEEditor(
-				{ "Bruz", "/home/vince/.config/Shadow/AXEProjects/bruz" });
+			ret = Shadow::AXE::startAXEEditor("/home/vince/.config/Shadow/AXEProjects/testsong.axe");
 		} else if (strcmp(argv[1], "editorwis") == 0) {
 			ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
 		} else if (strcmp(argv[1], "dev") == 0) {

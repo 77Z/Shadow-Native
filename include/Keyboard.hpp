@@ -3,6 +3,7 @@
 
 #include "GLFW/glfw3.h"
 #include "ShadowWindow.hpp"
+#include <functional>
 #include <vector>
 
 namespace Shadow {
@@ -139,7 +140,8 @@ enum KeyButton_ {
 	KeyButton_Menu
 };
 
-typedef void (* keyFunction)(KeyButton_ key, bool down, KeyModifiers_ mods);
+// typedef void (* keyFunction)(KeyButton_ key, bool down, KeyModifiers_ mods);
+typedef std::function<void(KeyButton_ key, bool down, KeyModifiers_ mods)> keyFunction;
 
 class Keyboard {
 public:

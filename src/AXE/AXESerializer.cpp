@@ -8,14 +8,16 @@
 
 namespace Shadow::AXE {
 
-bool serializeSong(const Song* song) {
+bool serializeSong(const Song* song, const std::string& filepath) {
 	json output;
 	output["name"] = song->name;
 	output["artist"] = song->artist;
 	output["album"] = song->album;
+	output["decodeOnLoad"] = song->decodeOnLoad;
 	output["bpm"] = song->bpm;
 	output["key"] = song->key;
 	output["timeSignature"] = song->timeSignature;
+	output["masterVolume"] = song->masterVolume;
 	output["tracks"] = json::array();
 	for (auto& track : song->tracks) {
 		json trackObj;
@@ -29,21 +31,22 @@ bool serializeSong(const Song* song) {
 		trackObj["balence"] = track.balence;
 		trackObj["volume"] = track.volume;
 
+		trackObj["muted"] = track.muted;
+
 		output["tracks"].push_back(trackObj);
 	}
 
-	JSON::dumpJsonToFile(output, "./AXEproject.json", true);
+	JSON::dumpJsonToFile(output, filepath + ".raw", true);
 
-
-	JSON::dumpJsonToBson(output, "./AXEproject.bson");
+	JSON::dumpJsonToBson(output, filepath);
 
 	return true;
 }
 
-bool deserializeSong(Song* song) {
+bool deserializeSong(Song* song, const std::string& filepath) {
 	EC_NEWCAT(EC_THIS);
 
-	std::ifstream infile("./AXEproject.bson");
+	std::ifstream infile(filepath);
 	if (!infile) ERROUT("Failed to read song file, expect failure from here");
 	json decodedSong = json::from_bson(infile);
 	infile.close();
@@ -51,10 +54,12 @@ bool deserializeSong(Song* song) {
 	song->name = decodedSong["name"];
 	song->artist = decodedSong["artist"];
 	song->album = decodedSong["album"];
+	song->decodeOnLoad = decodedSong["decodeOnLoad"];
 	song->bpm = decodedSong["bpm"];
 	song->key = decodedSong["key"];
 	song->timeSignature[0] = decodedSong["timeSignature"][0];
 	song->timeSignature[1] = decodedSong["timeSignature"][1];
+	song->masterVolume = decodedSong["masterVolume"];
 
 	for (auto& track : decodedSong["tracks"]) {
 		Track tempTrack;
@@ -62,6 +67,8 @@ bool deserializeSong(Song* song) {
 
 		tempTrack.balence = track["balence"];
 		tempTrack.volume = track["volume"];
+
+		tempTrack.muted = track["muted"];
 
 		EC_PRINT(EC_THIS, "Decoding track: %s", tempTrack.name.c_str());
 

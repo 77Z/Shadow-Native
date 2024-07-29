@@ -1,12 +1,15 @@
 #include "AXE/AXEEditor.hpp"
 #include "AXESerializer.hpp"
 #include "AXETypes.hpp"
+#include "Configuration/EngineConfiguration.hpp"
 #include "Debug/Logger.hpp"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include <filesystem>
 #include <string>
+#include <vector>
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
@@ -20,6 +23,18 @@ namespace Shadow::AXE {
 Song songToWrite;
 
 static bool openEditorAfterDeath = false;
+static std::string projectFileToOpenAfterDeath = "";
+
+static std::vector<std::string> reloadProjects() {
+	std::vector<std::string> ret;
+	for (const std::filesystem::directory_entry& file : std::filesystem::directory_iterator(EngineConfiguration::getConfigDir() + "/AXEProjects")) {
+		std::string name = file.path().filename();
+		if (name.ends_with(".axe")) {
+			ret.push_back(name);
+		}
+	}
+	return ret;
+}
 
 int startAXEProjectBrowser() {
 	#if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -68,6 +83,8 @@ int startAXEProjectBrowser() {
 	ImFont* headingFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 40.0f * sf);
 	ImGui::GetStyle().ScaleAllSizes(sf);
 
+	std::vector<std::string> projects = reloadProjects();
+
 	while (!window.shouldClose()) {
 		window.pollEvents();
 
@@ -114,12 +131,22 @@ int startAXEProjectBrowser() {
 			ImGui::InputText("Album", &songToWrite.album);
 			
 			if (ImGui::Button("Create")) {
-				serializeSong(&songToWrite);
+				std::string loc = EngineConfiguration::getConfigDir() + "/AXEProjects/" + songToWrite.name + ".axe";
+				serializeSong(&songToWrite, loc);
+				projectFileToOpenAfterDeath = loc;
 				openEditorAfterDeath = true;
 				window.close();
 			}
 
 			ImGui::TreePop();
+		}
+
+		for (auto& project : projects) {
+			if (ImGui::Selectable(project.c_str())) {
+				projectFileToOpenAfterDeath = EngineConfiguration::getConfigDir() + "/AXEProjects/" + project;
+				openEditorAfterDeath = true;
+				window.close();
+			}
 		}
 
 		ImGui::End();
@@ -140,9 +167,12 @@ int startAXEProjectBrowser() {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	window.shutdown();
+	// We shutdown the ShadowWindow manually to inject openEditorAfterDeath here
+	glfwDestroyWindow(window.window);
 
-	if (openEditorAfterDeath) startAXEEditor({"", ""});
+	if (openEditorAfterDeath) startAXEEditor(projectFileToOpenAfterDeath);
+
+	glfwTerminate();
 
 	return 0;
 }

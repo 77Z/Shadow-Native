@@ -12,6 +12,8 @@ inline void SetupTheme() {
 	style.WindowRounding = 7.0f;
 	style.FrameRounding = 2.0f;
 
+	style.WindowTitleAlign.x = 0.5f;
+
 	style.Colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
 	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
