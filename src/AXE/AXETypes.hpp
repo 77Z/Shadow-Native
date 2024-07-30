@@ -27,7 +27,7 @@ enum Keys_ {
 };
 
 struct NodeGraph {
-	ma_node_graph graph;
+	ma_node_graph compiledGraph;
 };
 
 struct Bookmark {
@@ -77,6 +77,7 @@ struct Song {
 	float masterVolume = 1.0f; // 0-1 with anything over 1 amplifying
 
 	std::vector<Track> tracks;
+	std::vector<NodeGraph> nodeGraphs;
 };
 
 }

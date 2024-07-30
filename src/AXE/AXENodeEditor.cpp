@@ -40,6 +40,16 @@ void AXENodeEditor::updateDebugMenu(bool& p_open) {
 	for (auto& node : nodes) {
 		ImGui::Bullet();
 		ImGui::Text("Node #%lu, %s", node.id.Get(), node.name.c_str());
+		for (auto& pin : node.inputs) {
+			ImGui::Indent();
+			ImGui::Text("Input pin #%lu", pin.id.Get());
+			ImGui::Unindent();
+		}
+		for (auto& pin : node.outputs) {
+			ImGui::Indent();
+			ImGui::Text("Output pin #%lu", pin.id.Get());
+			ImGui::Unindent();
+		}
 	}
 
 	ImGui::End();
@@ -154,6 +164,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		ImGui::OpenPopup("Create New Node");
 	}
 
+#if 0
 	ed::Suspend();
 	if (ImGui::BeginPopup("Create New Node")) {
 		if (ImGui::MenuItem("Low Pass Filter")) SpawnLowPassFilterNode();
@@ -161,6 +172,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		ImGui::EndPopup();
 	}
 	ed::Resume();
+#endif
 
 	ed::End();
 	ed::SetCurrentEditor(nullptr);
