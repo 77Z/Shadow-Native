@@ -4,7 +4,6 @@
 #include "Debug/Logger.hpp"
 #include "imgui.h"
 #include "miniaudio.h"
-#include <cstddef>
 #include <filesystem>
 #include "IconsCodicons.h"
 
@@ -53,7 +52,7 @@ void ClipBrowser::onUpdate(bool& p_open) {
 			EndDragDropSource();
 		}
 		SameLine();
-		if (SmallButton(ICON_CI_PLAY)) {
+		if (SmallButton((ICON_CI_PLAY "##" + clip.relativePath).c_str())) {
 			ma_engine_play_sound(audioEngine, clip.fullpath.c_str(), nullptr);
 		}
 		

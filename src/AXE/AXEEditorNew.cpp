@@ -201,6 +201,8 @@ int startAXEEditor(std::string projectFile) {
 	ClipBrowser clipBrowser(&engine);
 	AXENodeEditor nodeEditor;
 
+	window.maximize();
+
 	while (!window.shouldClose()) {
 		window.pollEvents();
 
