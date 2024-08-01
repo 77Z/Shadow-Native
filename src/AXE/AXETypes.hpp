@@ -38,11 +38,11 @@ struct Bookmark {
 struct Automation {};
 
 struct Clip {
-	std::string name;
-	std::string baseAudioSource;
+	std::string name = "";
+	std::string baseAudioSource = "";
 	// std::vector<Automation> automations;
 
-	uint64_t position;
+	float position = 0;
 
 	float balence = 0.0f;	// -1 L : +1 R
 	float volume = 100.0f;	// 0 - 100
@@ -78,6 +78,24 @@ struct Song {
 
 	std::vector<Track> tracks;
 	std::vector<NodeGraph> nodeGraphs;
+};
+
+struct EditorState {
+	float sf;
+
+	float lastKnownMasterVol = -1.0f;
+
+	// Window states
+	bool showShadowEngineConsole = false;
+	bool showImGuiConsole = false;
+	bool showImGuiMetrics = false;
+	bool showImGuiStackTool = false;
+	bool showClipboardBuffer = false;
+	bool showProjectMetadata = false;
+	bool showHelpDocs = false;
+	bool showNodeEditor = true;
+	bool showNodeEditorDebugger = false;
+	bool showClipBrowser = true;
 };
 
 }

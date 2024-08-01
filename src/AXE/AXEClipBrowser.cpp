@@ -1,0 +1,105 @@
+#include "AXEClipBrowser.hpp"
+#include "Configuration/EngineConfiguration.hpp"
+#include "Debug/EditorConsole.hpp"
+#include "Debug/Logger.hpp"
+#include "imgui.h"
+#include "miniaudio.h"
+#include <cstddef>
+#include <filesystem>
+#include "IconsCodicons.h"
+
+#define EC_THIS "Clip Browser"
+
+namespace Shadow::AXE {
+
+ClipBrowser::ClipBrowser(ma_engine* audioEngine): audioEngine(audioEngine) {
+	EC_NEWCAT(EC_THIS);
+
+	refreshFiles();
+}
+
+ClipBrowser::~ClipBrowser() { }
+
+void ClipBrowser::onUpdate(bool& p_open) {
+	using namespace ImGui;
+
+	if (!p_open) return;
+
+	Begin("Clip Browser", &p_open);
+
+	if (SmallButton("Refresh")) refreshFiles();
+
+	for (auto& clip : clips) {
+
+		if (clip.isDirectory) continue;
+
+		SetNextItemAllowOverlap();
+		Selectable((ICON_CI_MUSIC " " + clip.prettyName).c_str());
+		if (BeginItemTooltip()) {
+			Text("%s", clip.prettyType.c_str());
+			Separator();
+			TextUnformatted("Drag me onto the Timeline!");
+			Separator();
+			if (GetIO().KeyCtrl) {
+				Text("%s", clip.fullpath.c_str());
+			} else {
+				TextUnformatted("Hold CTRL for full path");
+			}
+			EndTooltip();
+		}
+		if (BeginDragDropSource()) {
+			SetDragDropPayload("AXE_CLIP_PATH_PAYLOAD", clip.fullpath.data(), clip.fullpath.size());
+			Text("\xee\xb0\x9b %s", clip.prettyName.c_str());
+			EndDragDropSource();
+		}
+		SameLine();
+		if (SmallButton(ICON_CI_PLAY)) {
+			ma_engine_play_sound(audioEngine, clip.fullpath.c_str(), nullptr);
+		}
+		
+	}
+
+	End();
+}
+
+void ClipBrowser::shutdown() {}
+
+void ClipBrowser::refreshFiles() {
+	std::string dirToRead = EngineConfiguration::getConfigDir() + "/AXEProjects/GlobalLibrary";
+
+	clips.clear();
+
+	if (!std::filesystem::exists(dirToRead)) {
+		ERROUT("Failed to read GlobalLibrary directory in AXEProjects!!");
+		EC_ERROUT(EC_THIS, "Failed to read GlobalLibrary directory in AXEProjects!!");
+		return;
+	}
+
+	for (const std::filesystem::directory_entry& file : std::filesystem::recursive_directory_iterator(dirToRead)) {
+		std::string fp = file.path().string();
+		EC_PRINT(EC_THIS, "%s", fp.substr().c_str());
+
+		ClipBrowserItemInfo item;
+		item.fullpath = fp;
+		item.relativePath = fp.substr(dirToRead.length() + 1);
+		item.prettyName = fp.substr(fp.find_last_of("/") + 1);
+		item.isDirectory = std::filesystem::is_directory(fp);
+
+		if (fp.ends_with(".wav")) {
+			item.prettyType = "Waveform Audio";
+		} else if (fp.ends_with(".flac")) {
+			item.prettyType = "Free Lossless Audio Codec";
+		} else if (fp.ends_with(".mp3")) {
+			item.prettyType = "MPEG-1 Audio Layer III";
+		} else if (fp.ends_with(".ogg")) {
+			item.prettyType = "OGG / Vorbis Audio Codec";
+		} else {
+			item.prettyType = "?? Unknown other file type ??";
+		}
+
+		clips.push_back(item);
+	}
+
+}
+
+}

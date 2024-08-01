@@ -1,4 +1,6 @@
+#include "AXEClipBrowser.hpp"
 #include "AXENodeEditor.hpp"
+#include "AXETimeline.hpp"
 #include "Debug/Logger.hpp"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
@@ -19,6 +21,7 @@
 #include "ImGuiNotify.hpp"
 #include "Keyboard.hpp"
 #include "miniaudio.h"
+#include "IconsCodicons.h"
 
 // Forward declarations
 namespace Shadow::Util {
@@ -56,20 +59,7 @@ const char* keysPretty[Keys_Count] = {
 static Song songInfo;
 
 // Not persistent
-struct {
-	float lastKnownMasterVol = -1.0f;
-
-	// Window states
-	bool showShadowEngineConsole = false;
-	bool showImGuiConsole = false;
-	bool showImGuiMetrics = false;
-	bool showImGuiStackTool = false;
-	bool showClipboardBuffer = false;
-	bool showProjectMetadata = false;
-	bool showHelpDocs = false;
-	bool showNodeEditor = true;
-	bool showNodeEditorDebugger = false;
-} editorState;
+static EditorState editorState;
 
 int startAXEEditor(std::string projectFile) {
 
@@ -86,7 +76,7 @@ int startAXEEditor(std::string projectFile) {
 
 	// ma_device* device = ma_engine_get_device(&engine);
 	ma_sound sound;
-	result = ma_sound_init_from_file(&engine, "/home/vince/Downloads/music/brainless.flac", songInfo.decodeOnLoad ? MA_SOUND_FLAG_DECODE : 0, nullptr, nullptr, &sound);
+	result = ma_sound_init_from_file(&engine, "./Resources/sound.wav", songInfo.decodeOnLoad ? MA_SOUND_FLAG_DECODE : 0, nullptr, nullptr, &sound);
 
 	ma_uint64 length;
 	ma_data_source_get_length_in_pcm_frames(&sound, &length);
@@ -171,18 +161,44 @@ int startAXEEditor(std::string projectFile) {
 	ImGui_ImplGlfw_InitForOpenGL(window.window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
-	// IMGUI_ENABLE_FREETYPE in imconfig to use Freetype for higher quality font rendering
-	float sf = window.getContentScale();
-	// float sf = 1.5;
+	// Font loading and scaling
+	{
+		// IMGUI_ENABLE_FREETYPE in imconfig to use Freetype for higher quality font rendering
+		editorState.sf = window.getContentScale();
+		float sf = editorState.sf;
 
-	ImFontConfig fontCfg;
-	fontCfg.OversampleH = 4;
-	fontCfg.OversampleV = 4;
-	fontCfg.PixelSnapH = false;
+		float fontSize = 16.0f * sf;
+		float iconFontSize = (fontSize * 2.0f / 3.0f) * sf;
 
-	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf, &fontCfg);
-	ImGui::GetStyle().ScaleAllSizes(sf);
+		ImVector<ImWchar> ranges;
+		ImFontGlyphRangesBuilder builder;
+		builder.AddText("♭");
 
+		ImFontConfig fontCfg;
+		fontCfg.OversampleH = 4;
+		fontCfg.OversampleV = 4;
+		fontCfg.PixelSnapH = false;
+
+		ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", fontSize, &fontCfg, ranges.Data);
+
+		static const ImWchar iconRanges[] = { ICON_MIN_CI, ICON_MAX_CI, 0 };
+
+		ImFontConfig iconFontCfg;
+		iconFontCfg.GlyphMinAdvanceX = iconFontSize;
+		iconFontCfg.MergeMode = true;
+		iconFontCfg.PixelSnapH = true;
+		iconFontCfg.OversampleH = 2;
+		iconFontCfg.OversampleV = 2;
+		iconFontCfg.GlyphOffset.y = 6;
+		iconFontCfg.DstFont = primaryFont;
+
+		io.Fonts->AddFontFromFileTTF("./Resources/codicon.ttf", 20.0f * sf, &iconFontCfg, iconRanges);
+
+		ImGui::GetStyle().ScaleAllSizes(sf);
+	}
+	
+	Timeline timeline(&songInfo, &editorState);
+	ClipBrowser clipBrowser(&engine);
 	AXENodeEditor nodeEditor;
 
 	while (!window.shouldClose()) {
@@ -256,9 +272,9 @@ int startAXEEditor(std::string projectFile) {
 				ImGui::EndMenuBar();
 			}
 
-			ImGui::PushItemWidth(100.0f * sf);
+			ImGui::PushItemWidth(100.0f * editorState.sf);
 			ImGui::InputFloat("BPM", &songInfo.bpm, 1.0f, 5.0f);
-			ImGui::PushItemWidth(120.0f * sf);
+			ImGui::PushItemWidth(120.0f * editorState.sf);
 			ImGui::SameLine();
 			ImGui::InputInt2("Time Signature", songInfo.timeSignature);
 			ImGui::SameLine();
@@ -269,7 +285,7 @@ int startAXEEditor(std::string projectFile) {
 			ImGui::SameLine();
 			ImGui::SliderFloat("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
 
-			ImGui::SetCursorPosY(55.0f * sf);
+			ImGui::SetCursorPosY(55.0f * editorState.sf);
 			ImGui::DockSpace(ImGui::GetID("AXEDockspace"));
 			ImGui::End();
 		}
@@ -335,101 +351,17 @@ int startAXEEditor(std::string projectFile) {
 			ImGui::End();
 		}
 
-		// Timeline
-		{
-			ImGui::Begin("Timeline");
-
-			// ImDrawList uses screen coords NOT window coords
-			ImDrawList* drawList = ImGui::GetWindowDrawList();
-			ImVec2 canvasPos = ImGui::GetCursorScreenPos();
-			// ImVec2 canvasSize = ImGui::GetContentRegionAvail();
-
-			// For middle click drag
-			ImVec2 mouseDelta = ImGui::GetIO().MouseDelta;
-			ImVec2 scrollDelta = ImVec2(-mouseDelta.x, -mouseDelta.y);
-
-			if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
-				ImGui::SetScrollY(ImGui::GetScrollY() + scrollDelta.y);
-			}
-
-			ImGui::SetCursorPosY(60.0f);
-
-			int trackIt = 0;
-			for (auto& track : songInfo.tracks) {
-				ImGui::PushID(trackIt);
-				ImGui::BeginChild("trackProps", ImVec2(250.0f * sf, 130.0f * sf));
-
-				ImGui::Text("%i", trackIt);
-				ImGui::PushItemWidth(200.0f * sf);
-				ImGui::InputText("##trackname", &track.name);
-				ImGui::SameLine();
-				if (ImGui::SmallButton("X")) songInfo.tracks.erase(songInfo.tracks.begin() + trackIt);
-				ImGui::SliderFloat("VOL", &track.volume, 0.0f, 100.0f);
-				ImGui::SliderFloat("BAL", &track.balence, -1.0f, 1.0f);
-
-				ImGui::Checkbox("Muted", &track.muted);
-				
-				ImGui::EndChild();
-				ImGui::PopID();
-				trackIt++;
-			}
-
-			if (ImGui::Button("+ Add Track")) {
-				Track newTrack;
-				newTrack.name = "Untitled Track " + std::to_string(trackIt + 1);
-				songInfo.tracks.push_back(newTrack);
-			}
-
-			ImGui::SetCursorPos(ImVec2(260.0f * sf, 60.0f));
-
-			trackIt = 0;
-			ImGui::BeginChild("timelineScroller", ImVec2(ImGui::GetWindowWidth() - 270.0f, 2000.0f), false, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
-
-			if (ImGui::IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && ImGui::IsMouseDown(ImGuiMouseButton_Middle)) {
-				ImGui::SetScrollX(ImGui::GetScrollX() + scrollDelta.x);
-			}
-
-			for (auto& track : songInfo.tracks) {
-				ImGui::PushID(trackIt);
-				ImGui::BeginChild("track", ImVec2(1000.0f * sf, 130.0f * sf));
-
-				ImGui::Text("I am the data for track %s at index %i", track.name.c_str(), trackIt);
-
-				// Clips render pipeline here
-
-
-				ImGui::EndChild();
-				ImGui::PopID();
-				trackIt++;
-			}
-
-			ImGui::EndChild();
-
-			// Draw scrubber
-			float frame = 20.0f;
-			ImGui::SetCursorPosY(30.0f);
-			ImGui::InputFloat("Frame", &frame);
-			float scrubberWindowPos = 260 + frame;
-			drawList->AddTriangleFilled(
-				ImVec2(canvasPos.x + scrubberWindowPos - 10.0f, canvasPos.y - 55.0f),
-				ImVec2(canvasPos.x + scrubberWindowPos + 10.0f, canvasPos.y - 55.0f),
-				ImVec2(canvasPos.x + scrubberWindowPos, canvasPos.y + 60.0f),
-				IM_COL32(255, 0, 0, 255)
-			);
-			drawList->AddRectFilled(ImVec2(canvasPos.x + scrubberWindowPos, canvasPos.y + 60.0f), ImVec2(canvasPos.x + scrubberWindowPos + 2.0f, 10000.0f), IM_COL32(255, 0, 0, 255));
-
-			ImGui::End();
-		}
-
 		if (editorState.showShadowEngineConsole) EditorConsole::Frontend::onUpdate();
 		if (editorState.showImGuiConsole) ImGui::ShowDebugLogWindow(&editorState.showImGuiConsole);
 		if (editorState.showImGuiMetrics) ImGui::ShowMetricsWindow(&editorState.showImGuiMetrics);
 		if (editorState.showImGuiStackTool) ImGui::ShowStackToolWindow(&editorState.showImGuiStackTool);
 
-		// ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 		updateHelpWindow(editorState.showHelpDocs);
+		timeline.onUpdate();
 		nodeEditor.onUpdate(editorState.showNodeEditor);
 		nodeEditor.updateDebugMenu(editorState.showNodeEditorDebugger);
+		clipBrowser.onUpdate(editorState.showClipBrowser);
 		ImGui::RenderNotifications();
 
 		// Rendering
@@ -456,6 +388,7 @@ int startAXEEditor(std::string projectFile) {
 	}
 
 	nodeEditor.shutdown();
+	clipBrowser.shutdown();
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();

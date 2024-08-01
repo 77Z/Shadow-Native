@@ -1,4 +1,5 @@
 #include "AXESerializer.hpp"
+#include "AXETypes.hpp"
 #include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
 #include "json_impl.hpp"
@@ -24,8 +25,24 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 
 		trackObj["name"] = track.name;
 		
-		for (auto& automation : track.automations) {
+		// for (auto& automation : track.automations) {
 			
+		// }
+
+		trackObj["clips"] = json::array();
+		for (auto& clip : track.clips) {
+			json clipObj;
+			clipObj["name"] = clip.name;
+			clipObj["baseAudioSource"] = clip.baseAudioSource;
+
+			clipObj["position"] = clip.position;
+
+			clipObj["balence"] = clip.balence;
+			clipObj["volume"] = clip.volume;
+
+			clipObj["muted"] = clip.muted;
+
+			trackObj["clips"].push_back(clipObj);
 		}
 
 		trackObj["balence"] = track.balence;
@@ -64,6 +81,21 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 	for (auto& track : decodedSong["tracks"]) {
 		Track tempTrack;
 		tempTrack.name = track["name"];
+
+		for (auto& clip : track["clips"]) {
+			Clip tempClip;
+			tempClip.name = clip["name"];
+			tempClip.baseAudioSource = clip["baseAudioSource"];
+
+			tempClip.position = clip["position"];
+
+			tempClip.balence = clip["balence"];
+			tempClip.volume = clip["volume"];
+
+			tempClip.muted = clip["muted"];
+			EC_PRINT(EC_THIS, "Decoded clip: %s at position %.3f", tempClip.name.c_str(), (float)tempClip.position);
+			tempTrack.clips.push_back(tempClip);
+		}
 
 		tempTrack.balence = track["balence"];
 		tempTrack.volume = track["volume"];
