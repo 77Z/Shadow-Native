@@ -75,7 +75,6 @@ void ShadowWindow::initWindow() {
 
 	window = glfwCreateWindow(width, height, windowTitle.c_str(), nullptr, nullptr);
 
-	// windowUserPointers.push_back(this);
 	windowUserPointers["window"] = this;
 	glfwSetWindowUserPointer(window, &windowUserPointers);
 

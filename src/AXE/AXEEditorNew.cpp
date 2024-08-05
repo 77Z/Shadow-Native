@@ -22,6 +22,7 @@
 #include "Keyboard.hpp"
 #include "miniaudio.h"
 #include "IconsCodicons.h"
+#include "../implot/implot.h"
 
 // Forward declarations
 namespace Shadow::Util {
@@ -29,7 +30,7 @@ void openURL(const std::string &url);
 }
 namespace Shadow::AXE {
 void updateHelpWindow(bool& p_open);
-void bootstrapSong(const Song* song, const ma_engine* audioEngine);
+void bootstrapSong(const Song* song, ma_engine* audioEngine);
 }
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
@@ -61,6 +62,8 @@ static Song songInfo;
 // Not persistent
 static EditorState editorState;
 
+static ClipBrowser* gblClipBrowser;
+
 int startAXEEditor(std::string projectFile) {
 
 	ma_result result;
@@ -91,6 +94,8 @@ int startAXEEditor(std::string projectFile) {
 	ma_context_get_devices(&context, &pPlaybackDeviceInfos, &playbackDeviceCount, &pCaptureDeviceInfos, &captureDeviceCount);
 	for (iDevice = 0; iDevice < playbackDeviceCount; iDevice++)
 		EC_WARN("All", "   %u: %s\n", iDevice, pCaptureDeviceInfos[iDevice].name);
+
+	uint32_t sampleRate = ma_engine_get_sample_rate(&engine);
 
 
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -149,6 +154,7 @@ int startAXEEditor(std::string projectFile) {
 	});
 
 	IMGUI_CHECKVERSION();
+	ImPlot::CreateContext();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
@@ -179,7 +185,8 @@ int startAXEEditor(std::string projectFile) {
 		fontCfg.OversampleV = 4;
 		fontCfg.PixelSnapH = false;
 
-		ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", fontSize, &fontCfg, ranges.Data);
+		// ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", fontSize, &fontCfg, ranges.Data);
+		ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/arial.ttf", fontSize, &fontCfg, ranges.Data);
 
 		static const ImWchar iconRanges[] = { ICON_MIN_CI, ICON_MAX_CI, 0 };
 
@@ -197,9 +204,17 @@ int startAXEEditor(std::string projectFile) {
 		ImGui::GetStyle().ScaleAllSizes(sf);
 	}
 	
-	Timeline timeline(&songInfo, &editorState);
+	Timeline timeline(&songInfo, &editorState, &engine);
 	ClipBrowser clipBrowser(&engine);
 	AXENodeEditor nodeEditor;
+
+	gblClipBrowser = &clipBrowser;
+	glfwSetDropCallback(window.window, [](GLFWwindow* window, int count, const char** paths) {
+		for (int i = 0; i < count; i++) {
+			EC_PRINT("All", "User dropped: %s", paths[i]);
+			gblClipBrowser->addFileToLibrary(paths[i]);
+		}
+	});
 
 	window.maximize();
 
@@ -287,6 +302,11 @@ int startAXEEditor(std::string projectFile) {
 			ImGui::SameLine();
 			ImGui::SliderFloat("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
 
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_CI_PLAY)) {
+				// timeline.play();
+			}
+
 			ImGui::SetCursorPosY(55.0f * editorState.sf);
 			ImGui::DockSpace(ImGui::GetID("AXEDockspace"));
 			ImGui::End();
@@ -303,18 +323,29 @@ int startAXEEditor(std::string projectFile) {
 		{
 			ImGui::Begin("ShadowAudio");
 
-			if (ImGui::Button("Play sound")) {
+			if (ImGui::Button("Play sound at 4s time")) {
 				// ma_engine_play_sound(&engine, "./Resources/sound.wav", nullptr);
 				ma_sound_seek_to_pcm_frame(&sound, 0);
+				ma_sound_set_start_time_in_pcm_frames(&sound, sampleRate * 4);
 				ma_sound_start(&sound);
 			}
 
+			ImGui::Text("Engine Sample rate: %u", sampleRate);
 			ImGui::Text("Engine milis: %llu", ma_engine_get_time_in_milliseconds(&engine));
 			ImGui::Text("Engine PCM Frames: %llu", ma_engine_get_time_in_pcm_frames(&engine));
-			ImGui::Text("loaded sound length in pcm frames: %llu", length);
+			ImGui::Text("Sound starts at PCM frame: %u", sampleRate * 4);
+			// ImGui::Text("loaded sound length in pcm frames: %llu", length);
 
 			if (ImGui::Button("Set engine timer to 0")) {
 				ma_engine_set_time_in_pcm_frames(&engine, 0);
+			}
+
+			if (ImGui::Button("Start engine")) {
+				ma_engine_start(&engine);
+			}
+
+			if (ImGui::Button("Stop engine")) {
+				ma_engine_stop(&engine);
 			}
 
 			ImGui::End();
@@ -359,6 +390,7 @@ int startAXEEditor(std::string projectFile) {
 		if (editorState.showImGuiStackTool) ImGui::ShowStackToolWindow(&editorState.showImGuiStackTool);
 
 		ImGui::ShowDemoWindow();
+		ImPlot::ShowDemoWindow();
 		updateHelpWindow(editorState.showHelpDocs);
 		timeline.onUpdate();
 		nodeEditor.onUpdate(editorState.showNodeEditor);
@@ -394,6 +426,7 @@ int startAXEEditor(std::string projectFile) {
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
+	ImPlot::DestroyContext();
 	ImGui::DestroyContext();
 
 	ma_sound_uninit(&sound);

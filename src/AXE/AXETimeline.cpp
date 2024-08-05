@@ -1,4 +1,5 @@
 #include "AXETimeline.hpp"
+#include "Debug/Logger.hpp"
 #include "imgui.h"
 #include <string>
 #include "IconsCodicons.h"
@@ -6,9 +7,10 @@
 
 namespace Shadow::AXE {
 
-Timeline::Timeline(Song* songInfo, EditorState* editorState)
+Timeline::Timeline(Song* songInfo, EditorState* editorState, ma_engine* audioEngine)
 	: songInfo(songInfo)
 	, editorState(editorState)
+	, audioEngine(audioEngine)
 		{ };
 Timeline::~Timeline() { }
 
@@ -32,7 +34,7 @@ void Timeline::onUpdate() {
 		SetScrollY(GetScrollY() + scrollDelta.y);
 	}
 
-	SetCursorPosY(60.0f);
+	SetCursorPosY(100.0f);
 
 	int trackIt = 0;
 	for (auto& track : songInfo->tracks) {
@@ -60,7 +62,7 @@ void Timeline::onUpdate() {
 		songInfo->tracks.push_back(newTrack);
 	}
 
-	SetCursorPos(ImVec2(260.0f * sf, 60.0f));
+	SetCursorPos(ImVec2(260.0f * sf, 100.0f));
 
 	trackIt = 0;
 	BeginChild("timelineScroller", ImVec2(GetWindowWidth() - 270.0f, 2000.0f), false, ImGuiWindowFlags_AlwaysHorizontalScrollbar);
@@ -71,7 +73,7 @@ void Timeline::onUpdate() {
 
 	for (auto& track : songInfo->tracks) {
 		PushID(trackIt);
-		BeginChild("track", ImVec2(1000.0f * sf, 130.0f * sf));
+		BeginChild("track", ImVec2(7000.0f * sf, 130.0f * sf));
 
 		// Text("I am the data for track %s at index %i", track.name.c_str(), trackIt);
 
@@ -88,12 +90,15 @@ void Timeline::onUpdate() {
 				clip.position = std::max(0.0f, clip.position + GetMousePos().x - GetWindowPos().x - (clipWidth / 2));
 			}
 
-			SetNextItemWidth(clipWidth);
+			SetNextItemWidth(clipWidth - 40.0f);
 			InputText("##name", &clip.name);
+			SameLine();
+			if (Button(ICON_CI_CLOSE)) track.clips.erase(track.clips.begin() + clipIt - 1);
+
 			Text("Window x: %.3f\nmouse x: %.3f\noffset: %.3f",
 				GetWindowPos().x,
 				GetMousePos().x,
-				GetMousePos().x - GetWindowPos().x);
+			GetMousePos().x - GetWindowPos().x);
 
 			EndChild();
 			PopStyleColor();
@@ -124,19 +129,28 @@ void Timeline::onUpdate() {
 	EndChild();
 
 	// Draw scrubber
-	float frame = 20.0f;
+	ImDrawList* fg = GetForegroundDrawList();
 	SetCursorPosY(30.0f);
-	InputFloat("Frame", &frame);
-	float scrubberWindowPos = 260 + frame;
-	drawList->AddTriangleFilled(
-		ImVec2(canvasPos.x + scrubberWindowPos - 10.0f, canvasPos.y - 55.0f),
-		ImVec2(canvasPos.x + scrubberWindowPos + 10.0f, canvasPos.y - 55.0f),
+	DragScalar("PCM Frames", ImGuiDataType_U64, &playbackFrames);
+	float scrubberWindowPos = (260 * sf) + playbackFrames;
+	fg->AddTriangleFilled(
+		ImVec2(canvasPos.x + scrubberWindowPos - 10.0f, canvasPos.y + 30.0f),
+		ImVec2(canvasPos.x + scrubberWindowPos + 10.0f, canvasPos.y + 30.0f),
 		ImVec2(canvasPos.x + scrubberWindowPos, canvasPos.y + 60.0f),
 		IM_COL32(255, 0, 0, 255)
 	);
-	drawList->AddRectFilled(ImVec2(canvasPos.x + scrubberWindowPos, canvasPos.y + 60.0f), ImVec2(canvasPos.x + scrubberWindowPos + 2.0f, 10000.0f), IM_COL32(255, 0, 0, 255));
+	fg->AddRectFilled(ImVec2(canvasPos.x + scrubberWindowPos, canvasPos.y + 60.0f), ImVec2(canvasPos.x + scrubberWindowPos + 2.0f, 10000.0f), IM_COL32(255, 0, 0, 255));
 
 	End();
+}
+
+void Timeline::startPlayback() {
+	for (auto& track : songInfo->tracks) {
+		for (auto& clip : track.clips) {
+			// if (clip.position > current engine pos)
+			//     get ma_sound and set to play
+		}
+	}
 }
 
 

@@ -26,7 +26,15 @@ public:
 
 	void shutdown();
 
+	/// Copies the file at specified `filepath` to the user's GlobalLibrary
+	/// directory and automatically reloads the `clips` vector
+	void addFileToLibrary(const std::string& filepath);
+
+	/// Same as `addFileToLibrary` but accepts vectors  of filepaths
+	// void addFilesToLibrary(const std::vector<std::string> filepaths);
+
 private:
+	std::string globalLibraryPath;
 	std::vector<ClipBrowserItemInfo> clips;
 	ma_engine* audioEngine;
 

@@ -48,6 +48,9 @@ struct Clip {
 	float volume = 100.0f;	// 0 - 100
 
 	bool muted = false;
+
+	// Volatile data
+	ma_sound engineSound;
 };
 
 struct Track {
@@ -61,6 +64,9 @@ struct Track {
 
 	bool muted = false;
 	// should solo be here??
+
+	// Volatile data
+	ma_sound_group* soundGroup;
 };
 
 struct Song {

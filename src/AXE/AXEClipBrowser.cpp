@@ -2,6 +2,7 @@
 #include "Configuration/EngineConfiguration.hpp"
 #include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
+#include "ImGuiNotify.hpp"
 #include "imgui.h"
 #include "miniaudio.h"
 #include <filesystem>
@@ -13,6 +14,8 @@ namespace Shadow::AXE {
 
 ClipBrowser::ClipBrowser(ma_engine* audioEngine): audioEngine(audioEngine) {
 	EC_NEWCAT(EC_THIS);
+
+	globalLibraryPath = EngineConfiguration::getConfigDir() + "/AXEProjects/GlobalLibrary";
 
 	refreshFiles();
 }
@@ -64,23 +67,21 @@ void ClipBrowser::onUpdate(bool& p_open) {
 void ClipBrowser::shutdown() {}
 
 void ClipBrowser::refreshFiles() {
-	std::string dirToRead = EngineConfiguration::getConfigDir() + "/AXEProjects/GlobalLibrary";
-
 	clips.clear();
 
-	if (!std::filesystem::exists(dirToRead)) {
+	if (!std::filesystem::exists(globalLibraryPath)) {
 		ERROUT("Failed to read GlobalLibrary directory in AXEProjects!!");
 		EC_ERROUT(EC_THIS, "Failed to read GlobalLibrary directory in AXEProjects!!");
 		return;
 	}
 
-	for (const std::filesystem::directory_entry& file : std::filesystem::recursive_directory_iterator(dirToRead)) {
+	for (const std::filesystem::directory_entry& file : std::filesystem::recursive_directory_iterator(globalLibraryPath)) {
 		std::string fp = file.path().string();
 		EC_PRINT(EC_THIS, "%s", fp.substr().c_str());
 
 		ClipBrowserItemInfo item;
 		item.fullpath = fp;
-		item.relativePath = fp.substr(dirToRead.length() + 1);
+		item.relativePath = fp.substr(globalLibraryPath.length() + 1);
 		item.prettyName = fp.substr(fp.find_last_of("/") + 1);
 		item.isDirectory = std::filesystem::is_directory(fp);
 
@@ -100,5 +101,29 @@ void ClipBrowser::refreshFiles() {
 	}
 
 }
+
+void ClipBrowser::addFileToLibrary(const std::string& filepath) {
+	if (!std::filesystem::exists(filepath)) {
+		ImGui::InsertNotification({ImGuiToastType::Error, 5000, "Specified file doesn't exist??"});
+		EC_ERROUT(EC_THIS, "Caller tried to add file that doesn't exist?\nFile in question: %s", filepath.c_str());
+		return;
+	}
+
+	if (std::filesystem::is_directory(filepath)) {
+		ImGui::InsertNotification({ImGuiToastType::Error, 5000, "Can't add folders to the Global Library!"});
+		EC_ERROUT(EC_THIS, "Can't add dirs to GlobalLibrary!!\nDir in question: %s", filepath.c_str());
+		return;
+	}
+
+	if (!std::filesystem::is_regular_file(filepath)) {
+		ImGui::InsertNotification({ImGuiToastType::Error, 5000, "Can't add non-regular files!"});
+		EC_ERROUT(EC_THIS, "Can't add non-regular files!\nFP in question: %s", filepath.c_str());
+		return;
+	}
+
+	std::filesystem::copy_file(filepath, globalLibraryPath + "/" + filepath.substr(filepath.find_last_of("/") + 1));
+
+	refreshFiles();
+};
 
 }

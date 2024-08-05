@@ -71,6 +71,7 @@ public:
 private:
 	static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 	static void glfw_errorCallback(int error, const char* description);
+	static void glfw_dropCallback(GLFWwindow* window, int count, const char** paths);
 	// static void mouseInputPassthrough(GLFWwindow* window, int button, int action, int mods);
 	void initWindow();
 
