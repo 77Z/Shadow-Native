@@ -1,13 +1,63 @@
 #ifndef SHADOW_NATIVE_AXE_AXE_TYPES_HPP
 #define SHADOW_NATIVE_AXE_AXE_TYPES_HPP
 
+#include "../nodeEditor/imgui_node_editor.h"
 #include <cstdint>
 #include <string>
 #include <vector>
+#include "imgui.h"
 #include "miniaudio.h"
 
 namespace Shadow::AXE {
 
+namespace ed = ax::NodeEditor;
+
+struct Node;
+
+enum PinType_ {};
+
+enum PinKind_ {
+	PinKind_Input,
+	PinKind_Output,
+	PinKind_COUNT,
+};
+
+struct Pin {
+	ed::PinId id;
+	Node* node;
+	std::string name;
+	PinType_ type;
+	PinKind_ kind;
+};
+
+struct Link {
+	ed::LinkId id;
+	ed::PinId inputId;
+	ed::PinId outputId;
+};
+
+enum NodeType_ {
+	NodeType_Regular,
+};
+
+struct Node {
+	ed::NodeId id;
+	std::string name;
+	std::vector<Pin> inputs;
+	std::vector<Pin> outputs;
+	ImColor color;
+	NodeType_ type;
+	ImVec2 size;
+};
+
+struct NodeGraph {
+	std::string name;
+
+	std::vector<Node> nodes;
+	ImVector<Link> links;
+
+	ma_node_graph compiledGraph;
+};
 
 enum Keys_ {
 	Keys_C,
@@ -26,10 +76,6 @@ enum Keys_ {
 	Keys_Count
 };
 
-struct NodeGraph {
-	ma_node_graph compiledGraph;
-};
-
 struct Bookmark {
 	float position;
 	std::string name;
@@ -42,7 +88,8 @@ struct Clip {
 	std::string baseAudioSource = "";
 	// std::vector<Automation> automations;
 
-	float position = 0;
+	uint64_t position = 0;
+	uint64_t length = 0;
 
 	float balence = 0.0f;	// -1 L : +1 R
 	float volume = 100.0f;	// 0 - 100

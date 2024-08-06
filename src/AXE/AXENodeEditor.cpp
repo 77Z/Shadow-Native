@@ -1,12 +1,17 @@
 #include "AXENodeEditor.hpp"
+#include "AXETypes.hpp"
 #include "imgui.h"
+#include "IconsCodicons.h"
+#include "imgui/imgui_utils.hpp"
+#include <string>
+#include "ppk_assert_impl.hpp"
 
 namespace Shadow::AXE {
 
-AXENodeEditor::AXENodeEditor() {
+AXENodeEditor::AXENodeEditor(Song* song): song(song) {
 	// Save settings inside axe file in future
 	ed::Config config;
-	config.SettingsFile = "nodeeditor.json";
+	config.SettingsFile = nullptr;
 	config.NavigateButtonIndex = 2;
 	editorCtx = ed::CreateEditor(&config);
 
@@ -24,92 +29,150 @@ AXENodeEditor::AXENodeEditor() {
 AXENodeEditor::~AXENodeEditor() { }
 
 void AXENodeEditor::updateDebugMenu(bool& p_open) {
+	using namespace ImGui;
+
 	if (!p_open) return;
 
-	ImGui::Begin("Node Editor Diagnostics", &p_open);
+	Begin("Node Editor Diagnostics", &p_open);
 
-	ImGui::Text("Currently opened node graph: ");
-
-	ImGui::TextUnformatted("Links:");
-	for (auto& link : links) {
-		ImGui::Bullet();
-		ImGui::Text("Link #%lu - Connects %lu to %lu", link.id.Get(), link.inputId.Get(), link.outputId.Get());
+	if (!openedNodeGraph) {
+		TextUnformatted("No Node Graph opened yet!");
+		End();
+		return;
 	}
 
-	ImGui::TextUnformatted("Nodes:");
-	for (auto& node : nodes) {
-		ImGui::Bullet();
-		ImGui::Text("Node #%lu, %s", node.id.Get(), node.name.c_str());
+	TextUnformatted("Currently opened node graph: ");
+	Text("%s", openedNodeGraph->name.c_str());
+
+	TextUnformatted("Links:");
+	for (auto& link : openedNodeGraph->links) {
+		Bullet();
+		Text("Link #%lu - Connects %lu to %lu", link.id.Get(), link.inputId.Get(), link.outputId.Get());
+	}
+
+	TextUnformatted("Nodes:");
+	for (auto& node : openedNodeGraph->nodes) {
+		Bullet();
+		Text("Node #%lu, %s", node.id.Get(), node.name.c_str());
 		for (auto& pin : node.inputs) {
-			ImGui::Indent();
-			ImGui::Text("Input pin #%lu", pin.id.Get());
-			ImGui::Unindent();
+			Indent();
+			Text("Input pin #%lu", pin.id.Get());
+			Unindent();
 		}
 		for (auto& pin : node.outputs) {
-			ImGui::Indent();
-			ImGui::Text("Output pin #%lu", pin.id.Get());
-			ImGui::Unindent();
+			Indent();
+			Text("Output pin #%lu", pin.id.Get());
+			Unindent();
 		}
 	}
 
-	ImGui::End();
+	End();
 }
 
 void AXENodeEditor::onUpdate(bool& p_open) {
+	using namespace ImGui;
+
 	if (!p_open) return;
 
-	ImGui::Begin("Node Editor", &p_open, ImGuiWindowFlags_MenuBar);
+	Begin("Node Editor", &p_open, ImGuiWindowFlags_MenuBar);
 	ed::SetCurrentEditor(editorCtx);
 
-	if (ImGui::BeginMenuBar()) {
-		if (ImGui::BeginMenu("+ Add")) {
-			ImGui::SeparatorText("Essential");
-			if (ImGui::MenuItem("Input")) SpawnInputNode();
-			if (ImGui::MenuItem("Output")) SpawnOutputNode();
-			ImGui::SeparatorText("Effects");
-			if (ImGui::MenuItem("Low Pass Filter")) SpawnLowPassFilterNode();
-			if (ImGui::MenuItem("Delay / Echo")) SpawnDelayNode();
-			ImGui::EndMenu();
+	if (BeginMenuBar()) {
+		if (MenuItem(ICON_CI_MENU " Menu")) mainMenuOpen = !mainMenuOpen;
+		if (BeginMenu("+ Add")) {
+			SeparatorText("Essential");
+			if (MenuItem("Input")) SpawnInputNode();
+			if (MenuItem("Output")) SpawnOutputNode();
+			SeparatorText("Effects");
+			if (MenuItem("Low Pass Filter")) SpawnLowPassFilterNode();
+			if (MenuItem("Delay / Echo")) SpawnDelayNode();
+			EndMenu();
 		}
-		if (ImGui::BeginMenu("Position")) {
-			if (ImGui::MenuItem("Recenter", "F")) ed::NavigateToContent();
-			ImGui::EndMenu();
+		if (BeginMenu("Position")) {
+			if (MenuItem("Recenter", "F")) ed::NavigateToContent();
+			EndMenu();
 		}
-		ImGui::EndMenuBar();
+		if (!openedNodeGraph) {
+			TextUnformatted(" | NO NODE GRAPH OPENED ");
+		} else {
+			TextUnformatted(" |");
+			PushItemWidth(300.0f);
+			PushStyleColor(ImGuiCol_FrameBg, GetStyle().Colors[ImGuiCol_MenuBarBg]);
+			InputText("##nodegraphname", &openedNodeGraph->name);
+			PopStyleColor();
+		}
+		Text("| %.0f%%", ed::GetCurrentZoom() * 100);
+		SetCursorPosX(GetWindowWidth() - CalcTextSize("Modifiers").x - 15.0f);
+		MenuItem("Modifiers");
+		EndMenuBar();
+	}
+
+	if (mainMenuOpen) {
+		BeginChild("NodeEditorLeftMenu", ImVec2(200.0f, 0.0f), ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX);
+		
+		if (Selectable(ICON_CI_ADD " New Node Graph")) {
+			NodeGraph ng;
+			ng.name = "Untitled Node Graph";
+			song->nodeGraphs.push_back(ng);
+		}
+
+		SeparatorText("Node Graphs");
+		
+		int it = 0;
+		for (auto& ng : song->nodeGraphs) {
+			if (Selectable((ng.name + "##" + std::to_string(it)).c_str())) {
+				openedNodeGraph = &ng;
+				reloadNodeEditorContents();
+			}
+			it++;
+		}
+
+		EndChild();
+
+		SameLine();
+	}
+
+	if (!openedNodeGraph) {
+		Text("No node graph open");
+		ed::SetCurrentEditor(nullptr);
+		End();
+		return;
 	}
 
 	ed::Begin("AXENodeEditor", ImVec2(0.0f, 0.0f));
 
-	for (auto& node : nodes) {
-		ImGui::PushID(node.id.AsPointer());
+	// editorActive = true;
+
+	for (auto& node : openedNodeGraph->nodes) {
+		PushID(node.id.AsPointer());
 		ed::PushStyleColor(ed::StyleColor_NodeBg, node.color);
 		ed::BeginNode(node.id);
 
 		// ImDrawList* bgDrawList = ed::GetNodeBackgroundDrawList(node.id);
-		// ImVec2 topLeft = ImGui::GetCursorScreenPos();
+		// ImVec2 topLeft = GetCursorScreenPos();
 		// bgDrawList->AddRectFilled(topLeft, ImVec2(topLeft.x + 1000.0f, topLeft.y + 10.0f), node.color);
 
-		ImGui::Text("%s", node.name.c_str());
+		Text("%s", node.name.c_str());
 
 		for (auto& input : node.inputs) {
 			ed::BeginPin(input.id, ed::PinKind::Input);
-				ImGui::Text("%s", input.name.c_str());
+				Text("%s", input.name.c_str());
 			ed::EndPin();
 		}
 
 		for (auto& output : node.outputs) {
-			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + ImGui::CalcTextSize(output.name.c_str()).x);
+			SetCursorPosX(GetCursorPosX() + CalcTextSize(output.name.c_str()).x);
 			ed::BeginPin(output.id, ed::PinKind::Output);
-				ImGui::Text("%s", output.name.c_str());
+				Text("%s", output.name.c_str());
 			ed::EndPin();
 		}
 
 		ed::EndNode();
 		ed::PopStyleColor();
-		ImGui::PopID();
+		PopID();
 	}
 
-	for (auto& linkInfo : links)
+	for (auto& linkInfo : openedNodeGraph->links)
 		ed::Link(linkInfo.id, linkInfo.inputId, linkInfo.outputId);
 
 	if (ed::BeginCreate()) { // Editor wants to create something...
@@ -117,11 +180,15 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		ed::PinId inputPinid, outputPinId;
 		if (ed::QueryNewLink(&inputPinid, &outputPinId)) { // Editor wants to create new link...
 			// Here is where we validate links
+			if (inputPinid.Get() == outputPinId.Get()) {
+				SetTooltip(ICON_CI_X "Pin can't connect to itself");
+			}
 			if (inputPinid && outputPinId) { // LGTM!
 				// ed::RejectNewItem to say no
-				if (ed::AcceptNewItem()) {
-					links.push_back({ ed::LinkId(nextLinkId++), inputPinid, outputPinId });
-				}
+				ed::RejectNewItem();
+				// if (ed::AcceptNewItem()) {
+				// 	openedNodeGraph->links.push_back({ ed::LinkId(nextLinkId++), inputPinid, outputPinId });
+				// }
 			}
 		}
 	}
@@ -131,9 +198,9 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		ed::LinkId deletedLinkId;
 		while (ed::QueryDeletedLink(&deletedLinkId)) {
 			if (ed::AcceptDeletedItem()) {
-				for (auto& link : links) {
+				for (auto& link : openedNodeGraph->links) {
 					if (link.id == deletedLinkId) {
-						links.erase(&link);
+						openedNodeGraph->links.erase(&link);
 						break;
 					}
 				}
@@ -144,9 +211,9 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		while (ed::QueryDeletedNode(&deletedNodeId)) {
 			if (ed::AcceptDeletedItem()) {
 				int it = 0;
-				for (auto& node : nodes) {
+				for (auto& node : openedNodeGraph->nodes) {
 					if (node.id == deletedNodeId) {
-						nodes.erase(nodes.begin() + it);
+						openedNodeGraph->nodes.erase(openedNodeGraph->nodes.begin() + it);
 						break;
 					}
 					it++;
@@ -157,19 +224,19 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	ed::EndDelete();
 
 	if (ed::ShowNodeContextMenu(&contextNodeId)) {
-		ImGui::OpenPopup("Node Context Menu");
+		OpenPopup("Node Context Menu");
 	} else if (ed::ShowLinkContextMenu(&contextLinkId)) {
-		ImGui::OpenPopup("Link Context Menu");
+		OpenPopup("Link Context Menu");
 	} else if (ed::ShowBackgroundContextMenu()) {
-		ImGui::OpenPopup("Create New Node");
+		OpenPopup("Create New Node");
 	}
 
 #if 0
 	ed::Suspend();
-	if (ImGui::BeginPopup("Create New Node")) {
-		if (ImGui::MenuItem("Low Pass Filter")) SpawnLowPassFilterNode();
-		if (ImGui::MenuItem("Delay / Echo")) SpawnDelayNode();
-		ImGui::EndPopup();
+	if (BeginPopup("Create New Node")) {
+		if (MenuItem("Low Pass Filter")) SpawnLowPassFilterNode();
+		if (MenuItem("Delay / Echo")) SpawnDelayNode();
+		EndPopup();
 	}
 	ed::Resume();
 #endif
@@ -177,7 +244,15 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	ed::End();
 	ed::SetCurrentEditor(nullptr);
 
-	ImGui::End();
+	End();
+}
+
+void AXENodeEditor::reloadNodeEditorContents() {
+	if (!openedNodeGraph) return;
+
+	PPK_ASSERT(ed::GetCurrentEditor() != nullptr);
+
+	ed::NavigateToContent();
 }
 
 void AXENodeEditor::shutdown() {
@@ -201,7 +276,7 @@ void AXENodeEditor::SpawnLowPassFilterNode() {
 	newNode.inputs.push_back(input);
 	newNode.outputs.push_back(output);
 	
-	nodes.push_back(newNode);
+	openedNodeGraph->nodes.push_back(newNode);
 }
 
 void AXENodeEditor::SpawnDelayNode() {
@@ -221,7 +296,7 @@ void AXENodeEditor::SpawnDelayNode() {
 	newNode.inputs.push_back(input);
 	newNode.outputs.push_back(output);
 	
-	nodes.push_back(newNode);
+	openedNodeGraph->nodes.push_back(newNode);
 }
 
 void AXENodeEditor::SpawnInputNode() {
@@ -236,7 +311,7 @@ void AXENodeEditor::SpawnInputNode() {
 
 	newNode.outputs.push_back(output);
 	
-	nodes.push_back(newNode);
+	openedNodeGraph->nodes.push_back(newNode);
 }
 
 void AXENodeEditor::SpawnOutputNode() {
@@ -251,7 +326,7 @@ void AXENodeEditor::SpawnOutputNode() {
 
 	newNode.inputs.push_back(input);
 	
-	nodes.push_back(newNode);
+	openedNodeGraph->nodes.push_back(newNode);
 }
 
 }

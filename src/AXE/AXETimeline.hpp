@@ -20,7 +20,7 @@ private:
 	EditorState* editorState;
 	ma_engine* audioEngine;
 
-	uint64_t playbackFrames;
+	uint64_t playbackFrames = 0;
 
 };
 

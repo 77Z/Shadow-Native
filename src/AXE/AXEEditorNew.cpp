@@ -2,10 +2,12 @@
 #include "AXENodeEditor.hpp"
 #include "AXETimeline.hpp"
 #include "Debug/Logger.hpp"
+#include "bx/debug.h"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include <cmath>
 #include <string>
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -23,6 +25,7 @@
 #include "miniaudio.h"
 #include "IconsCodicons.h"
 #include "../implot/implot.h"
+#include "../imgui/imgui_knobs.hpp"
 
 // Forward declarations
 namespace Shadow::Util {
@@ -185,8 +188,8 @@ int startAXEEditor(std::string projectFile) {
 		fontCfg.OversampleV = 4;
 		fontCfg.PixelSnapH = false;
 
-		// ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", fontSize, &fontCfg, ranges.Data);
-		ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/arial.ttf", fontSize, &fontCfg, ranges.Data);
+		ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", fontSize, &fontCfg, ranges.Data);
+		// ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/arial.ttf", fontSize, &fontCfg, ranges.Data);
 
 		static const ImWchar iconRanges[] = { ICON_MIN_CI, ICON_MAX_CI, 0 };
 
@@ -206,7 +209,7 @@ int startAXEEditor(std::string projectFile) {
 	
 	Timeline timeline(&songInfo, &editorState, &engine);
 	ClipBrowser clipBrowser(&engine);
-	AXENodeEditor nodeEditor;
+	AXENodeEditor nodeEditor(&songInfo);
 
 	gblClipBrowser = &clipBrowser;
 	glfwSetDropCallback(window.window, [](GLFWwindow* window, int count, const char** paths) {
@@ -278,6 +281,18 @@ int startAXEEditor(std::string projectFile) {
 						ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Loaded project from computer"});
 					}
 					ImGui::MenuItem("Node Editor Debugger", nullptr, &editorState.showNodeEditorDebugger);
+					ImGui::Separator();
+					if (ImGui::MenuItem("Break Here")) {
+						bx::debugBreak();
+					}
+					if (ImGui::BeginItemTooltip()) {
+						ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+						if (fmodf((float)ImGui::GetTime(), 0.4f) < 0.2f) {
+							ImGui::TextUnformatted("WARNING: WITHOUT A DEBUGGER ATTACHED, THIS WILL CRASH AXE!!!");
+						}
+						ImGui::PopStyleColor();
+						ImGui::EndTooltip();
+					}
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu("Help!")) {
@@ -304,7 +319,7 @@ int startAXEEditor(std::string projectFile) {
 
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_CI_PLAY)) {
-				// timeline.play();
+				timeline.startPlayback();
 			}
 
 			ImGui::SetCursorPosY(55.0f * editorState.sf);
@@ -347,6 +362,8 @@ int startAXEEditor(std::string projectFile) {
 			if (ImGui::Button("Stop engine")) {
 				ma_engine_stop(&engine);
 			}
+
+			ImGuiKnobs::Knob("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
 
 			ImGui::End();
 		}

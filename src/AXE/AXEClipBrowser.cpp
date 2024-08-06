@@ -27,7 +27,10 @@ void ClipBrowser::onUpdate(bool& p_open) {
 
 	if (!p_open) return;
 
-	Begin("Clip Browser", &p_open);
+	if (!Begin("Clip Browser", &p_open)) {
+		End();
+		return;
+	}
 
 	if (SmallButton("Refresh")) refreshFiles();
 

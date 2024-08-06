@@ -19,6 +19,7 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 	output["key"] = song->key;
 	output["timeSignature"] = song->timeSignature;
 	output["masterVolume"] = song->masterVolume;
+
 	output["tracks"] = json::array();
 	for (auto& track : song->tracks) {
 		json trackObj;
@@ -36,6 +37,7 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 			clipObj["baseAudioSource"] = clip.baseAudioSource;
 
 			clipObj["position"] = clip.position;
+			clipObj["length"] = clip.length;
 
 			clipObj["balence"] = clip.balence;
 			clipObj["volume"] = clip.volume;
@@ -51,6 +53,15 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 		trackObj["muted"] = track.muted;
 
 		output["tracks"].push_back(trackObj);
+	}
+	
+	output["nodeGraphs"] = json::array();
+	for (auto& ng : song->nodeGraphs) {
+		json ngObj;
+
+		ngObj["name"] = ng.name;
+
+		output["nodeGraphs"].push_back(ngObj);
 	}
 
 	JSON::dumpJsonToFile(output, filepath + ".raw", true);
@@ -88,6 +99,7 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 			tempClip.baseAudioSource = clip["baseAudioSource"];
 
 			tempClip.position = clip["position"];
+			tempClip.length = clip["length"];
 
 			tempClip.balence = clip["balence"];
 			tempClip.volume = clip["volume"];
@@ -105,6 +117,14 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 		EC_PRINT(EC_THIS, "Decoding track: %s", tempTrack.name.c_str());
 
 		song->tracks.push_back(tempTrack);
+	}
+
+	for (auto& ng: decodedSong["nodeGraphs"]) {
+		NodeGraph tempNg;
+
+		tempNg.name = ng["name"];
+
+		song->nodeGraphs.push_back(tempNg);
 	}
 
 	return true;

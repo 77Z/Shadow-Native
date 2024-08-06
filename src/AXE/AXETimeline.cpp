@@ -4,6 +4,9 @@
 #include <string>
 #include "IconsCodicons.h"
 #include "imgui/imgui_utils.hpp"
+#include "Debug/EditorConsole.hpp"
+
+#define EC_THIS "Timeline"
 
 namespace Shadow::AXE {
 
@@ -11,7 +14,9 @@ Timeline::Timeline(Song* songInfo, EditorState* editorState, ma_engine* audioEng
 	: songInfo(songInfo)
 	, editorState(editorState)
 	, audioEngine(audioEngine)
-		{ };
+		{
+			EC_NEWCAT(EC_THIS);
+		};
 Timeline::~Timeline() { }
 
 void Timeline::onUpdate() {
@@ -19,7 +24,10 @@ void Timeline::onUpdate() {
 
 	float sf = editorState->sf;
 
-	Begin("Timeline");
+	if (!Begin("Timeline")) {
+		End();
+		return;
+	}
 
 	// ImDrawList uses screen coords NOT window coords
 	ImDrawList* drawList = GetWindowDrawList();
@@ -82,7 +90,7 @@ void Timeline::onUpdate() {
 		for (auto& clip : track.clips) {
 			PushID(-1 * clipIt);
 			PushStyleColor(ImGuiCol_ChildBg, IM_COL32(255, 0, 0, 255));
-			float clipWidth = 300.0f;
+			float clipWidth = (float)clip.length;		
 			SetCursorPos(ImVec2(clip.position, 2.0f));
 			BeginChild("clip", ImVec2(clipWidth, GetWindowSize().y - 4.0f), 0, 0);
 
@@ -99,6 +107,7 @@ void Timeline::onUpdate() {
 				GetWindowPos().x,
 				GetMousePos().x,
 			GetMousePos().x - GetWindowPos().x);
+			InputScalar("Length", ImGuiDataType_U64, &clip.length);
 
 			EndChild();
 			PopStyleColor();
@@ -115,8 +124,9 @@ void Timeline::onUpdate() {
 				Clip clip;
 				clip.baseAudioSource = clipPathString;
 				clip.name = "Untitled Clip";
-				// clip.position = static_cast<uint64_t>(GetMousePos().x - GetWindowPos().x);
-				clip.position = GetMousePos().x - GetWindowPos().x;
+				clip.length = 300;
+				clip.position = static_cast<uint64_t>(GetMousePos().x - GetWindowPos().x);
+				// clip.position = GetMousePos().x - GetWindowPos().x;
 
 				track.clips.push_back(clip);
 			}
@@ -145,10 +155,17 @@ void Timeline::onUpdate() {
 }
 
 void Timeline::startPlayback() {
+	EC_WARN(EC_THIS, "Clips To Play");
 	for (auto& track : songInfo->tracks) {
+		// EC_PRINT(EC_THIS, "-- TRACK %s", track.name.c_str());
 		for (auto& clip : track.clips) {
-			// if (clip.position > current engine pos)
-			//     get ma_sound and set to play
+			if (clip.position + clip.length > playbackFrames) continue;
+			
+			if (clip.position > playbackFrames) {
+				EC_PRINT(EC_THIS, "CLIP %s is in the future", clip.name.c_str());
+			} else {
+				EC_PRINT(EC_THIS, "CLIP %s is on the line", clip.name.c_str());
+			}
 		}
 	}
 }
