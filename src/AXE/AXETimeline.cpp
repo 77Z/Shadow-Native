@@ -95,21 +95,29 @@ void Timeline::onUpdate() {
 			BeginChild("clip", ImVec2(clipWidth, GetWindowSize().y - 4.0f), 0, 0);
 
 			if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseDown(ImGuiMouseButton_Left)) {
-				clip.position = std::max(0.0f, clip.position + GetMousePos().x - GetWindowPos().x - (clipWidth / 2));
-			}
+				if (!clipBeingDragged) {
+					clipBeingDragged = &clip;
+					clipStoredMouseOffsetX = GetMousePos().x - GetWindowPos().x;
+				}
+			} else if (IsMouseReleased(ImGuiMouseButton_Left)) clipBeingDragged = nullptr;
+
+			if (clipBeingDragged == &clip)
+				clip.position = std::max(0.0f, clip.position + GetMousePos().x - GetWindowPos().x - clipStoredMouseOffsetX);
+
 
 			SetNextItemWidth(clipWidth - 40.0f);
 			InputText("##name", &clip.name);
 			SameLine();
 			if (Button(ICON_CI_CLOSE)) track.clips.erase(track.clips.begin() + clipIt - 1);
 
-			Text("Window x: %.3f\nmouse x: %.3f\noffset: %.3f",
-				GetWindowPos().x,
-				GetMousePos().x,
-			GetMousePos().x - GetWindowPos().x);
-			InputScalar("Length", ImGuiDataType_U64, &clip.length);
+			DragScalar("Length", ImGuiDataType_U64, &clip.length);
+			Text("pos (u64) %lu | length (u64) %lu\npos + len (end rail pos) %lu",
+				clip.position,
+				clip.length,
+				clip.position + clip.length);
+			Text("Data src: %s", clip.baseAudioSource.c_str());
 
-			EndChild();
+			EndChild();	
 			PopStyleColor();
 			PopID();
 			clipIt++;
@@ -126,7 +134,6 @@ void Timeline::onUpdate() {
 				clip.name = "Untitled Clip";
 				clip.length = 300;
 				clip.position = static_cast<uint64_t>(GetMousePos().x - GetWindowPos().x);
-				// clip.position = GetMousePos().x - GetWindowPos().x;
 
 				track.clips.push_back(clip);
 			}
@@ -142,11 +149,11 @@ void Timeline::onUpdate() {
 	ImDrawList* fg = GetForegroundDrawList();
 	SetCursorPosY(30.0f);
 	DragScalar("PCM Frames", ImGuiDataType_U64, &playbackFrames);
-	float scrubberWindowPos = (260 * sf) + playbackFrames;
+	float scrubberWindowPos = (252 * sf) + playbackFrames;
 	fg->AddTriangleFilled(
 		ImVec2(canvasPos.x + scrubberWindowPos - 10.0f, canvasPos.y + 30.0f),
 		ImVec2(canvasPos.x + scrubberWindowPos + 10.0f, canvasPos.y + 30.0f),
-		ImVec2(canvasPos.x + scrubberWindowPos, canvasPos.y + 60.0f),
+		ImVec2(canvasPos.x + scrubberWindowPos + 1.0f, canvasPos.y + 63.0f),
 		IM_COL32(255, 0, 0, 255)
 	);
 	fg->AddRectFilled(ImVec2(canvasPos.x + scrubberWindowPos, canvasPos.y + 60.0f), ImVec2(canvasPos.x + scrubberWindowPos + 2.0f, 10000.0f), IM_COL32(255, 0, 0, 255));

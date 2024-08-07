@@ -22,6 +22,8 @@ private:
 
 	uint64_t playbackFrames = 0;
 
+	Clip* clipBeingDragged = nullptr;
+	float clipStoredMouseOffsetX = 0.0f;
 };
 
 }

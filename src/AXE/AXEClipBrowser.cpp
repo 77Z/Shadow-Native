@@ -32,7 +32,10 @@ void ClipBrowser::onUpdate(bool& p_open) {
 		return;
 	}
 
-	if (SmallButton("Refresh")) refreshFiles();
+	if (SmallButton("Refresh")) {
+		refreshFiles();
+		ImGui::InsertNotification({ImGuiToastType::Success, 3000, "Clip browser refreshed"});
+	}
 
 	for (auto& clip : clips) {
 

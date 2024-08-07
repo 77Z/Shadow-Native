@@ -26,10 +26,7 @@ private:
 	Song* song;
 	NodeGraph* openedNodeGraph = nullptr;
 	ed::EditorContext* editorCtx;
-	// ImVector<Link> links;
-	// std::vector<Node> nodes;
 	int nextLinkId = 1000;
-	bool editorActive = false;
 
 	bool mainMenuOpen = false;
 

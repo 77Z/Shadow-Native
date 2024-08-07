@@ -22,7 +22,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsCodicons.h"
 
 
 
@@ -287,13 +287,13 @@ public:
 		case ImGuiToastType::None:
 			return nullptr;
 		case ImGuiToastType::Success:
-			return ICON_FA_MONEY_CHECK; // Font Awesome 6
+			return ICON_CI_CHECK;
 		case ImGuiToastType::Warning:
-			return ICON_FA_EXCLAMATION_TRIANGLE; // Font Awesome 6
+			return ICON_CI_WARNING;
 		case ImGuiToastType::Error:
-			return ICON_FA_EXCLAMATION_CIRCLE; // Font Awesome 6
+			return ICON_CI_ERROR;
 		case ImGuiToastType::Info:
-			return ICON_FA_INFO_CIRCLE; // Font Awesome 6
+			return ICON_CI_INFO;
 		default:
 			return nullptr;
 		}
@@ -618,8 +618,7 @@ namespace ImGui
 					SetCursorPosX(GetCursorPosX() + (GetWindowSize().x - GetCursorPosX()) * scale);
 
 					// If the button is pressed, we want to remove the notification
-					// if (Button(ICON_FA_XMARK))
-					if (Button("X"))
+					if (Button(ICON_CI_CLOSE))
 					{
 						RemoveNotification(i);
 					}

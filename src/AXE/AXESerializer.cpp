@@ -55,11 +55,51 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 		output["tracks"].push_back(trackObj);
 	}
 	
+	// Node Graphs
 	output["nodeGraphs"] = json::array();
 	for (auto& ng : song->nodeGraphs) {
 		json ngObj;
 
 		ngObj["name"] = ng.name;
+
+		ngObj["nodes"] = json::array();
+		for (auto& node : ng.nodes) {
+			json nodeObj;
+			nodeObj["name"] = node.name;
+			nodeObj["size"].push_back(node.size.x);
+			nodeObj["size"].push_back(node.size.y);
+
+			nodeObj["inputs"] = json::array();
+			for (auto& input : node.inputs) {
+				json inputObj;
+				inputObj["name"] = input.name;
+				inputObj["kind"] = input.kind;
+				inputObj["id"] = input.id.Get();
+				
+				nodeObj["inputs"].push_back(inputObj);
+			}
+
+			nodeObj["outputs"] = json::array();
+			for (auto& output : node.outputs) {
+				json outputObj;
+				outputObj["name"] = output.name;
+				outputObj["kind"] = output.kind;
+				outputObj["id"] = output.id.Get();
+				
+				nodeObj["outputs"].push_back(outputObj);
+			}
+			ngObj["nodes"].push_back(nodeObj);
+		}
+
+		ngObj["links"] = json::array();
+		for (auto& link : ng.links) {
+			json linkObj;
+			linkObj["id"] = link.id.Get();
+			linkObj["inputId"] = link.inputId.Get();
+			linkObj["outputId"] = link.outputId.Get();
+
+			ngObj["links"].push_back(linkObj);
+		}
 
 		output["nodeGraphs"].push_back(ngObj);
 	}

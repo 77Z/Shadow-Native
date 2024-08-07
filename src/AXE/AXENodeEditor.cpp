@@ -133,15 +133,17 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	}
 
 	if (!openedNodeGraph) {
-		Text("No node graph open");
+		const char txt[] = "NO NODE GRAPH OPENED";
+		const ImVec2 txtSize = CalcTextSize(txt);
+		const ImVec2 win = GetWindowSize();
+		SetCursorPos(ImVec2((win.x - txtSize.x) / 2.0f, (win.y - txtSize.y) / 2.0f));
+		TextUnformatted(txt);
 		ed::SetCurrentEditor(nullptr);
 		End();
 		return;
 	}
 
 	ed::Begin("AXENodeEditor", ImVec2(0.0f, 0.0f));
-
-	// editorActive = true;
 
 	for (auto& node : openedNodeGraph->nodes) {
 		PushID(node.id.AsPointer());
@@ -185,10 +187,10 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 			}
 			if (inputPinid && outputPinId) { // LGTM!
 				// ed::RejectNewItem to say no
-				ed::RejectNewItem();
-				// if (ed::AcceptNewItem()) {
-				// 	openedNodeGraph->links.push_back({ ed::LinkId(nextLinkId++), inputPinid, outputPinId });
-				// }
+				// ed::RejectNewItem();
+				if (ed::AcceptNewItem()) {
+					openedNodeGraph->links.push_back({ ed::LinkId(nextLinkId++), inputPinid, outputPinId });
+				}
 			}
 		}
 	}
