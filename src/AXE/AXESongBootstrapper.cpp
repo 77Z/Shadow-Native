@@ -1,12 +1,13 @@
 #include "AXETypes.hpp"
 #include "Debug/EditorConsole.hpp"
 #include "miniaudio.h"
+#include <cstddef>
 
 #define EC_THIS "Song Bootstrapper"
 
 namespace Shadow::AXE {
 
-void bootstrapSong(const Song* song, ma_engine* audioEngine) {
+void bootstrapSong(Song* song, ma_engine* audioEngine) {
 	EC_NEWCAT(EC_THIS);
 	EC_PRINT(EC_THIS, "Bootstrapping song: %s with ShadowAudio", song->name.c_str());
 
@@ -26,6 +27,24 @@ void bootstrapSong(const Song* song, ma_engine* audioEngine) {
 	// }
 
 
+	for (auto& track : song->tracks) {
+		for (auto& clip : track.clips) {
+			result = ma_sound_init_from_file(audioEngine, clip.baseAudioSource.c_str(), soundFlags, nullptr, nullptr, &clip.engineSound);
+			clip.loaded = true;
+			if (result != MA_SUCCESS) {
+				EC_ERROUT(EC_THIS, "FAILED TO INIT SOUND FOR CLIP %s", clip.name.c_str());
+			}
+		}
+	}
+}
+
+void unloadSong(Song* song, ma_engine* audioEngine) {
+	for (auto& track : song->tracks) {
+		for (auto& clip : track.clips) {
+			ma_sound_uninit(&clip.engineSound);
+			clip.loaded = false;
+		}
+	}
 }
 
 }

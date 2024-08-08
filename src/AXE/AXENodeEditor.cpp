@@ -42,15 +42,22 @@ void AXENodeEditor::updateDebugMenu(bool& p_open) {
 	}
 
 	TextUnformatted("Currently opened node graph: ");
+	PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 0, 255));
 	Text("%s", openedNodeGraph->name.c_str());
+	PopStyleColor();
+	Text("Last known id: %i", openedNodeGraph->lastKnownGraphId);
+	
+	if (SmallButton("Show Graph Flow"))
+		for (auto& link: openedNodeGraph->links)
+			ed::Flow(link.id);
 
-	TextUnformatted("Links:");
+	SeparatorText("Links:");
 	for (auto& link : openedNodeGraph->links) {
 		Bullet();
 		Text("Link #%lu - Connects %lu to %lu", link.id.Get(), link.inputId.Get(), link.outputId.Get());
 	}
 
-	TextUnformatted("Nodes:");
+	SeparatorText("Nodes:");
 	for (auto& node : openedNodeGraph->nodes) {
 		Bullet();
 		Text("Node #%lu, %s", node.id.Get(), node.name.c_str());
@@ -66,6 +73,11 @@ void AXENodeEditor::updateDebugMenu(bool& p_open) {
 		}
 	}
 
+	SeparatorText("Selection");
+	if (SmallButton("Clear Selection")) ed::ClearSelection();
+
+
+
 	End();
 }
 
@@ -78,7 +90,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	ed::SetCurrentEditor(editorCtx);
 
 	if (BeginMenuBar()) {
-		if (MenuItem(ICON_CI_MENU " Menu")) mainMenuOpen = !mainMenuOpen;
+		if (MenuItem(ICON_CI_MENU " Graphs")) mainMenuOpen = !mainMenuOpen;
 		if (BeginMenu("+ Add")) {
 			SeparatorText("Essential");
 			if (MenuItem("Input")) SpawnInputNode();
@@ -111,6 +123,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		BeginChild("NodeEditorLeftMenu", ImVec2(200.0f, 0.0f), ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX);
 		
 		if (Selectable(ICON_CI_ADD " New Node Graph")) {
+			openedNodeGraph = nullptr;
 			NodeGraph ng;
 			ng.name = "Untitled Node Graph";
 			song->nodeGraphs.push_back(ng);
@@ -189,7 +202,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 				// ed::RejectNewItem to say no
 				// ed::RejectNewItem();
 				if (ed::AcceptNewItem()) {
-					openedNodeGraph->links.push_back({ ed::LinkId(nextLinkId++), inputPinid, outputPinId });
+					openedNodeGraph->links.push_back({ ed::LinkId(getNextId()), inputPinid, outputPinId });
 				}
 			}
 		}

@@ -48,10 +48,15 @@ struct Node {
 	ImColor color;
 	NodeType_ type;
 	ImVec2 size;
+
+	float x;
+	float y;
 };
 
 struct NodeGraph {
 	std::string name;
+	//TODO: update to a u64
+	int lastKnownGraphId = 1000;
 
 	std::vector<Node> nodes;
 	ImVector<Link> links;
@@ -98,6 +103,7 @@ struct Clip {
 
 	// Volatile data
 	ma_sound engineSound;
+	bool loaded = false;
 };
 
 struct Track {
@@ -139,7 +145,7 @@ struct EditorState {
 	float lastKnownMasterVol = -1.0f;
 
 	// Window states
-	bool showShadowEngineConsole = false;
+	bool showShadowEngineConsole = true;
 	bool showImGuiConsole = false;
 	bool showImGuiMetrics = false;
 	bool showImGuiStackTool = false;

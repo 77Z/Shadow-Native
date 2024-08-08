@@ -59,6 +59,7 @@
 			"program": "${workspaceFolder}/bin/sdw/shadow-engine/Shadow",
 			"args": [
 				"axeEditor"
+				// "axe"
 				// "dev"
 				// "editorwis"
 				// "SlimEditor", "/home/vince/.config/Shadow/Projects/WIS/Content/Scenes/mesh.scene"

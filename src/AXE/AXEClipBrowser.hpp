@@ -19,7 +19,7 @@ struct ClipBrowserItemInfo {
 
 class ClipBrowser {
 public:
-	ClipBrowser(ma_engine* audioEngine);
+	ClipBrowser();
 	~ClipBrowser();
 
 	void onUpdate(bool& p_open);

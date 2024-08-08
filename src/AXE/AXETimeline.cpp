@@ -1,14 +1,16 @@
 #include "AXETimeline.hpp"
-#include "Debug/Logger.hpp"
 #include "imgui.h"
 #include <string>
 #include "IconsCodicons.h"
 #include "imgui/imgui_utils.hpp"
 #include "Debug/EditorConsole.hpp"
+#include "ppk_assert_impl.hpp"
 
 #define EC_THIS "Timeline"
 
 namespace Shadow::AXE {
+
+// static float oset = 0.0f;
 
 Timeline::Timeline(Song* songInfo, EditorState* editorState, ma_engine* audioEngine)
 	: songInfo(songInfo)
@@ -23,6 +25,8 @@ void Timeline::onUpdate() {
 	using namespace ImGui;
 
 	float sf = editorState->sf;
+
+	playbackFrames = ma_engine_get_time_in_pcm_frames(audioEngine) / 100;
 
 	if (!Begin("Timeline")) {
 		End();
@@ -40,6 +44,11 @@ void Timeline::onUpdate() {
 
 	if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseDown(ImGuiMouseButton_Middle)) {
 		SetScrollY(GetScrollY() + scrollDelta.y);
+	}
+
+	if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseDown(ImGuiMouseButton_Right)) {
+		ma_engine_set_time_in_pcm_frames(audioEngine, 
+			uint64_t(std::max(0.0f, GetMousePos().x - GetWindowPos().x - 390.0f) * 100));
 	}
 
 	SetCursorPosY(100.0f);
@@ -135,6 +144,15 @@ void Timeline::onUpdate() {
 				clip.length = 300;
 				clip.position = static_cast<uint64_t>(GetMousePos().x - GetWindowPos().x);
 
+				// load into mem
+				ma_result result;
+
+				ma_uint32 soundFlags = MA_SOUND_FLAG_NO_SPATIALIZATION;
+				if (songInfo->decodeOnLoad) soundFlags |= MA_SOUND_FLAG_DECODE;
+				ma_sound_init_from_file(audioEngine, clip.baseAudioSource.c_str(), soundFlags, nullptr, nullptr, &clip.engineSound);
+				if (result != MA_SUCCESS) EC_ERROUT("Song Bootstrapper", "FAILED TO INIT SOUND FOR CLIP %s", clip.name.c_str());
+				else clip.loaded = true;
+
 				track.clips.push_back(clip);
 			}
 			EndDragDropTarget();
@@ -148,6 +166,7 @@ void Timeline::onUpdate() {
 	// Draw scrubber
 	ImDrawList* fg = GetForegroundDrawList();
 	SetCursorPosY(30.0f);
+	PushItemWidth(400.0f);
 	DragScalar("PCM Frames", ImGuiDataType_U64, &playbackFrames);
 	float scrubberWindowPos = (252 * sf) + playbackFrames;
 	fg->AddTriangleFilled(
@@ -162,20 +181,43 @@ void Timeline::onUpdate() {
 }
 
 void Timeline::startPlayback() {
+	playing = true;
+
 	EC_WARN(EC_THIS, "Clips To Play");
 	for (auto& track : songInfo->tracks) {
 		// EC_PRINT(EC_THIS, "-- TRACK %s", track.name.c_str());
 		for (auto& clip : track.clips) {
-			if (clip.position + clip.length > playbackFrames) continue;
+			if (clip.position + clip.length < playbackFrames) continue;
 			
 			if (clip.position > playbackFrames) {
-				EC_PRINT(EC_THIS, "CLIP %s is in the future", clip.name.c_str());
+				EC_PRINT(EC_THIS, "CLIP %s is in the future\nWill play at %lu", clip.name.c_str(), clip.position);
+
+				PPK_ASSERT(clip.loaded, "Sound data not loaded for this clip!");
+				
+				ma_sound_seek_to_pcm_frame(&clip.engineSound, 0);
+				ma_sound_set_start_time_in_pcm_frames(&clip.engineSound, clip.position * 100);
+				ma_sound_start(&clip.engineSound);
 			} else {
 				EC_PRINT(EC_THIS, "CLIP %s is on the line", clip.name.c_str());
 			}
 		}
 	}
+
+	ma_engine_start(audioEngine);
 }
 
+void Timeline::stopPlayback() {
+	playing = false;
 
+	ma_engine_stop(audioEngine);
+}
+
+void Timeline::togglePlayback() {
+	playing = !playing;
+
+	if (playing)
+		startPlayback();
+	else
+		stopPlayback();
+}
 }

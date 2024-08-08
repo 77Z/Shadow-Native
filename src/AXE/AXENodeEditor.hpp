@@ -3,8 +3,6 @@
 
 #include "../nodeEditor/imgui_node_editor.h"
 #include "AXETypes.hpp"
-#include "imgui.h"
-#include <vector>
 
 namespace Shadow::AXE {
 
@@ -26,15 +24,16 @@ private:
 	Song* song;
 	NodeGraph* openedNodeGraph = nullptr;
 	ed::EditorContext* editorCtx;
-	int nextLinkId = 1000;
+	// int nextLinkId = 1000;
 
-	bool mainMenuOpen = false;
+	bool mainMenuOpen = true;
 
 	// Temporary container to take actions on things from ctx menus
 	ed::NodeId contextNodeId;
 	ed::LinkId contextLinkId;
 
-	int getNextId() { return nextLinkId++; }
+	// int getNextId() { return nextLinkId++; }
+	int getNextId() { return openedNodeGraph->lastKnownGraphId++; }
 	// int getNextLinkId() { return ed::LinkId(getNextId()); }
 
 	// Really a terrible name on my part. When a new node graph is loaded into

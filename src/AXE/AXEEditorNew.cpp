@@ -2,7 +2,7 @@
 #include "AXENodeEditor.hpp"
 #include "AXETimeline.hpp"
 #include "Debug/Logger.hpp"
-#include "bx/debug.h"
+#include "bx/bx.h"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
@@ -33,7 +33,11 @@ void openURL(const std::string &url);
 }
 namespace Shadow::AXE {
 void updateHelpWindow(bool& p_open);
-void bootstrapSong(const Song* song, ma_engine* audioEngine);
+void bootstrapSong(Song* song, ma_engine* audioEngine);
+void unloadSong(Song* song, ma_engine* audioEngine);
+}
+namespace bx {
+void debugBreak();
 }
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
@@ -70,8 +74,10 @@ static ClipBrowser* gblClipBrowser;
 int startAXEEditor(std::string projectFile) {
 
 	ma_result result;
+	ma_engine_config engineConfig = ma_engine_config_init();
+	engineConfig.noAutoStart = MA_TRUE;
 	ma_engine engine;
-	result = ma_engine_init(nullptr, &engine);
+	result = ma_engine_init(&engineConfig, &engine);
 	if (result != MA_SUCCESS) {
 		ERROUT("Failed to initialize ShadowAudio engine!!");
 		return 1;
@@ -130,6 +136,10 @@ int startAXEEditor(std::string projectFile) {
 
 	Keyboard keyboard(&window);
 
+	Timeline timeline(&songInfo, &editorState, &engine);
+	ClipBrowser clipBrowser;
+	AXENodeEditor nodeEditor(&songInfo);
+
 	// Keyboard Shortcuts
 	keyboard.registerKeyCallback([&](KeyButton_ key, bool down, KeyModifiers_ mods) {
 		if (mods == KeyModifiers_Control
@@ -154,6 +164,10 @@ int startAXEEditor(std::string projectFile) {
 			&& down) {
 				ImGui::InsertNotification({ImGuiToastType::Success, 3000, "Bruh"});
 			}
+
+		if (key == KeyButton_Space && down) {
+			timeline.togglePlayback();
+		}
 	});
 
 	IMGUI_CHECKVERSION();
@@ -206,13 +220,10 @@ int startAXEEditor(std::string projectFile) {
 
 		ImGui::GetStyle().ScaleAllSizes(sf);
 	}
-	
-	Timeline timeline(&songInfo, &editorState, &engine);
-	ClipBrowser clipBrowser(&engine);
-	AXENodeEditor nodeEditor(&songInfo);
 
 	gblClipBrowser = &clipBrowser;
 	glfwSetDropCallback(window.window, [](GLFWwindow* window, int count, const char** paths) {
+		BX_UNUSED(window);
 		for (int i = 0; i < count; i++) {
 			EC_PRINT("All", "User dropped: %s", paths[i]);
 			gblClipBrowser->addFileToLibrary(paths[i]);
@@ -318,9 +329,10 @@ int startAXEEditor(std::string projectFile) {
 			ImGui::SliderFloat("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
 
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_CI_PLAY)) {
-				timeline.startPlayback();
+			if (ImGui::Button(timeline.isPlaying() ? ICON_CI_DEBUG_PAUSE : ICON_CI_PLAY)) {
+				timeline.togglePlayback();
 			}
+			ImGui::SetItemTooltip("Play/Pause song from current position (SPACE)");
 
 			ImGui::SetCursorPosY(55.0f * editorState.sf);
 			ImGui::DockSpace(ImGui::GetID("AXEDockspace"));
@@ -448,6 +460,7 @@ int startAXEEditor(std::string projectFile) {
 
 	ma_sound_uninit(&sound);
 	ma_engine_uninit(&engine);
+	unloadSong(&songInfo, &engine);
 
 	window.shutdown();
 

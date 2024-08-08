@@ -2,6 +2,7 @@
 #include "AXETypes.hpp"
 #include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
+#include "imgui.h"
 #include "json_impl.hpp"
 #include <fstream>
 
@@ -61,6 +62,7 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 		json ngObj;
 
 		ngObj["name"] = ng.name;
+		ngObj["lastKnownGraphId"] = ng.lastKnownGraphId;
 
 		ngObj["nodes"] = json::array();
 		for (auto& node : ng.nodes) {
@@ -68,6 +70,12 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 			nodeObj["name"] = node.name;
 			nodeObj["size"].push_back(node.size.x);
 			nodeObj["size"].push_back(node.size.y);
+			nodeObj["id"] = node.id.Get();
+			
+			nodeObj["color"].push_back(node.color.Value.x);
+			nodeObj["color"].push_back(node.color.Value.y);
+			nodeObj["color"].push_back(node.color.Value.z);
+			nodeObj["color"].push_back(node.color.Value.w);
 
 			nodeObj["inputs"] = json::array();
 			for (auto& input : node.inputs) {
@@ -159,10 +167,54 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 		song->tracks.push_back(tempTrack);
 	}
 
+	// Node Graphs
 	for (auto& ng: decodedSong["nodeGraphs"]) {
 		NodeGraph tempNg;
 
 		tempNg.name = ng["name"];
+		tempNg.lastKnownGraphId = ng["lastKnownGraphId"];
+
+		for (auto& node : ng["nodes"]) {
+			Node tempNode;
+			tempNode.name = node["name"];
+			tempNode.size = ImVec2(node["size"][0], node["size"][1]);
+			tempNode.id = (int)node["id"];
+
+			tempNode.color = ImColor(
+				(float)node["color"][0],
+				(float)node["color"][1],
+				(float)node["color"][2],
+				(float)node["color"][3]);
+
+			for (auto& input : node["inputs"]) {
+				Pin tempInput;
+				tempInput.name = input["name"];
+				tempInput.kind = input["kind"];
+				tempInput.id = (int)input["id"];
+
+				tempNode.inputs.push_back(tempInput);
+			}
+
+			for (auto& output : node["outputs"]) {
+				Pin tempOutput;
+				tempOutput.name = output["name"];
+				tempOutput.kind = output["kind"];
+				tempOutput.id = (int)output["id"];
+
+				tempNode.outputs.push_back(tempOutput);
+			}
+			
+			tempNg.nodes.push_back(tempNode);
+		}
+
+		for (auto& link : ng["links"]) {
+			Link tempLink;
+			tempLink.id = (int)link["id"];
+			tempLink.inputId = (int)link["inputId"];
+			tempLink.outputId = (int)link["outputId"];
+
+			tempNg.links.push_back(tempLink);
+		}
 
 		song->nodeGraphs.push_back(tempNg);
 	}

@@ -14,6 +14,9 @@ public:
 	void onUpdate();
 
 	void startPlayback();
+	void stopPlayback();
+	void togglePlayback();
+	bool isPlaying() { return playing; }
 
 private:
 	Song* songInfo;
@@ -21,9 +24,11 @@ private:
 	ma_engine* audioEngine;
 
 	uint64_t playbackFrames = 0;
+	bool playing = false;
 
 	Clip* clipBeingDragged = nullptr;
 	float clipStoredMouseOffsetX = 0.0f;
+
 };
 
 }
