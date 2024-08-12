@@ -258,8 +258,8 @@ void Timeline::onUpdate() {
 			float left = GetCursorPosX();
 			for (auto& clip : track.clips) {
 				PushID(clipIt);
-				SetCursorPosX(left + (float)clip.position);
-				float clipWidth = (float)clip.length;
+				SetCursorPosX(left + (float)clip.position * (editorState->zoom / 100.0f));
+				float clipWidth = (float)clip.length * (editorState->zoom / 100.0f);
 				BeginChild("Clip", ImVec2(clipWidth, 143.0f), 0, 0);
 
 				// Clip dragging logic
@@ -312,12 +312,17 @@ void Timeline::onUpdate() {
 		}
 
 		if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseDown(ImGuiMouseButton_Middle)) {
-			SetScrollX(GetScrollX() + scrollDelta.x);
-			SetScrollY(GetScrollY() + scrollDelta.y);
+			if (GetIO().KeyCtrl) {
+				editorState->zoom -= scrollDelta.x;
+				if (editorState->zoom < 5) editorState->zoom = 5;
+			} else {
+				SetScrollX(GetScrollX() + scrollDelta.x);
+				SetScrollY(GetScrollY() + scrollDelta.y);
+			}
 		}
 
 		if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseDown(ImGuiMouseButton_Right)) {
-			ma_engine_set_time_in_pcm_frames(audioEngine, uint64_t(std::max(0.0f, GetMousePos().x - GetWindowPos().x + GetScrollX() - 376.0f) * 100));
+			ma_engine_set_time_in_pcm_frames(audioEngine, uint64_t(std::max(0.0f, GetMousePos().x - GetWindowPos().x + GetScrollX() - 376.0f) * editorState->zoom));
 		}
 
 		PushClipRect(
@@ -329,7 +334,7 @@ void Timeline::onUpdate() {
 		ImDrawList* tableDrawList = GetWindowDrawList();
 
 		// Draw Scrubber
-		float scrubberWindowPos = (250 * sf) + playbackFrames - GetScrollX();
+		float scrubberWindowPos = ((250 * sf) + playbackFrames - GetScrollX()); // TODO: this broke w/ zoom addon
 		tableDrawList->AddTriangleFilled(
 			ImVec2(canvasPos.x + scrubberWindowPos - 10.0f, canvasPos.y + 0.0f),
 			ImVec2(canvasPos.x + scrubberWindowPos + 10.0f, canvasPos.y + 0.0f),
@@ -343,8 +348,8 @@ void Timeline::onUpdate() {
 		);
 
 		// Draw Scale / Ruler
-		float majorUnit =		100.0f;
-		float minorUnit =		10.0f;
+		float majorUnit =		100.0f * (editorState->zoom / 100.0f);
+		float minorUnit =		10.0f * (editorState->zoom / 100.0f);
 		float labelAlignment =	0.6f;
 		float sign =			1.0f;
 		float minorSize =		10.0f;
@@ -361,30 +366,33 @@ void Timeline::onUpdate() {
 		tableDrawList->AddLine(from, to, IM_COL32(255, 255, 255, 255));
 
 		auto p = from;
-		for (float d = 0.0f; d <= distance; d += minorUnit, p += direction * minorUnit)
-			tableDrawList->AddLine(p - normal * minorSize, p + normal * minorSize, IM_COL32(255, 255, 255, 255));
+		if (editorState->zoom > 70.0f)
+			for (float d = 0.0f; d <= distance; d += minorUnit, p += direction * minorUnit)
+				tableDrawList->AddLine(p - normal * minorSize, p + normal * minorSize, IM_COL32(255, 255, 255, 255));
 
-		for (float d = 0.0f; d <= distance + majorUnit; d += majorUnit)
-		{
-			p = from + direction * d;
+		if (editorState->zoom > 20.0f)
+			for (float d = 0.0f; d <= distance + majorUnit; d += majorUnit) {
+				p = from + direction * d;
 
-			tableDrawList->AddLine(p - normal * majorSize, p + normal * majorSize, IM_COL32(255, 255, 255, 255));
-			tableDrawList->AddLine(p - normal * canvasMax.y, p + normal * canvasMax.y, IM_COL32(255, 255, 255, 50));
+				tableDrawList->AddLine(p - normal * majorSize, p + normal * majorSize, IM_COL32(255, 255, 255, 255));
+				tableDrawList->AddLine(p - normal * canvasMax.y, p + normal * canvasMax.y, IM_COL32(255, 255, 255, 50));
 
-			if (d == 0.0f)
-				continue;
+				if (d == 0.0f)
+					continue;
 
-			char label[16];
-			snprintf(label, 15, "%g", d * sign);
-			ImVec2 labelSize = ImGui::CalcTextSize(label);
+				if (editorState->zoom < 50.0f) continue;
 
-			ImVec2 labelPosition = p + ImVec2(fabsf(normal.x), fabsf(normal.y)) * labelDistance;
-			float labelAlignedSize = ImDot(labelSize, direction);
-			labelPosition += direction * (-labelAlignedSize + labelAlignment * labelAlignedSize * 2.0f);
-			labelPosition = ImFloor(labelPosition + ImVec2(0.5f, 0.5f));
+				char label[16];
+				snprintf(label, 15, "%g", d * sign);
+				ImVec2 labelSize = ImGui::CalcTextSize(label);
 
-			tableDrawList->AddText(labelPosition, IM_COL32(255, 255, 255, 255), label);
-		}
+				ImVec2 labelPosition = p + ImVec2(fabsf(normal.x), fabsf(normal.y)) * labelDistance;
+				float labelAlignedSize = ImDot(labelSize, direction);
+				labelPosition += direction * (-labelAlignedSize + labelAlignment * labelAlignedSize * 2.0f);
+				labelPosition = ImFloor(labelPosition + ImVec2(0.5f, 0.5f));
+
+				tableDrawList->AddText(labelPosition, IM_COL32(255, 255, 255, 255), label);
+			}
 
 		PopClipRect();
 

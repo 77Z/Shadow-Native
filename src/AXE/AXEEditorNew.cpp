@@ -197,15 +197,15 @@ int startAXEEditor(std::string projectFile) {
 
 		ImVector<ImWchar> ranges;
 		ImFontGlyphRangesBuilder builder;
-		builder.AddText("♭");
+		builder.AddText((const char*)u8"♭");
 
 		ImFontConfig fontCfg;
 		fontCfg.OversampleH = 4;
 		fontCfg.OversampleV = 4;
 		fontCfg.PixelSnapH = false;
 
-		ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", fontSize, &fontCfg, ranges.Data);
-		// ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/arial.ttf", fontSize, &fontCfg, ranges.Data);
+		// ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", fontSize, &fontCfg, ranges.Data);
+		ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/arial.ttf", fontSize, &fontCfg, ranges.Data);
 
 		static const ImWchar iconRanges[] = { ICON_MIN_CI, ICON_MAX_CI, 0 };
 
@@ -341,6 +341,13 @@ int startAXEEditor(std::string projectFile) {
 			ImGui::SliderFloat("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
 
 			ImGui::SameLine();
+			ImGui::SliderFloat("Zoom", &editorState.zoom, 1, 400, "%.0f%%");
+
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_CI_ZOOM_IN)) editorState.zoom = 100.0f;
+			ImGui::SetItemTooltip("Reset zoom");
+
+			ImGui::SameLine();
 			if (ImGui::Button(timeline.isPlaying() ? ICON_CI_DEBUG_PAUSE : ICON_CI_PLAY)) {
 				timeline.togglePlayback();
 			}
@@ -388,6 +395,8 @@ int startAXEEditor(std::string projectFile) {
 			}
 
 			ImGuiKnobs::Knob("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
+
+			ImGui::DebugTextEncoding((const char*)u8"C# / D♭");
 
 			ImGui::End();
 		}
