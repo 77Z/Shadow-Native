@@ -165,9 +165,11 @@ int startAXEEditor(std::string projectFile) {
 				ImGui::InsertNotification({ImGuiToastType::Success, 3000, "Bruh"});
 			}
 
+#if 0
 		if (key == KeyButton_Space && down) {
 			timeline.togglePlayback();
 		}
+#endif
 	});
 
 	IMGUI_CHECKVERSION();
@@ -319,11 +321,21 @@ int startAXEEditor(std::string projectFile) {
 			ImGui::InputFloat("BPM", &songInfo.bpm, 1.0f, 5.0f);
 			ImGui::PushItemWidth(120.0f * editorState.sf);
 			ImGui::SameLine();
-			ImGui::InputInt2("Time Signature", songInfo.timeSignature);
-			ImGui::SameLine();
+			// ImGui::InputInt2("Time Signature", songInfo.timeSignature);
+			// ImGui::SameLine();
 
 			const char* keyName = (songInfo.key >= 0 && songInfo.key < Keys_Count) ? keysPretty[songInfo.key] : "? Unknown ?";
-			ImGui::SliderInt("Key", &songInfo.key, 0, Keys_Count - 1, keyName);
+			// ImGui::SliderInt("Key", &songInfo.key, 0, Keys_Count - 1, keyName);
+			if (ImGui::BeginCombo("Key", keyName)) {
+				for (int n = 0; n < ((int)(sizeof(keysPretty) / sizeof(*(keysPretty)))); n++) {
+					const bool isSelected = (songInfo.key == n);
+					if (ImGui::Selectable(keysPretty[n], isSelected))
+						songInfo.key = n;
+
+					if (isSelected) ImGui::SetItemDefaultFocus();
+				}
+				ImGui::EndCombo();
+			}
 
 			ImGui::SameLine();
 			ImGui::SliderFloat("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);

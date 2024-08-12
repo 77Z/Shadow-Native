@@ -82,7 +82,7 @@ enum Keys_ {
 };
 
 struct Bookmark {
-	float position;
+	uint64_t position;
 	std::string name;
 };
 

@@ -28,7 +28,6 @@ private:
 
 	Clip* clipBeingDragged = nullptr;
 	float clipStoredMouseOffsetX = 0.0f;
-
 };
 
 }

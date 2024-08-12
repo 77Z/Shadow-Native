@@ -58,10 +58,10 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/bin/sdw/shadow-engine/Shadow",
 			"args": [
-				"axeEditor"
+				// "axeEditor"
 				// "axe"
 				// "dev"
-				// "editorwis"
+				"editorwis"
 				// "SlimEditor", "/home/vince/.config/Shadow/Projects/WIS/Content/Scenes/mesh.scene"
 			],
 			"stopAtEntry": false,
