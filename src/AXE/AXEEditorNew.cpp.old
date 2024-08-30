@@ -26,7 +26,6 @@
 #include "IconsCodicons.h"
 #include "../implot/implot.h"
 #include "../imgui/imgui_knobs.hpp"
-#include "AXEEqualizer.hpp"
 
 // Forward declarations
 namespace Shadow::Util {
@@ -36,8 +35,6 @@ namespace Shadow::AXE {
 void updateHelpWindow(bool& p_open);
 void bootstrapSong(Song* song, ma_engine* audioEngine);
 void unloadSong(Song* song, ma_engine* audioEngine);
-void updateCurveTest();
-void initCurveTest();
 }
 namespace bx {
 void debugBreak();
@@ -76,8 +73,6 @@ static ClipBrowser* gblClipBrowser;
 
 int startAXEEditor(std::string projectFile) {
 
-	initCurveTest();
-
 	ma_result result;
 	ma_engine_config engineConfig = ma_engine_config_init();
 	engineConfig.noAutoStart = MA_TRUE;
@@ -88,28 +83,28 @@ int startAXEEditor(std::string projectFile) {
 		return 1;
 	}
 
-	deserializeSong(&songInfo, projectFile);
-	bootstrapSong(&songInfo, &engine);
+	// deserializeSong(&songInfo, projectFile);
+	// bootstrapSong(&songInfo, &engine);
 
-	// ma_device* device = ma_engine_get_device(&engine);
-	ma_sound sound;
-	result = ma_sound_init_from_file(&engine, "./Resources/sound.wav", songInfo.decodeOnLoad ? MA_SOUND_FLAG_DECODE : 0, nullptr, nullptr, &sound);
+	// // ma_device* device = ma_engine_get_device(&engine);
+	// ma_sound sound;
+	// result = ma_sound_init_from_file(&engine, "./Resources/sound.wav", songInfo.decodeOnLoad ? MA_SOUND_FLAG_DECODE : 0, nullptr, nullptr, &sound);
 
-	ma_uint64 length;
-	ma_data_source_get_length_in_pcm_frames(&sound, &length);
+	// ma_uint64 length;
+	// ma_data_source_get_length_in_pcm_frames(&sound, &length);
 
-	ma_context context;
-	ma_context_init(nullptr, 0, nullptr, &context);
-	ma_device_info* pPlaybackDeviceInfos;
-    ma_uint32 playbackDeviceCount;
-    ma_device_info* pCaptureDeviceInfos;
-    ma_uint32 captureDeviceCount;
-    ma_uint32 iDevice;
-	ma_context_get_devices(&context, &pPlaybackDeviceInfos, &playbackDeviceCount, &pCaptureDeviceInfos, &captureDeviceCount);
-	for (iDevice = 0; iDevice < playbackDeviceCount; iDevice++)
-		EC_WARN("All", "   %u: %s\n", iDevice, pCaptureDeviceInfos[iDevice].name);
+	// ma_context context;
+	// ma_context_init(nullptr, 0, nullptr, &context);
+	// ma_device_info* pPlaybackDeviceInfos;
+    // ma_uint32 playbackDeviceCount;
+    // ma_device_info* pCaptureDeviceInfos;
+    // ma_uint32 captureDeviceCount;
+    // ma_uint32 iDevice;
+	// ma_context_get_devices(&context, &pPlaybackDeviceInfos, &playbackDeviceCount, &pCaptureDeviceInfos, &captureDeviceCount);
+	// for (iDevice = 0; iDevice < playbackDeviceCount; iDevice++)
+	// 	EC_WARN("All", "   %u: %s\n", iDevice, pCaptureDeviceInfos[iDevice].name);
 
-	uint32_t sampleRate = ma_engine_get_sample_rate(&engine);
+	// uint32_t sampleRate = ma_engine_get_sample_rate(&engine);
 
 
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -144,7 +139,6 @@ int startAXEEditor(std::string projectFile) {
 	Timeline timeline(&songInfo, &editorState, &engine);
 	ClipBrowser clipBrowser;
 	AXENodeEditor nodeEditor(&songInfo);
-	AXEEqualizer equalizer;
 
 	// Keyboard Shortcuts
 	keyboard.registerKeyCallback([&](KeyButton_ key, bool down, KeyModifiers_ mods) {
@@ -183,8 +177,9 @@ int startAXEEditor(std::string projectFile) {
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;	
 
 	ImGui::SetupTheme();
 
@@ -284,7 +279,6 @@ int startAXEEditor(std::string projectFile) {
 					ImGui::Separator();
 					ImGui::MenuItem("Project Metadata", nullptr, &editorState.showProjectMetadata);
 					ImGui::MenuItem("Node Editor", nullptr, &editorState.showNodeEditor);
-					ImGui::MenuItem("Visual Equalizer", nullptr, &editorState.showEqualizer);
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu("Debug Tools")) {
@@ -300,7 +294,6 @@ int startAXEEditor(std::string projectFile) {
 						ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Loaded project from computer"});
 					}
 					ImGui::MenuItem("Node Editor Debugger", nullptr, &editorState.showNodeEditorDebugger);
-					ImGui::MenuItem("Automation Debug Mode", nullptr, &editorState.automationDebugMode);
 					ImGui::Separator();
 					if (ImGui::MenuItem("Break Here")) {
 						bx::debugBreak();
@@ -355,14 +348,6 @@ int startAXEEditor(std::string projectFile) {
 			ImGui::SetItemTooltip(ICON_CI_ZOOM_IN " Reset zoom");
 
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_CI_DIFF_ADDED)) {
-				Track newTrack;
-				newTrack.name = "Untitled Track";
-				songInfo.tracks.push_back(newTrack);
-			}
-			ImGui::SetItemTooltip("New Track");
-
-			ImGui::SameLine();
 			ImGui::ToggleButton(ICON_CI_MAGNET, &editorState.snappingEnabled);
 			ImGui::SetItemTooltip(ICON_CI_MAGNET " Toggle clip snapping");
 
@@ -385,56 +370,40 @@ int startAXEEditor(std::string projectFile) {
 		}
 
 		//ShadowAudio window
-		{
-			using namespace ImGui;
-			Begin("ShadowAudio");
+		// {
+		// 	ImGui::Begin("ShadowAudio");
 
-			if (Button("Play sound at 4s time")) {
-				// ma_engine_play_sound(&engine, "./Resources/sound.wav", nullptr);
-				ma_sound_seek_to_pcm_frame(&sound, 0);
-				ma_sound_set_start_time_in_pcm_frames(&sound, sampleRate * 4);
-				ma_sound_start(&sound);
-			}
+		// 	if (ImGui::Button("Play sound at 4s time")) {
+		// 		// ma_engine_play_sound(&engine, "./Resources/sound.wav", nullptr);
+		// 		ma_sound_seek_to_pcm_frame(&sound, 0);
+		// 		ma_sound_set_start_time_in_pcm_frames(&sound, sampleRate * 4);
+		// 		ma_sound_start(&sound);
+		// 	}
 
-			Text("Engine Sample rate: %u", sampleRate);
-			Text("Engine milis: %llu", ma_engine_get_time_in_milliseconds(&engine));
-			Text("Engine PCM Frames: %llu", ma_engine_get_time_in_pcm_frames(&engine));
-			Text("Sound starts at PCM frame: %u", sampleRate * 4);
-			// ImGui::Text("loaded sound length in pcm frames: %llu", length);
+		// 	ImGui::Text("Engine Sample rate: %u", sampleRate);
+		// 	ImGui::Text("Engine milis: %llu", ma_engine_get_time_in_milliseconds(&engine));
+		// 	ImGui::Text("Engine PCM Frames: %llu", ma_engine_get_time_in_pcm_frames(&engine));
+		// 	ImGui::Text("Sound starts at PCM frame: %u", sampleRate * 4);
+		// 	// ImGui::Text("loaded sound length in pcm frames: %llu", length);
 
-			if (Button("Set engine timer to 0")) {
-				ma_engine_set_time_in_pcm_frames(&engine, 0);
-			}
+		// 	if (ImGui::Button("Set engine timer to 0")) {
+		// 		ma_engine_set_time_in_pcm_frames(&engine, 0);
+		// 	}
 
-			if (Button("Start engine")) {
-				ma_engine_start(&engine);
-			}
+		// 	if (ImGui::Button("Start engine")) {
+		// 		ma_engine_start(&engine);
+		// 	}
 
-			if (Button("Stop engine")) {
-				ma_engine_stop(&engine);
-			}
+		// 	if (ImGui::Button("Stop engine")) {
+		// 		ma_engine_stop(&engine);
+		// 	}
 
-			ImGuiKnobs::Knob("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
+		// 	ImGuiKnobs::Knob("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
 
-			DebugTextEncoding((const char*)u8"C# / D♭");
+		// 	ImGui::DebugTextEncoding((const char*)u8"C# / D♭");
 
-			if (Button("Big number modal"))
-				OpenPopup("BigNumberInFile");
-
-			if (BeginPopupModal("BigNumberInFile")) {
-
-				TextWrapped("A an extremely large number has been detected in your project and the "
-							"traditional AXE data format is not designed to handle numbers this "
-							"big. There is a seperate format that is less space efficient");
-
-				if (Button("Okay!"))	
-					CloseCurrentPopup();
-
-				EndPopup();
-			}
-
-			End();
-		}
+		// 	ImGui::End();
+		// }
 
 		// Project Metadata
 		if (editorState.showProjectMetadata) {
@@ -474,19 +443,17 @@ int startAXEEditor(std::string projectFile) {
 		if (editorState.showImGuiMetrics) ImGui::ShowMetricsWindow(&editorState.showImGuiMetrics);
 		if (editorState.showImGuiStackTool) ImGui::ShowStackToolWindow(&editorState.showImGuiStackTool);
 
-		updateCurveTest();
-		// ImGui::ShowDemoWindow();
-		// ImPlot::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
+		ImPlot::ShowDemoWindow();
 		updateHelpWindow(editorState.showHelpDocs);
 		timeline.onUpdate();
 		nodeEditor.onUpdate(editorState.showNodeEditor);
 		nodeEditor.updateDebugMenu(editorState.showNodeEditorDebugger);
 		clipBrowser.onUpdate(editorState.showClipBrowser);
-		equalizer.onUpdate(editorState.showEqualizer);
 		ImGui::RenderNotifications();
 
 		// Rendering
-		ImGui::Render();	
+		ImGui::Render();
 		int display_w, display_h;
 		glfwGetFramebufferSize(window.window, &display_w, &display_h);
 		glViewport(0, 0, display_w, display_h);
@@ -516,11 +483,11 @@ int startAXEEditor(std::string projectFile) {
 	ImPlot::DestroyContext();
 	ImGui::DestroyContext();
 
-	ma_sound_uninit(&sound);
+	// ma_sound_uninit(&sound);
 	ma_engine_uninit(&engine);
 	unloadSong(&songInfo, &engine);
 
-	// window.shutdown();
+	window.shutdown();
 
 	return 0;
 }

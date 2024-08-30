@@ -38,7 +38,8 @@ inline void SetupTheme() {
 	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(1.00f, 0.17f, 0.17f, 1.00f);
 	style.Colors[ImGuiCol_Button] = ImVec4(1.00f, 0.17f, 0.17f, 1.00f);
 	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(1.00f, 0.43f, 0.43f, 1.00f);
-	style.Colors[ImGuiCol_ButtonActive] = ImVec4(1.00f, 0.17f, 0.17f, 1.00f);
+	// style.Colors[ImGuiCol_ButtonActive] = ImVec4(1.00f, 0.17f, 0.17f, 1.00f);
+	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.53f, 0.00f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_Header] = ImVec4(1.00f, 0.17f, 0.17f, 1.00f);
 	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(1.00f, 0.43f, 0.43f, 1.00f);
 	style.Colors[ImGuiCol_HeaderActive] = ImVec4(1.00f, 0.17f, 0.17f, 1.00f);
@@ -69,6 +70,8 @@ inline void SetupTheme() {
 	style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 	style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.13f, 0.13f, 0.13f, 0.00f);
 	style.Colors[ImGuiCol_DockingPreview] = ImVec4(0.98f, 0.26f, 0.26f, 0.70f);
+	style.Colors[ImGuiCol_TabSelectedOverline] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	style.Colors[ImGuiCol_TabDimmedSelectedOverline] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
 }
 
 }

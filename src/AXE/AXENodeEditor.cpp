@@ -3,8 +3,14 @@
 #include "imgui.h"
 #include "IconsCodicons.h"
 #include "imgui/imgui_utils.hpp"
+#include <memory>
 #include <string>
 #include "ppk_assert_impl.hpp"
+
+// Forward declarations
+namespace Shadow::AXE {
+bool compileNodeGraph(NodeGraph* graph);
+}
 
 namespace Shadow::AXE {
 
@@ -41,6 +47,8 @@ void AXENodeEditor::updateDebugMenu(bool& p_open) {
 		return;
 	}
 
+	ed::SetCurrentEditor(editorCtx);
+
 	TextUnformatted("Currently opened node graph: ");
 	PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 0, 255));
 	Text("%s", openedNodeGraph->name.c_str());
@@ -74,11 +82,27 @@ void AXENodeEditor::updateDebugMenu(bool& p_open) {
 	}
 
 	SeparatorText("Selection");
+
 	if (SmallButton("Clear Selection")) ed::ClearSelection();
 
+	for (int i = 0; i < selectedNodeCount; ++i) Text("Node (%p)", selectedNodes[i].AsPointer());
+	for (int i = 0; i < selectedLinkCount; ++i) Text("Link (%p)", selectedLinks[i].AsPointer());
 
+
+	ed::SetCurrentEditor(nullptr);	
 
 	End();
+}
+
+void AXENodeEditor::nodeAddMenu() {
+	using namespace ImGui;
+
+	SeparatorText("Essential");
+	if (MenuItem("Input")) SpawnInputNode();
+	if (MenuItem("Output")) SpawnOutputNode();
+	SeparatorText("Effects");
+	if (MenuItem("Low Pass Filter")) SpawnLowPassFilterNode();
+	if (MenuItem("Delay / Echo")) SpawnDelayNode();
 }
 
 void AXENodeEditor::onUpdate(bool& p_open) {
@@ -89,31 +113,72 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	Begin("Node Editor", &p_open, ImGuiWindowFlags_MenuBar);
 	ed::SetCurrentEditor(editorCtx);
 
+	ImGuiIO io = GetIO();
+	if (IsWindowHovered() && io.KeyCtrl && IsKeyPressed(GetKeyIndex(ImGuiKey_B))) {
+		compileNodeGraph(openedNodeGraph);
+		for (auto& link: openedNodeGraph->links)
+			ed::Flow(link.id);
+	}
+
+	// update selection
+	selectedNodes.resize(ed::GetSelectedObjectCount());
+	selectedLinks.resize(ed::GetSelectedObjectCount());
+	selectedNodeCount = ed::GetSelectedNodes(selectedNodes.data(), static_cast<int>(selectedNodes.size()));
+	selectedLinkCount = ed::GetSelectedLinks(selectedLinks.data(), static_cast<int>(selectedLinks.size()));
+	// selectedNodes.resize(nodeCount);
+	// selectedLinks.resize(linkCount);
+
 	if (BeginMenuBar()) {
 		if (MenuItem(ICON_CI_MENU " Graphs")) mainMenuOpen = !mainMenuOpen;
+		BeginDisabled(!openedNodeGraph);
 		if (BeginMenu("+ Add")) {
-			SeparatorText("Essential");
-			if (MenuItem("Input")) SpawnInputNode();
-			if (MenuItem("Output")) SpawnOutputNode();
-			SeparatorText("Effects");
-			if (MenuItem("Low Pass Filter")) SpawnLowPassFilterNode();
-			if (MenuItem("Delay / Echo")) SpawnDelayNode();
+			nodeAddMenu();
 			EndMenu();
 		}
-		if (BeginMenu("Position")) {
+		if (BeginMenu("Graph")) {
+			if (MenuItem("Compile", "CTRL + B")) {
+				compileNodeGraph(openedNodeGraph);
+				for (auto& link: openedNodeGraph->links)
+					ed::Flow(link.id);
+			}
+			if (MenuItem("Close"))
+				openedNodeGraph = nullptr;
+			EndMenu();
+		}
+		if (BeginMenu("View")) {
 			if (MenuItem("Recenter", "F")) ed::NavigateToContent();
 			EndMenu();
 		}
-		if (!openedNodeGraph) {
-			TextUnformatted(" | NO NODE GRAPH OPENED ");
-		} else {
-			TextUnformatted(" |");
+		EndDisabled();
+		if (openedNodeGraph) {
+			TextUnformatted("|");
 			PushItemWidth(300.0f);
 			PushStyleColor(ImGuiCol_FrameBg, GetStyle().Colors[ImGuiCol_MenuBarBg]);
 			InputText("##nodegraphname", &openedNodeGraph->name);
 			PopStyleColor();
+
+			Text("| %.0f%%", ed::GetCurrentZoom() * 100);
+
+			TextUnformatted("|");
+			if (openedNodeGraph->lastModified > openedNodeGraph->lastCompiled) {
+				TextUnformatted(ICON_CI_WARNING " Out of date");
+			} else {
+				TextUnformatted(ICON_CI_CHECK " Up to date");
+			}
+			if (BeginItemTooltip()) {
+				PushTextWrapPos(GetFontSize() * 35.0f);
+				TextUnformatted(
+					"Out of date node graphs need to be compiled before use in your project. This "
+					"happens automatically when you press play, but compilation could take some "
+					"time for larger graphs, which could add some jarring latency to what you'd "
+					"expect from AXE.\n\n"
+					"As yet another measure to let you go crazy with AXE, you can trigger node "
+					"graph compilations at any time using the menu, or by pressing CTRL + B");
+				PopTextWrapPos();
+				EndTooltip();
+			}
 		}
-		Text("| %.0f%%", ed::GetCurrentZoom() * 100);
+
 		SetCursorPosX(GetWindowWidth() - CalcTextSize("Modifiers").x - 15.0f);
 		MenuItem("Modifiers");
 		EndMenuBar();
@@ -126,11 +191,14 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 			openedNodeGraph = nullptr;
 			NodeGraph ng;
 			ng.name = "Untitled Node Graph";
+			std::time_t t = std::time(nullptr);
+			ng.lastModified = t;
+			ng.lastCompiled = t;
 			song->nodeGraphs.push_back(ng);
 		}
 
 		SeparatorText("Node Graphs");
-		
+
 		int it = 0;
 		for (auto& ng : song->nodeGraphs) {
 			if (Selectable((ng.name + "##" + std::to_string(it)).c_str())) {
@@ -175,6 +243,13 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 			ed::EndPin();
 		}
 
+		for (auto& prop: node.props) {
+			if (prop.propType == NodeProperties_Double) {
+				TextUnformatted(prop.propLabel.c_str());
+				DragScalar(("##" + prop.propLabel).c_str(), ImGuiDataType_Double, &prop.data);
+			}
+		}
+
 		for (auto& output : node.outputs) {
 			SetCursorPosX(GetCursorPosX() + CalcTextSize(output.name.c_str()).x);
 			ed::BeginPin(output.id, ed::PinKind::Output);
@@ -203,6 +278,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 				// ed::RejectNewItem();
 				if (ed::AcceptNewItem()) {
 					openedNodeGraph->links.push_back({ ed::LinkId(getNextId()), inputPinid, outputPinId });
+					markGraphDirty(openedNodeGraph);
 				}
 			}
 		}
@@ -216,6 +292,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 				for (auto& link : openedNodeGraph->links) {
 					if (link.id == deletedLinkId) {
 						openedNodeGraph->links.erase(&link);
+						markGraphDirty(openedNodeGraph);
 						break;
 					}
 				}
@@ -229,6 +306,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 				for (auto& node : openedNodeGraph->nodes) {
 					if (node.id == deletedNodeId) {
 						openedNodeGraph->nodes.erase(openedNodeGraph->nodes.begin() + it);
+						markGraphDirty(openedNodeGraph);
 						break;
 					}
 					it++;
@@ -246,15 +324,29 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		OpenPopup("Create New Node");
 	}
 
-#if 0
 	ed::Suspend();
+	SetNextWindowPos(GetMousePos(), ImGuiCond_Appearing);
 	if (BeginPopup("Create New Node")) {
-		if (MenuItem("Low Pass Filter")) SpawnLowPassFilterNode();
-		if (MenuItem("Delay / Echo")) SpawnDelayNode();
+		nodeAddMenu();
 		EndPopup();
 	}
 	ed::Resume();
-#endif
+
+	ed::Suspend();
+	SetNextWindowPos(GetMousePos(), ImGuiCond_Appearing);
+	if (BeginPopup("Node Context Menu")) {
+		Text("%i node%s selected", selectedNodeCount, selectedNodeCount == 1 ? "" : "s");
+		Separator();
+		if (MenuItem("Delete")) {
+			for (int i = 0; i < selectedNodeCount; ++i) ed::DeleteNode(selectedNodes[i]);
+			for (int i = 0; i < selectedLinkCount; ++i) ed::DeleteLink(selectedLinks[i]);
+		}
+
+		if (MenuItem(ICON_CI_GROUP_BY_REF_TYPE " Ship selection to new graph")) {}
+
+		EndPopup();
+	}
+	ed::Resume();
 
 	ed::End();
 	ed::SetCurrentEditor(nullptr);
@@ -274,6 +366,11 @@ void AXENodeEditor::shutdown() {
 	ed::DestroyEditor(editorCtx);
 }
 
+void AXENodeEditor::markGraphDirty(NodeGraph* graph) {
+	if (!graph) return;
+	graph->lastModified = std::time(nullptr);
+}
+
 void AXENodeEditor::SpawnLowPassFilterNode() {
 	Node newNode;
 	newNode.name = "Low Pass Filter";
@@ -290,8 +387,16 @@ void AXENodeEditor::SpawnLowPassFilterNode() {
 
 	newNode.inputs.push_back(input);
 	newNode.outputs.push_back(output);
+
+	NodeProperty cutoffFreqProp;
+	cutoffFreqProp.propLabel = "Cutoff Frequency";
+	cutoffFreqProp.propType = NodeProperties_Double;
+	cutoffFreqProp.data = std::make_shared<double>(50);
+	cutoffFreqProp.size = sizeof(double);
+	newNode.props.push_back(cutoffFreqProp);
 	
 	openedNodeGraph->nodes.push_back(newNode);
+	markGraphDirty(openedNodeGraph);
 }
 
 void AXENodeEditor::SpawnDelayNode() {
@@ -312,6 +417,7 @@ void AXENodeEditor::SpawnDelayNode() {
 	newNode.outputs.push_back(output);
 	
 	openedNodeGraph->nodes.push_back(newNode);
+	markGraphDirty(openedNodeGraph);
 }
 
 void AXENodeEditor::SpawnInputNode() {
@@ -327,6 +433,7 @@ void AXENodeEditor::SpawnInputNode() {
 	newNode.outputs.push_back(output);
 	
 	openedNodeGraph->nodes.push_back(newNode);
+	markGraphDirty(openedNodeGraph);
 }
 
 void AXENodeEditor::SpawnOutputNode() {
@@ -334,6 +441,7 @@ void AXENodeEditor::SpawnOutputNode() {
 	newNode.name = "Output";
 	newNode.id = getNextId();
 	newNode.color = ImColor(50, 0, 0, 255);
+	newNode.type = NodeType_Output;
 
 	Pin input;
 	input.id = getNextId();
@@ -342,6 +450,7 @@ void AXENodeEditor::SpawnOutputNode() {
 	newNode.inputs.push_back(input);
 	
 	openedNodeGraph->nodes.push_back(newNode);
+	markGraphDirty(openedNodeGraph);
 }
 
 }

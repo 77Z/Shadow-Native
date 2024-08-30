@@ -32,14 +32,24 @@ private:
 	ed::NodeId contextNodeId;
 	ed::LinkId contextLinkId;
 
+	std::vector<ed::NodeId> selectedNodes;
+	std::vector<ed::LinkId> selectedLinks;
+	int selectedNodeCount = 0;
+	int selectedLinkCount = 0;
+
 	// int getNextId() { return nextLinkId++; }
 	int getNextId() { return openedNodeGraph->lastKnownGraphId++; }
 	// int getNextLinkId() { return ed::LinkId(getNextId()); }
+
+	void markGraphDirty(NodeGraph* graph);
 
 	// Really a terrible name on my part. When a new node graph is loaded into
 	// `openedNodeGraph`, the contents of the node editor need to reflect this.
 	// This method is for just that.
 	void reloadNodeEditorContents();
+
+
+	void nodeAddMenu();
 
 	void SpawnInputNode();
 	void SpawnOutputNode();

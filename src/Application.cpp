@@ -42,6 +42,8 @@ int Main(int argc, char** argv) {
 			ret = Shadow::AXE::startAXEProjectBrowser();
 		} else if (strcmp(argv[1], "axeEditor") == 0) {
 			ret = Shadow::AXE::startAXEEditor("/home/vince/.config/Shadow/AXEProjects/testsong.axe");
+		} else if (strcmp(argv[1], "axeEditorWithProject") == 0) {
+			ret = Shadow::AXE::startAXEEditor(std::string(argv[2]));
 		} else if (strcmp(argv[1], "editorwis") == 0) {
 			ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
 		} else if (strcmp(argv[1], "dev") == 0) {

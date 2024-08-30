@@ -4,7 +4,9 @@
 #include "Debug/Logger.hpp"
 #include "imgui.h"
 #include "json_impl.hpp"
+#include <cstdint>
 #include <fstream>
+#include <utility>
 
 #define EC_THIS "Song Serializer"
 
@@ -26,26 +28,48 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 		json trackObj;
 
 		trackObj["name"] = track.name;
-		
-		// for (auto& automation : track.automations) {
-			
-		// }
 
 		trackObj["clips"] = json::array();
 		for (auto& clip : track.clips) {
 			json clipObj;
-			clipObj["name"] = clip.name;
-			clipObj["baseAudioSource"] = clip.baseAudioSource;
+			clipObj["name"] = clip->name;
+			clipObj["baseAudioSource"] = clip->baseAudioSource;
 
-			clipObj["position"] = clip.position;
-			clipObj["length"] = clip.length;
+			clipObj["position"] = clip->position;
+			clipObj["length"] = clip->length;
 
-			clipObj["balence"] = clip.balence;
-			clipObj["volume"] = clip.volume;
+			clipObj["balence"] = clip->balence;
+			clipObj["volume"] = clip->volume;
 
-			clipObj["muted"] = clip.muted;
+			clipObj["muted"] = clip->muted;
 
 			trackObj["clips"].push_back(clipObj);
+		}
+
+		trackObj["automations"] = json::array();
+		for (auto& automation : track.automations) {
+			json autoObj;
+
+			autoObj["startRail"] = automation.startRail;
+			autoObj["endRail"] = automation.endRail;
+
+			autoObj["points"] = json::array();
+			for (auto& point : automation.points) {
+				json pointObj;
+				pointObj.push_back(point.first);
+				pointObj.push_back(point.second);
+
+				autoObj["points"].push_back(pointObj);
+			}
+
+			autoObj["color"].push_back(automation.color.Value.x);
+			autoObj["color"].push_back(automation.color.Value.y);
+			autoObj["color"].push_back(automation.color.Value.z);
+			autoObj["color"].push_back(automation.color.Value.w);
+
+			autoObj["visible"] = automation.visible;
+
+			trackObj["automations"].push_back(autoObj);
 		}
 
 		trackObj["balence"] = track.balence;
@@ -114,7 +138,7 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 
 	JSON::dumpJsonToFile(output, filepath + ".raw", true);
 
-	JSON::dumpJsonToBson(output, filepath);
+	// JSON::dumpJsonToBson(output, filepath);
 
 	return true;
 }
@@ -142,19 +166,43 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 		tempTrack.name = track["name"];
 
 		for (auto& clip : track["clips"]) {
-			Clip tempClip;
-			tempClip.name = clip["name"];
-			tempClip.baseAudioSource = clip["baseAudioSource"];
+			std::shared_ptr<Clip> tempClip = std::make_shared<Clip>();
+			tempClip->name = clip["name"];
+			tempClip->baseAudioSource = clip["baseAudioSource"];
 
-			tempClip.position = clip["position"];
-			tempClip.length = clip["length"];
+			tempClip->position = clip["position"];
+			tempClip->length = clip["length"];
 
-			tempClip.balence = clip["balence"];
-			tempClip.volume = clip["volume"];
+			tempClip->balence = clip["balence"];
+			tempClip->volume = clip["volume"];
 
-			tempClip.muted = clip["muted"];
-			EC_PRINT(EC_THIS, "Decoded clip: %s at position %.3f", tempClip.name.c_str(), (float)tempClip.position);
+			tempClip->muted = clip["muted"];
+			EC_PRINT(EC_THIS, "Decoded clip: %s at position %.3f", tempClip->name.c_str(), (float)tempClip->position);
 			tempTrack.clips.push_back(tempClip);
+		}
+
+		for (auto& automation : track["automations"]) {
+			Automation tempAuto;
+
+			tempAuto.startRail = automation["startRail"];
+			tempAuto.endRail = automation["endRail"];
+
+			for (auto& point : automation["points"]) {
+				tempAuto.points.push_back(
+					std::pair<uint64_t, float>(point[0], point[1])
+				);
+			}
+
+			tempAuto.color = ImColor(
+				(float)automation["color"][0],
+				(float)automation["color"][1],
+				(float)automation["color"][2],
+				(float)automation["color"][3]
+			);
+
+			tempAuto.visible = automation["visible"];
+
+			tempTrack.automations.push_back(tempAuto);
 		}
 
 		tempTrack.balence = track["balence"];

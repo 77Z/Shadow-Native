@@ -128,13 +128,13 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 		io.IniFilename = "./Resources/editor.ini";
 
 		// Icons
-		const float iconFontSize = 50.0f /* base font size */ * 2.0f / 3.0f;
-		static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
-		ImFontConfig icon_config;
-		icon_config.MergeMode = true;
-		icon_config.PixelSnapH = true;
-		icon_config.GlyphMinAdvanceX = iconFontSize;
-		io.Fonts->AddFontFromFileTTF("./Resources/VFontAwesome.ttf", iconFontSize, &icon_config, icon_ranges);
+		// const float iconFontSize = 50.0f /* base font size */ * 2.0f / 3.0f;
+		// static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
+		// ImFontConfig icon_config;
+		// icon_config.MergeMode = true;
+		// icon_config.PixelSnapH = true;
+		// icon_config.GlyphMinAdvanceX = iconFontSize;
+		// io.Fonts->AddFontFromFileTTF("./Resources/VFontAwesome.ttf", iconFontSize, &icon_config, icon_ranges);
 		// io.Fonts->AddFontFromFileTTF("./Resources/" FONT_ICON_FILE_NAME_FAS, iconFontSize, &icon_config, icon_ranges);
 
 		ImGui::SetupTheme();

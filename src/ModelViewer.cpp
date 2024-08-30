@@ -17,7 +17,8 @@ namespace Shadow {
 			modelViewerWindow.waitEvents();
 			rb.startFrame();
 
-			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+			//TODO: Fixme
+			// ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
 			ImGui::Begin("Model Viewport");
 			ImGui::Text("%s", filePath.c_str());

@@ -3,6 +3,8 @@
 
 #include "AXEClipBrowser.hpp"
 #include "AXETypes.hpp"
+#include "imgui.h"
+#include <memory>
 
 namespace Shadow::AXE {
 
@@ -26,8 +28,16 @@ private:
 	uint64_t playbackFrames = 0;
 	bool playing = false;
 
+	// std::shared_ptr<Clip> clipBeingDragged = nullptr;
 	Clip* clipBeingDragged = nullptr;
 	float clipStoredMouseOffsetX = 0.0f;
+	int tableHoveredRow = -1;
+	Track* currentlySelectedTrack = nullptr;
+	Automation* automationStartRailBeingDragged = nullptr;
+	Automation* automationEndRailBeingDragged = nullptr;
+	ImGuiID autoPointBeingDragged = 0;
+
+	void updateTrackAutomationsPopup();
 };
 
 }

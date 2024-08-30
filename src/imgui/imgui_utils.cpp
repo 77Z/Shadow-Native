@@ -86,3 +86,26 @@ bool ImGui::myBeginMenuBar() {
 	AlignTextToFramePadding();
 	return true;
 }
+
+bool ImGui::ToggleButton(const char* label, bool* v) {
+	ImGuiWindow* window = GetCurrentWindow();
+	if (window->SkipItems) return false;
+
+	ImGuiStyle style = GetStyle();
+
+	if (*v) {
+		// PushStyleColor(ImGuiCol_Button, style.Colors[ImGuiCol_ButtonActive]);
+		// PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonActive]);
+
+		if (Button(label)) *v = !*v;
+
+		// PopStyleColor(2);
+	} else {
+		PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonActive]);
+		PushStyleColor(ImGuiCol_Button, style.Colors[ImGuiCol_ButtonActive]);
+		if (Button(label)) *v = !*v;
+		PopStyleColor(2);
+	}
+
+	return true;
+}

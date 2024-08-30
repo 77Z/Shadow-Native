@@ -1,4 +1,10 @@
+#include "Debug/Logger.hpp"
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
+#include <utility>
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include "AXETypes.hpp"
 #include "AXETimeline.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
@@ -7,6 +13,7 @@
 #include "imgui/imgui_utils.hpp"
 #include "Debug/EditorConsole.hpp"
 #include "ppk_assert_impl.hpp"
+#include <memory>
 
 #define EC_THIS "Timeline"
 
@@ -197,6 +204,11 @@ void Timeline::onUpdate() {
 }
 #endif
 
+static float smoothstep(float edge0, float edge1, float x) {
+	x = ImClamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
+	return x * x * (3 - 2 * x);
+}
+
 void Timeline::onUpdate() {
 	using namespace ImGui;
 
@@ -212,6 +224,7 @@ void Timeline::onUpdate() {
 		PopStyleVar(2);
 		return;
 	}
+	PopStyleVar(2);
 
 	if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) &&
 		IsKeyPressed(GetKeyIndex(ImGuiKey_Space)) &&
@@ -223,6 +236,9 @@ void Timeline::onUpdate() {
 	ImVec2 canvasPos = GetCursorScreenPos();
 	ImVec2 canvasSize = GetContentRegionAvail();
 	ImVec2 canvasMax = GetWindowContentRegionMax();
+
+	// GetForegroundDrawList()->AddRect(canvasPos, canvasSize, IM_COL32(255, 255, 0, 255), 10.0f);
+	// GetForegroundDrawList()->AddRect(canvasPos, canvasMax, IM_COL32(255, 255, 255, 255), 10.0f);
 
 	// For middle click drag
 	ImVec2 mouseDelta = GetIO().MouseDelta;
@@ -248,29 +264,42 @@ void Timeline::onUpdate() {
 			if (SmallButton(ICON_CI_CLOSE)) songInfo->tracks.erase(songInfo->tracks.begin() + trackIt);
 			SliderFloat("VOL", &track.volume, 0.0f, 100.0f, "%.0f");
 			SliderFloat("BAL", &track.balence, -1.0f, 1.0f, "%.2f");
-			Checkbox("Muted", &track.muted);
+			ToggleButton("M", &track.muted);
+			SetItemTooltip("Mute Track");
+			// ToggleButton("S", )
+
+			SameLine();
+			if (Button(ICON_CI_ROBOT)) {
+				currentlySelectedTrack = &track;
+				OpenPopup("Track Automations");
+			}
+			SetItemTooltip("Track Automations");
+			updateTrackAutomationsPopup();
 
 			TableSetColumnIndex(1);
 
 			PushStyleColor(ImGuiCol_FrameBg, IM_COL32(0,0,0,0));
 
+			// top left of the cell
+			ImVec2 screenPosOrigin = GetCursorScreenPos();
+
 			int clipIt = 0;
 			float left = GetCursorPosX();
 			for (auto& clip : track.clips) {
 				PushID(clipIt);
-				SetCursorPosX(left + (float)clip.position * (editorState->zoom / 100.0f));
-				float clipWidth = (float)clip.length * (editorState->zoom / 100.0f);
+				SetCursorPosX(left + (float)clip->position * (editorState->zoom / 100.0f));
+				float clipWidth = (float)clip->length * (editorState->zoom / 100.0f);
 				BeginChild("Clip", ImVec2(clipWidth, 143.0f), 0, 0);
 
 				// Clip dragging logic
 				if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseDown(ImGuiMouseButton_Left) && !clipBeingDragged) {
-					clipBeingDragged = &clip;
+					clipBeingDragged = clip.get();
 					clipStoredMouseOffsetX = GetMousePos().x - GetWindowPos().x;
 				} else if (IsMouseReleased(ImGuiMouseButton_Left)) clipBeingDragged = nullptr;
 
-				if (clipBeingDragged == &clip) {
+				if (clipBeingDragged == clip.get()) {
 					// Actively dragging
-					clip.position = std::max(0.0f, clip.position + GetMousePos().x - GetWindowPos().x - clipStoredMouseOffsetX);
+					clip->position = std::max(0.0f, clip->position + GetMousePos().x - GetWindowPos().x - clipStoredMouseOffsetX);
 					#if 0 //TODO: this is bugged :P
 					if (!IsWindowHovered()) {
 						int n = GetMouseDragDelta(0).y < 0.0f ? -1 : 1;
@@ -282,13 +311,13 @@ void Timeline::onUpdate() {
 				}
 
 				SetNextItemWidth(clipWidth - 55.0f);
-				InputText("##ClipName", &clip.name);
+				InputText("##ClipName", &clip->name);
 				SameLine();
 				if (SmallButton(ICON_CI_CLOSE)) track.clips.erase(track.clips.begin() + clipIt + 1);
 				Text("pos (u64) %lu\nlength (u64) %lu\npos + len (end rail pos) %lu",
-					clip.position,
-					clip.length,
-					clip.position + clip.length);
+					clip->position,
+					clip->length,
+					clip->position + clip->length);
 
 				EndChild();
 				PopID();
@@ -299,10 +328,157 @@ void Timeline::onUpdate() {
 
 			PopStyleColor();
 
+			int autoit = 1;
+			for (auto& automation : track.automations) {
+
+				if (!automation.visible) continue;
+
+				PushID(autoit);
+
+				ImColor col = automation.color;
+				ImRect bounds = ImRect(screenPosOrigin.x, screenPosOrigin.y, GetWindowPos().x + GetWindowWidth(), screenPosOrigin.y + 143.0f);
+
+				ImDrawList* fg = GetForegroundDrawList();
+
+				if (editorState->automationDebugMode) {
+					fg->AddRect(bounds.Min, bounds.Max, col, 2.0f, 0, 2);
+					fg->AddText(bounds.Min + ImVec2(10,10), col, "AUTOMATION DEBUG");
+				}
+
+				PushClipRect(bounds.Min, bounds.Max, false);
+
+				{ // Start Rail
+					float startRailPos = (bounds.Min.x + (float)automation.startRail) * editorState->zoom / 100;
+					drawList->AddTriangleFilled(
+						ImVec2(startRailPos - 15, bounds.Min.y),
+						ImVec2(startRailPos, bounds.Min.y),
+						ImVec2(startRailPos, bounds.Min.y + 15),
+						col
+					);
+					drawList->AddRectFilled(
+						ImVec2(startRailPos, bounds.Min.y),
+						ImVec2(startRailPos + 5, bounds.Max.y),
+						col
+					);
+					SetCursorScreenPos(ImVec2(startRailPos - 15, bounds.Min.y));
+					InvisibleButton("##StartRailGrabber", ImVec2(20, bounds.Max.y - bounds.Min.y));
+					if (IsItemHovered() && IsMouseDown(0) && !automationStartRailBeingDragged) {
+						automationStartRailBeingDragged = &automation;
+					} else if (IsMouseReleased(0)) automationStartRailBeingDragged = nullptr;
+					SetItemTooltip("Automation Start Rail");
+					if (automationStartRailBeingDragged == &automation) {
+						// Actively dragging
+						automation.startRail = std::max(0.0f, GetMousePos().x - GetWindowPos().x - 376.0f);
+						if (automation.startRail > automation.endRail - 20) automation.startRail = automation.endRail - 20;
+					}
+				}
+				
+				{ // End Rail
+					float endRailPos = (bounds.Min.x + (float)automation.endRail) * editorState->zoom / 100;
+					drawList->AddTriangleFilled(
+						ImVec2(endRailPos + 20, bounds.Min.y),
+						ImVec2(endRailPos + 5, bounds.Min.y),
+						ImVec2(endRailPos + 5, bounds.Min.y + 15),
+						col
+					);
+					drawList->AddRectFilled(
+						ImVec2(endRailPos, bounds.Min.y),
+						ImVec2(endRailPos + 5, bounds.Max.y),
+						col
+					);
+
+					SetCursorScreenPos(ImVec2(endRailPos, bounds.Min.y));
+					InvisibleButton("##EndRailGrabber", ImVec2(20, bounds.Max.y - bounds.Min.y));
+					if (IsItemHovered() && IsMouseDown(0) && !automationEndRailBeingDragged) {
+						automationEndRailBeingDragged = &automation;
+					} else if (IsMouseReleased(0)) automationEndRailBeingDragged = nullptr;
+					SetItemTooltip("Automation End Rail");
+					if (automationEndRailBeingDragged == &automation) {
+						// Actively dragging
+						automation.endRail = std::max(0.0f, GetMousePos().x - GetWindowPos().x - 376.0f);
+						if (automation.endRail < automation.startRail + 20) automation.endRail = automation.startRail + 20;
+					}
+				}
+
+				size_t pointit = 1;
+				for (auto& point : automation.points) {
+					PushID(pointit);
+					uint64_t x = point.first;
+					float y = point.second;
+
+					SetCursorScreenPos(ImVec2(bounds.Min.x + x - 10, bounds.Min.y + y - 10));
+					InvisibleButton("PointGrabber", ImVec2(20,20));
+					if (IsItemHovered() && IsMouseDown(0) && !autoPointBeingDragged) {
+						autoPointBeingDragged = GetItemID();
+					} else if (IsMouseReleased(0)) autoPointBeingDragged = 0;
+					if (autoPointBeingDragged == GetItemID()) {
+						// Actively dragging
+						ImVec2 mousePos = GetMousePos(), winPos = GetWindowPos();
+						point.first = mousePos.x - winPos.x - 376.0f;
+						point.second = std::max(0.0f, std::min(130.0f, mousePos.y - screenPosOrigin.y));
+					}
+
+					drawList->AddCircleFilled(
+						ImVec2(bounds.Min.x + x, bounds.Min.y + y),
+						10.0f,
+						col,
+						4
+					);
+
+					drawList->AddCircleFilled(
+						ImVec2(bounds.Min.x + x, bounds.Min.y + y),
+						3.0f,
+						IM_COL32(0, 0, 0, 255),
+						4
+					);
+
+					
+
+					// Draw curve
+					if (automation.points.size() == pointit) {
+						// No next point
+					} else {
+						auto& nextPoint = automation.points.at(pointit);
+						// Screen point locations
+						const ImVec2 p1 = ImVec2(bounds.Min.x + point.first, bounds.Min.y + point.second);
+						const ImVec2 p2 = ImVec2(bounds.Min.x + nextPoint.first, bounds.Min.y + nextPoint.second);
+
+						size_t subStepCount = automation.smoothCurve ? 20 : 2;
+						float step = 1.f / float(subStepCount - 1);
+						for (size_t substep = 0; substep < subStepCount - 1; substep++) {
+							float t = float(substep) * step;
+
+							const ImVec2 sp1 = ImLerp(p1, p2, t);
+							const ImVec2 sp2 = ImLerp(p1, p2, t + step);
+
+							const float rt1 = smoothstep(p1.x, p2.x, sp1.x);
+							const float rt2 = smoothstep(p1.x, p2.x, sp2.x);
+
+							const ImVec2 pos1 = ImVec2(sp1.x, ImLerp(p1.y, p2.y, rt1))/*  * viewSize + offset */;
+							const ImVec2 pos2 = ImVec2(sp2.x, ImLerp(p1.y, p2.y, rt2))/*  * viewSize + offset */;
+
+							drawList->AddLine(
+								pos1,
+								pos2,
+								col, 2.0f
+							);
+						}
+					}
+
+					PopID();
+					pointit++;
+				}
+
+				PopClipRect();
+				PopID();
+				autoit++;
+			}
+
 			PopID();
 			trackIt++;
 		}
 
+#if 0
 		TableNextRow();
 		TableSetColumnIndex(0);
 		if (Button(ICON_CI_PLUS " Add Track")) {
@@ -310,11 +486,15 @@ void Timeline::onUpdate() {
 			newTrack.name = "Untitled Track " + std::to_string(trackIt + 1);
 			songInfo->tracks.push_back(newTrack);
 		}
+#endif
+
+		// GetForegroundDrawList()->AddText(ImVec2(900, 700), IM_COL32(255, 255, 255, 255), std::to_string(TableGetHoveredRow()).c_str());
+		tableHoveredRow = TableGetHoveredRow();
 
 		if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseDown(ImGuiMouseButton_Middle)) {
 			if (GetIO().KeyCtrl) {
 				editorState->zoom -= scrollDelta.x;
-				if (editorState->zoom < 5) editorState->zoom = 5;
+				if (editorState->zoom < 10) editorState->zoom = 10;
 			} else {
 				SetScrollX(GetScrollX() + scrollDelta.x);
 				SetScrollY(GetScrollY() + scrollDelta.y);
@@ -348,6 +528,8 @@ void Timeline::onUpdate() {
 		);
 
 		// Draw Scale / Ruler
+		ImColor textColor = GetStyle().Colors[ImGuiCol_Text];
+
 		float majorUnit =		100.0f * (editorState->zoom / 100.0f);
 		float minorUnit =		10.0f * (editorState->zoom / 100.0f);
 		float labelAlignment =	0.6f;
@@ -363,19 +545,19 @@ void Timeline::onUpdate() {
 		ImVec2 normal    = ImVec2(direction.y, direction.x);
 		float distance   = sqrtf(ImLengthSqr(to - from));
 
-		tableDrawList->AddLine(from, to, IM_COL32(255, 255, 255, 255));
+		tableDrawList->AddLine(from, to, textColor);
 
 		auto p = from;
 		if (editorState->zoom > 70.0f)
 			for (float d = 0.0f; d <= distance; d += minorUnit, p += direction * minorUnit)
-				tableDrawList->AddLine(p - normal * minorSize, p + normal * minorSize, IM_COL32(255, 255, 255, 255));
+				tableDrawList->AddLine(p - normal * minorSize, p + normal * minorSize, textColor);
 
 		if (editorState->zoom > 20.0f)
 			for (float d = 0.0f; d <= distance + majorUnit; d += majorUnit) {
 				p = from + direction * d;
 
-				tableDrawList->AddLine(p - normal * majorSize, p + normal * majorSize, IM_COL32(255, 255, 255, 255));
-				tableDrawList->AddLine(p - normal * canvasMax.y, p + normal * canvasMax.y, IM_COL32(255, 255, 255, 50));
+				tableDrawList->AddLine(p - normal * majorSize, p + normal * majorSize, textColor);
+				tableDrawList->AddLine(p - normal * canvasMax.y, p + normal * canvasMax.y, ImColor(textColor.Value.x, textColor.Value.y, textColor.Value.z, 0.3f));
 
 				if (d == 0.0f)
 					continue;
@@ -391,7 +573,7 @@ void Timeline::onUpdate() {
 				labelPosition += direction * (-labelAlignedSize + labelAlignment * labelAlignedSize * 2.0f);
 				labelPosition = ImFloor(labelPosition + ImVec2(0.5f, 0.5f));
 
-				tableDrawList->AddText(labelPosition, IM_COL32(255, 255, 255, 255), label);
+				tableDrawList->AddText(labelPosition, textColor, label);
 			}
 
 		PopClipRect();
@@ -399,8 +581,87 @@ void Timeline::onUpdate() {
 		EndTable();
 	}
 
+	if (BeginDragDropTargetCustom(ImRect(GetWindowPos(), GetWindowPos() + GetWindowSize()), GetID("TimelineDropTarget"))) {
+
+		ImDrawList* fg = GetForegroundDrawList();
+		ImVec2 mouse = GetMousePos();
+
+		if (tableHoveredRow != -1 && tableHoveredRow != 0) {
+			fg->AddCircleFilled(GetMousePos(), 5.0f, IM_COL32(0, 255, 0, 255));
+			std::string text = "Add clip to track " + std::to_string(tableHoveredRow);
+			fg->AddText(ImVec2(mouse.x, mouse.y - 40.0f), IM_COL32(0, 255, 0, 255), text.c_str());
+
+			if (const ImGuiPayload* payload = AcceptDragDropPayload("AXE_CLIP_PATH_PAYLOAD")) {
+				ma_result res;
+				ma_uint32 soundFlags = MA_SOUND_FLAG_NO_SPATIALIZATION;
+				if (songInfo->decodeOnLoad) soundFlags |= MA_SOUND_FLAG_DECODE;
+
+				const char* clipPath = static_cast<const char*>(payload->Data);
+				std::string clipPathString(clipPath, clipPath + payload->DataSize);
+
+
+				std::shared_ptr<Clip> clip = std::make_shared<Clip>();
+				clip->baseAudioSource = clipPathString;
+				clip->name = "Untitled Clip";
+
+				ma_uint64 len = 0;
+				res = ma_sound_init_from_file(audioEngine, clipPath, soundFlags, nullptr, nullptr, &clip->engineSound);
+				if (res != MA_SUCCESS) EC_ERROUT(EC_THIS, "Engine failure to load audio from file! Err enum %i", res);
+				else clip->loaded = true;
+				res = ma_data_source_get_length_in_pcm_frames(&clip->engineSound, &len);
+				if (res != MA_SUCCESS) EC_ERROUT(EC_THIS, "Engine failure calc clip length! Err enum %i", res);
+
+				clip->length = (uint64_t)len;
+				clip->position = static_cast<uint64_t>(GetMousePos().x - GetWindowPos().x);
+
+				EC_PRINT(EC_THIS, "user dropped %s", clipPath);
+
+				songInfo->tracks.at(tableHoveredRow - 1).clips.push_back(clip);
+			}
+		} else {
+			fg->AddCircleFilled(GetMousePos(), 5.0f, IM_COL32(255, 0, 0, 255));
+			fg->AddText(ImVec2(mouse.x, mouse.y - 40.0f), IM_COL32(255, 0, 0, 255), "Not a track!");
+		}
+		EndDragDropTarget();
+	}
+
 	End();
-	PopStyleVar(2);
+}
+
+void Timeline::updateTrackAutomationsPopup() {
+	using namespace ImGui;
+
+	if (BeginPopup("Track Automations")) {
+
+		if (currentlySelectedTrack == nullptr) {
+			SeparatorText("No track selected!");
+		} else {
+			SeparatorText(("Autos for " + currentlySelectedTrack->name).c_str());
+
+			int autoIt = 1;
+			for (auto& automation : currentlySelectedTrack->automations) {
+				PushID(autoIt);
+				ToggleButton(ICON_CI_EYE, &automation.visible);
+				SetItemTooltip("Toggle Automation Visibility");
+				SameLine();
+				ColorEdit4("##AutoColor", (float*)&automation.color);
+				SameLine();
+				if (Button(ICON_CI_CLOSE))
+					currentlySelectedTrack->automations.erase(currentlySelectedTrack->automations.begin() + autoIt - 1);
+				SetItemTooltip("Delete Automation");
+				PopID();
+				autoIt++;
+			}
+
+			if (Selectable("+ Add Automation...", false, ImGuiSelectableFlags_DontClosePopups)) {
+				Automation newAuto;
+				newAuto.points.push_back(std::pair<uint64_t, float>(20, 10.0f));
+				currentlySelectedTrack->automations.push_back(newAuto);
+			}
+		}
+
+		EndPopup();
+	}
 }
 
 void Timeline::startPlayback() {
@@ -410,18 +671,18 @@ void Timeline::startPlayback() {
 	for (auto& track : songInfo->tracks) {
 		// EC_PRINT(EC_THIS, "-- TRACK %s", track.name.c_str());
 		for (auto& clip : track.clips) {
-			if (clip.position + clip.length < playbackFrames) continue;
+			if (clip->position + clip->length < playbackFrames) continue;
 			
-			if (clip.position > playbackFrames) {
-				EC_PRINT(EC_THIS, "CLIP %s is in the future\nWill play at %lu", clip.name.c_str(), clip.position);
+			if (clip->position > playbackFrames) {
+				EC_PRINT(EC_THIS, "CLIP %s is in the future\nWill play at %lu", clip->name.c_str(), clip->position);
 
-				PPK_ASSERT(clip.loaded, "Sound data not loaded for this clip!");
+				PPK_ASSERT(clip->loaded, "Sound data not loaded for this clip!");
 				
-				ma_sound_seek_to_pcm_frame(&clip.engineSound, 0);
-				ma_sound_set_start_time_in_pcm_frames(&clip.engineSound, clip.position * 100);
-				ma_sound_start(&clip.engineSound);
+				ma_sound_seek_to_pcm_frame(&clip->engineSound, 0);
+				ma_sound_set_start_time_in_pcm_frames(&clip->engineSound, clip->position * 100);
+				ma_sound_start(&clip->engineSound);
 			} else {
-				EC_PRINT(EC_THIS, "CLIP %s is on the line", clip.name.c_str());
+				EC_PRINT(EC_THIS, "CLIP %s is on the line", clip->name.c_str());
 			}
 		}
 	}

@@ -29,10 +29,11 @@ void bootstrapSong(Song* song, ma_engine* audioEngine) {
 
 	for (auto& track : song->tracks) {
 		for (auto& clip : track.clips) {
-			result = ma_sound_init_from_file(audioEngine, clip.baseAudioSource.c_str(), soundFlags, nullptr, nullptr, &clip.engineSound);
-			clip.loaded = true;
+			result = ma_sound_init_from_file(audioEngine, clip->baseAudioSource.c_str(), soundFlags, nullptr, nullptr, &clip->engineSound);
+			clip->loaded = true;
 			if (result != MA_SUCCESS) {
-				EC_ERROUT(EC_THIS, "FAILED TO INIT SOUND FOR CLIP %s", clip.name.c_str());
+				EC_ERROUT(EC_THIS, "FAILED TO INIT SOUND FOR CLIP %s", clip->name.c_str());
+				EC_ERROUT(EC_THIS, "Clip base audio source %s", clip->baseAudioSource.c_str());
 			}
 		}
 	}
@@ -41,8 +42,8 @@ void bootstrapSong(Song* song, ma_engine* audioEngine) {
 void unloadSong(Song* song, ma_engine* audioEngine) {
 	for (auto& track : song->tracks) {
 		for (auto& clip : track.clips) {
-			ma_sound_uninit(&clip.engineSound);
-			clip.loaded = false;
+			ma_sound_uninit(&clip->engineSound);
+			clip->loaded = false;
 		}
 	}
 }
