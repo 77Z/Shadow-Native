@@ -86,6 +86,12 @@ struct Node {
 	float y;
 };
 
+struct NGComment {
+	ed::NodeId id;
+	std::string data = "New Comment";
+	ImVec2 size = ImVec2(300, 200);
+};
+
 struct NodeGraph {
 	std::string name;
 	//TODO: update to a u64
@@ -93,6 +99,7 @@ struct NodeGraph {
 
 	std::vector<Node> nodes;
 	ImVector<Link> links;
+	std::vector<NGComment> comments;
 
 	std::time_t lastModified;
 	std::time_t lastCompiled;
@@ -202,7 +209,7 @@ struct EditorState {
 	bool showProjectMetadata = false;
 	bool showHelpDocs = false;
 	bool showNodeEditor = true;
-	bool showNodeEditorDebugger = false;
+	bool showNodeEditorDebugger = true;
 	bool showClipBrowser = true;
 	bool showEqualizer = true;
 };

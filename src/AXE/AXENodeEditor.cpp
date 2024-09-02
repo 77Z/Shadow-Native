@@ -1,6 +1,9 @@
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "AXENodeEditor.hpp"
 #include "AXETypes.hpp"
+#include "Debug/Logger.hpp"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include "IconsCodicons.h"
 #include "imgui/imgui_utils.hpp"
 #include <memory>
@@ -13,6 +16,15 @@ bool compileNodeGraph(NodeGraph* graph);
 }
 
 namespace Shadow::AXE {
+
+static ImRect ImRect_Expanded(const ImRect& rect, float x, float y) {
+	ImRect result = rect;
+	result.Min.x -= x;
+	result.Min.y -= y;
+	result.Max.x += x;
+	result.Max.y += y;
+	return result;
+}
 
 AXENodeEditor::AXENodeEditor(Song* song): song(song) {
 	// Save settings inside axe file in future
@@ -98,11 +110,24 @@ void AXENodeEditor::nodeAddMenu() {
 	using namespace ImGui;
 
 	SeparatorText("Essential");
-	if (MenuItem("Input")) SpawnInputNode();
-	if (MenuItem("Output")) SpawnOutputNode();
+	if (MenuItem("Input", "I")) SpawnInputNode();
+	if (MenuItem("Output", "O")) SpawnOutputNode();
+	SeparatorText("Filtering");
+	MenuItem("Biquad");
+	if (MenuItem("Low Pass")) SpawnLowPassFilterNode();
+	MenuItem("High Pass");
+	MenuItem("Low Shelf");
+	MenuItem("High Shelf");
+	MenuItem("Band Pass");
+	MenuItem("Notch");
+	MenuItem("Peaking EQ");
 	SeparatorText("Effects");
-	if (MenuItem("Low Pass Filter")) SpawnLowPassFilterNode();
 	if (MenuItem("Delay / Echo")) SpawnDelayNode();
+	SeparatorText("Generation");
+	MenuItem("Waveform");
+	MenuItem("Noise");
+	Separator();
+	if (MenuItem("Comment", "C")) SpawnComment();
 }
 
 void AXENodeEditor::onUpdate(bool& p_open) {
@@ -114,10 +139,19 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	ed::SetCurrentEditor(editorCtx);
 
 	ImGuiIO io = GetIO();
-	if (IsWindowHovered() && io.KeyCtrl && IsKeyPressed(GetKeyIndex(ImGuiKey_B))) {
+	if (IsWindowHovered()
+		&& io.KeyCtrl
+		&& IsKeyPressed(GetKeyIndex(ImGuiKey_B))
+		&& openedNodeGraph) {
 		compileNodeGraph(openedNodeGraph);
 		for (auto& link: openedNodeGraph->links)
 			ed::Flow(link.id);
+	}
+
+	if (IsWindowHovered() && openedNodeGraph && !io.WantTextInput) {
+		if (IsKeyPressed(ImGuiKey_I)) SpawnInputNode();
+		if (IsKeyPressed(ImGuiKey_O)) SpawnOutputNode();
+		if (IsKeyPressed(ImGuiKey_C)) SpawnComment();
 	}
 
 	// update selection
@@ -225,6 +259,51 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	}
 
 	ed::Begin("AXENodeEditor", ImVec2(0.0f, 0.0f));
+
+	for (auto& comment : openedNodeGraph->comments) {
+		PushStyleVar(ImGuiStyleVar_Alpha, 0.75f);
+		ed::PushStyleColor(ed::StyleColor_NodeBg, ImColor(255, 255, 255, 64));
+		ed::PushStyleColor(ed::StyleColor_NodeBorder, ImColor(255, 255, 255, 64));
+		ed::BeginNode(comment.id);
+		PushID(comment.id.AsPointer());
+
+		// TextUnformatted(comment.data.c_str());
+		InputText("##commentData", &comment.data);
+
+		ed::Group(comment.size);
+
+		PopID();
+		ed::EndNode();
+		PopStyleVar();
+
+		if (ed::BeginGroupHint(comment.id)) {
+			
+			int bgAlpha = static_cast<int>(ImGui::GetStyle().Alpha * 255);
+			ImVec2 min = ed::GetGroupMin();
+
+			SetCursorScreenPos(min - ImVec2(-8, ImGui::GetTextLineHeightWithSpacing() + 4));
+			BeginGroup();
+			TextUnformatted(comment.data.c_str());
+			EndGroup();
+
+			ImDrawList* drawList = ed::GetHintBackgroundDrawList();
+
+			ImRect hintBounds      = ImRect(GetItemRectMin(), GetItemRectMax());
+			ImRect hintFrameBounds = ImRect_Expanded(hintBounds, 8, 4);
+
+			drawList->AddRectFilled(
+				hintFrameBounds.GetTL(),
+				hintFrameBounds.GetBR(),
+				IM_COL32(255, 255, 255, 64 * bgAlpha / 255), 4.0f);
+
+			drawList->AddRect(
+				hintFrameBounds.GetTL(),
+				hintFrameBounds.GetBR(),
+				IM_COL32(255, 255, 255, 128 * bgAlpha / 255), 4.0f);
+
+			ed::EndGroupHint();
+		}
+	}
 
 	for (auto& node : openedNodeGraph->nodes) {
 		PushID(node.id.AsPointer());
@@ -338,11 +417,32 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		Text("%i node%s selected", selectedNodeCount, selectedNodeCount == 1 ? "" : "s");
 		Separator();
 		if (MenuItem("Delete")) {
-			for (int i = 0; i < selectedNodeCount; ++i) ed::DeleteNode(selectedNodes[i]);
-			for (int i = 0; i < selectedLinkCount; ++i) ed::DeleteLink(selectedLinks[i]);
+			for (int i = 0; i < selectedNodeCount; i++) ed::DeleteNode(selectedNodes[i]);
+			for (int i = 0; i < selectedLinkCount; i++) ed::DeleteLink(selectedLinks[i]);
 		}
 
-		if (MenuItem(ICON_CI_GROUP_BY_REF_TYPE " Ship selection to new graph")) {}
+		if (MenuItem(ICON_CI_GROUP_BY_REF_TYPE " Ship selection to new graph")) {
+			// CRASHES
+			NodeGraph shippedGraph;
+			shippedGraph.name = "Shipped Graph";
+			std::time_t t = std::time(nullptr);
+			shippedGraph.lastModified = t;
+			shippedGraph.lastCompiled = t;
+
+			for (int i = 0; i < selectedNodeCount; i++) {
+				// if (!openedNodeGraph) break;
+				for (auto& node : openedNodeGraph->nodes) {
+					if (node.id == selectedNodes[i]) {
+						PRINT("NODES MATCH");
+						shippedGraph.nodes.push_back(node);
+						ed::DeleteNode(selectedNodes[i]);
+					}
+				}
+			}
+
+			openedNodeGraph = nullptr;
+			song->nodeGraphs.push_back(shippedGraph);
+		}
 
 		EndPopup();
 	}
@@ -451,6 +551,14 @@ void AXENodeEditor::SpawnOutputNode() {
 	
 	openedNodeGraph->nodes.push_back(newNode);
 	markGraphDirty(openedNodeGraph);
+}
+
+void AXENodeEditor::SpawnComment() {
+	NGComment c;
+
+	c.id = getNextId();
+
+	openedNodeGraph->comments.push_back(c);
 }
 
 }

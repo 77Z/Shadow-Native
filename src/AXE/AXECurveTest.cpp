@@ -123,21 +123,47 @@ void drawAutomation(ImRect bounds) {
 static ma_result result;
 static ma_engine engine;
 
+static ma_sound sound;
+
+static void chkRes(ma_result res) {
+	if (res != MA_SUCCESS) {
+		ERROUT("ERR IN AUDIO ENGINE %i", res);
+	}
+}
+
 void initCurveTest() {
 	result = ma_engine_init(NULL, &engine);
-	if (result != MA_SUCCESS) {
-		// return result;  // Failed to initialize the engine.
-		ERROUT("ERR INIT AUDIO ENGINE %i", result);
-	}
+	chkRes(result);
 
 	ma_node_graph_config nodeGraphConfig = ma_node_graph_config_init(2);
 	ma_node_graph nodeGraph;
 
 	result = ma_node_graph_init(&nodeGraphConfig, NULL, &nodeGraph);    // Second parameter is a pointer to allocation callbacks.
-	if (result != MA_SUCCESS) {
-		ERROUT("ERR INIT AUDIO ENGINE %i", result);
-		// Failed to initialize node graph.
-	}
+	chkRes(result);
+
+	// Load audio
+	result = ma_sound_init_from_file(&engine, "./Resources/sound.wav", MA_SOUND_FLAG_DECODE, nullptr, nullptr, &sound);
+	chkRes(result);
+
+	ma_data_source_node_config config = ma_data_source_node_config_init(&sound);
+
+	ma_data_source_node dataSourceNode;
+	result = ma_data_source_node_init(&nodeGraph, &config, NULL, &dataSourceNode);
+	chkRes(result);
+
+	ma_lpf_node_config lpfConfig = ma_lpf_node_config_init(2, ma_engine_get_sample_rate(&engine), 200, 1);
+
+	ma_lpf_node lpfNode;
+	result = ma_lpf_node_init(&nodeGraph, &lpfConfig, nullptr, &lpfNode);
+	chkRes(result);
+
+	result = ma_node_attach_output_bus(&dataSourceNode, 0, &lpfNode, 0);
+	chkRes(result);
+	result = ma_node_attach_output_bus(&lpfNode, 0, ma_node_graph_get_endpoint(&nodeGraph), 0);
+
+
+	// result = ma_node_attach_output_bus(&dataSourceNode, 0, ma_node_graph_get_endpoint(&nodeGraph), 0);
+	// chkRes(result);
 
 
 
@@ -160,7 +186,10 @@ void updateCurveTest() {
 	Begin("Curve Edit");
 
 	if (Button("sound")) {
-		ma_engine_play_sound(&engine, "./Resources/sound.wav", nullptr);
+		// ma_engine_play_sound(&engine, "./Resources/sound.wav", nullptr);
+
+		ma_sound_seek_to_pcm_frame(&sound, 0);
+		ma_sound_start(&sound);
 	}
 
 	// DragScalar("const char *label", ImGuiDataType_U32, "void *p_data");

@@ -55,6 +55,7 @@ private:
 	void SpawnOutputNode();
 	void SpawnLowPassFilterNode();
 	void SpawnDelayNode();
+	void SpawnComment();
 };
 
 }
