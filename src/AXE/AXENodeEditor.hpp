@@ -56,6 +56,10 @@ private:
 	void SpawnLowPassFilterNode();
 	void SpawnDelayNode();
 	void SpawnComment();
+
+	void createNodeGraph(const std::string& name);
+
+	std::string helpText;
 };
 
 }

@@ -60,10 +60,14 @@ enum NodeProperties_ {
 
 struct NodeProperty {
 	std::string propLabel = "!! UNTITLED PROP !!";
+	std::string help = "";
 	NodeProperties_ propType;
 	std::shared_ptr<void> data;
+	std::shared_ptr<void> min; // Used in num types
+	std::shared_ptr<void> max; // Used in num types
 	// formality for most data types given their static sizes
 	size_t size;
+
 };
 
 enum NodeType_ {
@@ -96,6 +100,9 @@ struct NodeGraph {
 	std::string name;
 	//TODO: update to a u64
 	int lastKnownGraphId = 1000;
+	// ed::EditorContext* ctx;
+	// std::shared_ptr<ed::EditorContext> ctx;
+	// std::shared_ptr<void> ctx;
 
 	std::vector<Node> nodes;
 	ImVector<Link> links;

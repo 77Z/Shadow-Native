@@ -8,6 +8,7 @@
 #include "imgui/imgui_utils.hpp"
 #include <memory>
 #include <string>
+#include "../imgui/imgui_knobs.hpp"
 #include "ppk_assert_impl.hpp"
 
 // Forward declarations
@@ -155,12 +156,14 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	}
 
 	// update selection
-	selectedNodes.resize(ed::GetSelectedObjectCount());
-	selectedLinks.resize(ed::GetSelectedObjectCount());
-	selectedNodeCount = ed::GetSelectedNodes(selectedNodes.data(), static_cast<int>(selectedNodes.size()));
-	selectedLinkCount = ed::GetSelectedLinks(selectedLinks.data(), static_cast<int>(selectedLinks.size()));
-	// selectedNodes.resize(nodeCount);
-	// selectedLinks.resize(linkCount);
+	if (openedNodeGraph) {
+		selectedNodes.resize(ed::GetSelectedObjectCount());
+		selectedLinks.resize(ed::GetSelectedObjectCount());
+		selectedNodeCount = ed::GetSelectedNodes(selectedNodes.data(), static_cast<int>(selectedNodes.size()));
+		selectedLinkCount = ed::GetSelectedLinks(selectedLinks.data(), static_cast<int>(selectedLinks.size()));
+		// selectedNodes.resize(nodeCount);
+		// selectedLinks.resize(linkCount);
+	}
 
 	if (BeginMenuBar()) {
 		if (MenuItem(ICON_CI_MENU " Graphs")) mainMenuOpen = !mainMenuOpen;
@@ -191,7 +194,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 			InputText("##nodegraphname", &openedNodeGraph->name);
 			PopStyleColor();
 
-			Text("| %.0f%%", ed::GetCurrentZoom() * 100);
+			Text("| %.0f%%", ed::GetCurrentScale() * 100);
 
 			TextUnformatted("|");
 			if (openedNodeGraph->lastModified > openedNodeGraph->lastCompiled) {
@@ -220,15 +223,13 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 
 	if (mainMenuOpen) {
 		BeginChild("NodeEditorLeftMenu", ImVec2(200.0f, 0.0f), ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX);
-		
+
 		if (Selectable(ICON_CI_ADD " New Node Graph")) {
-			openedNodeGraph = nullptr;
-			NodeGraph ng;
-			ng.name = "Untitled Node Graph";
-			std::time_t t = std::time(nullptr);
-			ng.lastModified = t;
-			ng.lastCompiled = t;
-			song->nodeGraphs.push_back(ng);
+			createNodeGraph("Untitled Node Graph");
+		}
+
+		if (Selectable(ICON_CI_GRAPH " Open Master Graph")) {
+			//
 		}
 
 		SeparatorText("Node Graphs");
@@ -323,11 +324,58 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		}
 
 		for (auto& prop: node.props) {
-			if (prop.propType == NodeProperties_Double) {
-				TextUnformatted(prop.propLabel.c_str());
-				DragScalar(("##" + prop.propLabel).c_str(), ImGuiDataType_Double, &prop.data);
+			switch (prop.propType) {
+			case NodeProperties_S8:
+			case NodeProperties_U8:
+			case NodeProperties_S16:
+			case NodeProperties_U16:
+				break;
+			case NodeProperties_S32: {
+				std::shared_ptr<int> minPtr = std::static_pointer_cast<int>(prop.min);
+				std::shared_ptr<int> maxPtr = std::static_pointer_cast<int>(prop.max);
+				ImGuiKnobs::KnobInt(
+					prop.propLabel.c_str(),
+					static_cast<int*>(prop.data.get()),
+					*minPtr,
+					*maxPtr);
+				break;
 			}
+			case NodeProperties_U32:
+			case NodeProperties_S64:
+			case NodeProperties_U64:
+				break;
+			case NodeProperties_Float: {
+				std::shared_ptr<float> minPtr = std::static_pointer_cast<float>(prop.min);
+				std::shared_ptr<float> maxPtr = std::static_pointer_cast<float>(prop.max);
+				ImGuiKnobs::Knob(
+					prop.propLabel.c_str(),
+					static_cast<float*>(prop.data.get()),
+					*minPtr,
+					*maxPtr);
+				break;
+			}
+			case NodeProperties_Double: {
+				std::shared_ptr<double> minPtr = std::static_pointer_cast<double>(prop.min);
+				std::shared_ptr<double> maxPtr = std::static_pointer_cast<double>(prop.max);
+				ImGuiKnobs::Knob(
+					prop.propLabel.c_str(),
+					static_cast<float*>(prop.data.get()),
+					*minPtr,
+					*maxPtr);
+				break;
+			}
+			case NodeProperties_Bool:
+			case NodeProperties_COUNT:
+				break;
+			}
+			if (!prop.help.empty()) {
+				SameLine();
+				ImGui::TextDisabled("?");
+				if (IsItemHovered()) helpText = prop.help;
+			}
+			SameLine();
 		}
+		InvisibleButton("##SamelineStop", ImVec2(1,1));
 
 		for (auto& output : node.outputs) {
 			SetCursorPosX(GetCursorPosX() + CalcTextSize(output.name.c_str()).x);
@@ -423,6 +471,8 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 
 		if (MenuItem(ICON_CI_GROUP_BY_REF_TYPE " Ship selection to new graph")) {
 			// CRASHES
+			// Needs to be reimplemented with new createNodeGraph method
+#if 0
 			NodeGraph shippedGraph;
 			shippedGraph.name = "Shipped Graph";
 			std::time_t t = std::time(nullptr);
@@ -442,6 +492,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 
 			openedNodeGraph = nullptr;
 			song->nodeGraphs.push_back(shippedGraph);
+#endif
 		}
 
 		EndPopup();
@@ -451,15 +502,25 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	ed::End();
 	ed::SetCurrentEditor(nullptr);
 
+	if (!helpText.empty()) {
+		float wrapX = GetFontSize() * 35.0f;
+		ImVec2 textSize = CalcTextSize(helpText.c_str(), nullptr, false, wrapX);
+		RenderTextWrapped(GetWindowPos() + GetWindowSize() - textSize - ImVec2(10,10), helpText.c_str(), nullptr, wrapX);
+		GetForegroundDrawList()->AddRect(GetWindowPos(), GetWindowPos() + GetWindowSize(), IM_COL32(255, 0, 0, 255));
+		helpText = "";
+	}
+
 	End();
 }
 
 void AXENodeEditor::reloadNodeEditorContents() {
+#if 0
 	if (!openedNodeGraph) return;
 
 	PPK_ASSERT(ed::GetCurrentEditor() != nullptr);
 
 	ed::NavigateToContent();
+#endif
 }
 
 void AXENodeEditor::shutdown() {
@@ -470,6 +531,33 @@ void AXENodeEditor::markGraphDirty(NodeGraph* graph) {
 	if (!graph) return;
 	graph->lastModified = std::time(nullptr);
 }
+
+void AXENodeEditor::createNodeGraph(const std::string& name) {
+	openedNodeGraph = nullptr;
+	NodeGraph ng;
+	// ng.ctx = std::make_shared<ed::EditorContext>(ed::CreateEditor(&defaultConfig));
+	ng.name = name;
+	std::time_t t = std::time(nullptr);
+	ng.lastModified = t;
+	ng.lastCompiled = t;
+
+#if 0
+	ed::SetCurrentEditor(editorCtx);
+
+	auto& colors = ed::GetStyle().Colors;
+	colors[ed::StyleColor_Bg] = ImColor(0, 0, 0, 255);
+	colors[ed::StyleColor_HovNodeBorder] = ImColor(255, 69, 0, 255);
+	colors[ed::StyleColor_SelNodeBorder] = ImColor(255, 0, 0, 255);
+	colors[ed::StyleColor_PinRect] = ImColor(255, 0, 0, 255);
+
+	ed::SetCurrentEditor(nullptr);
+#endif
+
+	song->nodeGraphs.push_back(ng);
+}
+
+// template<typename T>
+// static void constructProps(T f) {}
 
 void AXENodeEditor::SpawnLowPassFilterNode() {
 	Node newNode;
@@ -489,11 +577,27 @@ void AXENodeEditor::SpawnLowPassFilterNode() {
 	newNode.outputs.push_back(output);
 
 	NodeProperty cutoffFreqProp;
-	cutoffFreqProp.propLabel = "Cutoff Frequency";
-	cutoffFreqProp.propType = NodeProperties_Double;
-	cutoffFreqProp.data = std::make_shared<double>(50);
-	cutoffFreqProp.size = sizeof(double);
+	cutoffFreqProp.propLabel = "Cutoff Factor";
+	cutoffFreqProp.propType = NodeProperties_S32;
+	cutoffFreqProp.data = std::make_shared<int>(80);
+	cutoffFreqProp.min = std::make_shared<int>(0);
+	cutoffFreqProp.max = std::make_shared<int>(100);
+	cutoffFreqProp.size = sizeof(int);
+	cutoffFreqProp.help = "A number divided by the sample rate to get a cutoff frequency";
 	newNode.props.push_back(cutoffFreqProp);
+
+	NodeProperty filterOrderProp;
+	filterOrderProp.propLabel = "Filter Order";
+	filterOrderProp.propType = NodeProperties_S32;
+	filterOrderProp.data = std::make_shared<int>(8);
+	filterOrderProp.min = std::make_shared<int>(0);
+	filterOrderProp.max = std::make_shared<int>(60);
+	filterOrderProp.size = sizeof(int);
+	filterOrderProp.help = "Controls the complexity of the filter. Filters with more complexity "
+						   "have sharper frequency responses, useful when trying to seperate "
+						   "frequencies that are close to each other. Higher orders require more "
+						   "processing power";
+	newNode.props.push_back(filterOrderProp);
 	
 	openedNodeGraph->nodes.push_back(newNode);
 	markGraphDirty(openedNodeGraph);
@@ -515,6 +619,25 @@ void AXENodeEditor::SpawnDelayNode() {
 
 	newNode.inputs.push_back(input);
 	newNode.outputs.push_back(output);
+
+	NodeProperty delayProp;
+	delayProp.propLabel = "Delay (sec)";
+	delayProp.propType = NodeProperties_Float;
+	delayProp.data = std::make_shared<float>(0.2f);
+	delayProp.min = std::make_shared<float>(0.0f);
+	delayProp.max = std::make_shared<float>(60.0f);
+	delayProp.size = sizeof(float);
+	newNode.props.push_back(delayProp);
+
+	NodeProperty decayProp;
+	decayProp.propLabel = "Decay";
+	decayProp.propType = NodeProperties_Float;
+	decayProp.data = std::make_shared<float>(0.5f);
+	decayProp.min = std::make_shared<float>(0.0f);
+	decayProp.max = std::make_shared<float>(1.0f);
+	decayProp.size = sizeof(float);
+	decayProp.help = "Decay controls the volume falloff per each echo";
+	newNode.props.push_back(decayProp);
 	
 	openedNodeGraph->nodes.push_back(newNode);
 	markGraphDirty(openedNodeGraph);
