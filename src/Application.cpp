@@ -20,6 +20,11 @@
 #include "generated/autoconf.h"
 #include <Editor/SlimEditor.hpp>
 
+// Forward Decls
+namespace Shadow::AXE {
+int startAXEAuthenticationWindow(int argc, char** argv);
+}
+
 namespace Shadow {
 int Main(int argc, char** argv) {
 	int ret = 0;
@@ -39,11 +44,13 @@ int Main(int argc, char** argv) {
 
 	if (argc > 1) {
 		if (strcmp(argv[1], "axe") == 0) {
-			ret = Shadow::AXE::startAXEProjectBrowser();
+			ret = Shadow::AXE::startAXEProjectBrowser(argc, argv);
 		} else if (strcmp(argv[1], "axeEditor") == 0) {
 			ret = Shadow::AXE::startAXEEditor("/home/vince/.config/Shadow/AXEProjects/testsong.axe");
 		} else if (strcmp(argv[1], "axeEditorWithProject") == 0) {
 			ret = Shadow::AXE::startAXEEditor(std::string(argv[2]));
+		} else if (strcmp(argv[1], "auth") == 0) {
+			ret = Shadow::AXE::startAXEAuthenticationWindow(argc, argv);
 		} else if (strcmp(argv[1], "editorwis") == 0) {
 			ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
 		} else if (strcmp(argv[1], "dev") == 0) {

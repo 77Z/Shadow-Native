@@ -69,7 +69,7 @@ bool compileNodeGraph(NodeGraph* graph) {
 	}
 	if (!outputNode) {
 		// No output!
-		failCompile("No output node speicified!\nThis audio has nowhere to go!");
+		failCompile("No output node specified!\nThis audio has nowhere to go!");
 		return false;
 	}
 

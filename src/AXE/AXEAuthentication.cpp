@@ -1,16 +1,9 @@
-#include "AXE/AXEEditor.hpp"
-#include "AXESerializer.hpp"
-#include "AXETypes.hpp"
-#include "Configuration/EngineConfiguration.hpp"
-#include "Debug/Logger.hpp"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <cstdlib>
-#include <filesystem>
 #include <string>
-#include <vector>
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
@@ -21,23 +14,10 @@
 
 namespace Shadow::AXE {
 
-Song songToWrite;
+static std::string inpUsername = "";
+static std::string inpPassword = "";
 
-static bool openEditorAfterDeath = false;
-static std::string projectFileToOpenAfterDeath = "";
-
-static std::vector<std::string> reloadProjects() {
-	std::vector<std::string> ret;
-	for (const std::filesystem::directory_entry& file : std::filesystem::directory_iterator(EngineConfiguration::getConfigDir() + "/AXEProjects")) {
-		std::string name = file.path().filename();
-		if (name.ends_with(".axe")) {
-			ret.push_back(name);
-		}
-	}
-	return ret;
-}
-
-int startAXEProjectBrowser(int argc, char** argv) {
+int startAXEAuthenticationWindow(int argc, char** argv) {
 	#if defined(IMGUI_IMPL_OPENGL_ES2)
 	// GL ES 2.0 + GLSL 100
 	const char* glsl_version = "#version 100";
@@ -60,7 +40,7 @@ int startAXEProjectBrowser(int argc, char** argv) {
 	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-	ShadowWindow window(720, 720, "Shadow Engine - AXE Project Browser", true, true);
+	ShadowWindow window(720, 720, "Shadow Engine - AXE Authenticator", true, true);
 	if (window.window == nullptr) return 1;
 	glfwMakeContextCurrent(window.window);
 	glfwSwapInterval(1); // Enable vsync
@@ -84,82 +64,57 @@ int startAXEProjectBrowser(int argc, char** argv) {
 	ImFont* headingFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 40.0f * sf);
 	ImGui::GetStyle().ScaleAllSizes(sf);
 
-	std::vector<std::string> projects = reloadProjects();
-
 	while (!window.shouldClose()) {
+		using namespace ImGui;
+
 		window.pollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
-		ImGui::NewFrame();
+		NewFrame();
 
 		// DRAW
 
-		ImGuiViewport* viewport = ImGui::GetMainViewport();
-		ImGui::SetNextWindowPos(viewport->Pos);
-		ImGui::SetNextWindowSize(viewport->Size);
-		ImGui::SetNextWindowViewport(viewport->ID);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1.0f, 1.0f));
+		ImGuiViewport* viewport = GetMainViewport();
+		SetNextWindowPos(viewport->Pos);
+		SetNextWindowSize(viewport->Size);
+		SetNextWindowViewport(viewport->ID);
+		PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+		PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+		PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1.0f, 1.0f));
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
 			| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
 			| ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus
 			| ImGuiWindowFlags_MenuBar;
 
-		ImGui::PushStyleColor(ImGuiCol_MenuBarBg, IM_COL32(0, 0, 0, 255));
+		PushStyleColor(ImGuiCol_MenuBarBg, IM_COL32(0, 0, 0, 255));
 
-		ImGui::Begin("RootWindow", nullptr, window_flags);
+		Begin("RootWindow", nullptr, window_flags);
 
-		ImGui::PopStyleColor();
+		PopStyleColor();
 
-		ImGui::PopStyleVar(3);
+		PopStyleVar(3);
 
-		ImGui::PushFont(headingFont);
-		ImGui::Text("  Shadow Engine AXE DAW (Hi Wyatt!)");
-		ImGui::PopFont();
+		TextUnformatted("Shadow Engine AXE Authenticator");
 
-		if (ImGui::TreeNode("New Song")) {
-			ImGui::PushFont(headingFont);
-			ImGui::Text("New Song");
-			ImGui::Separator();
-			ImGui::PopFont();
+		PushFont(headingFont);
+		TextUnformatted("VinceTech Account");
+		PopFont();
 
-			ImGui::Text("Enter some basic information, this can be changed later");
+		InputText("Username", &inpUsername);
+		InputText("Password", &inpPassword, ImGuiInputTextFlags_Password);
+		Button("Login");
 
-			ImGui::InputText("Title", &songToWrite.name);
-			ImGui::InputText("Artist(s)", &songToWrite.artist);
-			ImGui::InputText("Album", &songToWrite.album);
-			
-			if (ImGui::Button("Create")) {
-				std::string loc = EngineConfiguration::getConfigDir() + "/AXEProjects/" + songToWrite.name + ".axe";
-				serializeSong(&songToWrite, loc);
-				projectFileToOpenAfterDeath = loc;
-				openEditorAfterDeath = true;
-				window.close();
-			}
-
-			ImGui::TreePop();
-		}
-
-		for (auto& project : projects) {
-			if (ImGui::Selectable(project.c_str())) {
-				projectFileToOpenAfterDeath = EngineConfiguration::getConfigDir() + "/AXEProjects/" + project;
-				openEditorAfterDeath = true;
-				window.close();
-			}
-		}
-
-		ImGui::End();
+		End();
 
 		// Rendering
-		ImGui::Render();
+		Render();
 		int display_w, display_h;
 		glfwGetFramebufferSize(window.window, &display_w, &display_h);
 		glViewport(0, 0, display_w, display_h);
 		glClearColor(0, 0, 0, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplOpenGL3_RenderDrawData(GetDrawData());
 
 		glfwSwapBuffers(window.window);
 	}
@@ -168,14 +123,7 @@ int startAXEProjectBrowser(int argc, char** argv) {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	// We shutdown the ShadowWindow manually to inject openEditorAfterDeath here
-	glfwDestroyWindow(window.window);
-
-	// if (openEditorAfterDeath) startAXEEditor(projectFileToOpenAfterDeath);
-
-	glfwTerminate();
-
-	std::system((std::string(argv[0]) + " axeEditorWithProject " + projectFileToOpenAfterDeath).c_str());
+	window.shutdown();
 
 	return 0;
 }
