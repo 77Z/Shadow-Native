@@ -18,7 +18,7 @@ import { generateShadowEngineConfig } from "./ShadowConfigGen.ts";
 import { generateShaderBuildFiles } from "./Shaders.ts";
 
 export const cliFlags = parse(Deno.args, {
-	boolean: ["help", "verbose", "version", "v", "clean", "confgen", "noshaders"],
+	boolean: ["help", "verbose", "version", "v", "clean", "confgen", "noshaders", "dumpToJson", "dumpBuildDir"],
 	string: ["config", "target"],
 });
 
@@ -46,11 +46,22 @@ const buildDir = formatUnicorn(`./bin/${conf.BuildDir}`, {
 	dbg: debugBuild ? "debug" : "release",
 });
 
+if (cliFlags.dumpBuildDir) {
+	PRINT(buildDir);
+	Deno.exit();
+}
+
 PRINT(`${conf.ProductName} ver. ${ProductVersion}`);
 
 if (cliFlags.clean) {
 	Deno.removeSync(buildDir, { recursive: true });
-	console.log("Deleted BuildDir: " + buildDir);
+	PRINT("Deleted BuildDir: " + buildDir);
+	Deno.exit();
+}
+
+if (cliFlags.dumpToJson) {
+	Deno.writeTextFileSync("dumped.json", JSON.stringify(conf));
+	PRINT("Dumped build files to JSON");
 	Deno.exit();
 }
 
