@@ -27,6 +27,7 @@
 #include "../implot/implot.h"
 #include "../imgui/imgui_knobs.hpp"
 #include "AXEEqualizer.hpp"
+#include "AXEJobSystem.hpp"
 
 // Forward declarations
 namespace Shadow::Util {
@@ -38,6 +39,7 @@ void bootstrapSong(Song* song, ma_engine* audioEngine);
 void unloadSong(Song* song, ma_engine* audioEngine);
 void updateCurveTest();
 void initCurveTest();
+void cacheWaveforms();
 }
 namespace bx {
 void debugBreak();
@@ -237,6 +239,14 @@ int startAXEEditor(std::string projectFile) {
 		}
 	});
 
+	ImGui::InsertNotification({
+		ImGuiToastType::Info,
+		5000,
+		"You might have to wait for active\njobs to finish before working"
+	});
+
+	// cacheWaveforms();
+
 	window.maximize();
 
 	while (!window.shouldClose()) {
@@ -301,6 +311,7 @@ int startAXEEditor(std::string projectFile) {
 					}
 					ImGui::MenuItem("Node Editor Debugger", nullptr, &editorState.showNodeEditorDebugger);
 					ImGui::MenuItem("Automation Debug Mode", nullptr, &editorState.automationDebugMode);
+					if (ImGui::MenuItem("Re-cache waveforms")) cacheWaveforms();
 					ImGui::Separator();
 					if (ImGui::MenuItem("Break Here")) {
 						bx::debugBreak();
@@ -316,6 +327,8 @@ int startAXEEditor(std::string projectFile) {
 					ImGui::EndMenu();
 				}
 				if (ImGui::BeginMenu("Help!")) {
+					if (ImGui::MenuItem("Diagnose issues!")) ImGui::OpenPopup("Dump and Ship");
+					ImGui::Separator();
 					ImGui::MenuItem("ShadowAudio information and help", nullptr, &editorState.showHelpDocs);
 					ImGui::Text("If you need help, just text me");
 					if (ImGui::MenuItem("Shadow Engine Website")) Util::openURL("https://shadow.77z.dev");
@@ -372,6 +385,9 @@ int startAXEEditor(std::string projectFile) {
 			}
 			ImGui::SetItemTooltip("Play/Pause song from current position (SPACE)");
 
+			ImGui::SameLine();
+			JobSystem::onUpdateStatusBar();
+
 			ImGui::SetCursorPosY(55.0f * editorState.sf);
 			ImGui::DockSpace(ImGui::GetID("AXEDockspace"));
 			ImGui::End();
@@ -382,6 +398,25 @@ int startAXEEditor(std::string projectFile) {
 			ma_engine_set_volume(&engine, songInfo.masterVolume);
 			EC_PRINT("All", "Changed master volume to %.3f", songInfo.masterVolume);
 			editorState.lastKnownMasterVol = songInfo.masterVolume;
+		}
+
+		if (ImGui::BeginPopupModal("Dump and Ship")) {
+
+			ImGui::TextWrapped(
+				"When you encounter problems in AXE, i'll probably tell you"
+				" to press this button. It packages all debug and logging info"
+				" about your AXE session and ships it off to my server.\n\n"
+				"It probably won't be enough to fix every problem, but"
+				" hopefully it can be helpful"
+			);
+
+			if (ImGui::Button("Send it")) {
+				// TODO:
+			}
+
+			if (ImGui::Button("Cancel")) ImGui::CloseCurrentPopup();
+
+			ImGui::EndPopup();
 		}
 
 		//ShadowAudio window
@@ -475,7 +510,7 @@ int startAXEEditor(std::string projectFile) {
 		if (editorState.showImGuiStackTool) ImGui::ShowStackToolWindow(&editorState.showImGuiStackTool);
 
 		updateCurveTest();
-		// ImGui::ShowDemoWindow();
+		ImGui::ShowDemoWindow();
 		// ImPlot::ShowDemoWindow();
 		updateHelpWindow(editorState.showHelpDocs);
 		timeline.onUpdate();

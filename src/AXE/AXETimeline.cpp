@@ -1,7 +1,9 @@
+#include "Configuration/EngineConfiguration.hpp"
 #include "Debug/Logger.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
+#include <filesystem>
 #include <utility>
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "AXETypes.hpp"
@@ -14,6 +16,8 @@
 #include "Debug/EditorConsole.hpp"
 #include "ppk_assert_impl.hpp"
 #include <memory>
+#include "ImGuiNotify.hpp"
+#include "json_impl.hpp"
 
 #define EC_THIS "Timeline"
 
@@ -204,6 +208,28 @@ void Timeline::onUpdate() {
 }
 #endif
 
+static void loadClipDataFromAXEwf(std::shared_ptr<Clip> clip) {
+	// TODO: This is repeat code from WaveformGen.cpp
+	std::string globalLibraryPath = EngineConfiguration::getConfigDir() + "/AXEProjects/GlobalLibrary";
+	std::string cachePath = EngineConfiguration::getConfigDir() + "/AXECachedData";
+	std::string uniqueName = clip->baseAudioSource.substr(globalLibraryPath.length() + 1);
+	std::replace(uniqueName.begin(), uniqueName.end(), '/', '-');
+
+	std::string waveformFileLoc = cachePath + "/" + uniqueName + ".AXEwf";
+
+	if (!std::filesystem::exists(waveformFileLoc)) {
+		ImGui::InsertNotification({ImGuiToastType::Error, 5000, "Failed to load waveforms!"});
+		return;
+	}
+	
+	auto j = JSON::readBsonFile(waveformFileLoc);
+	clip->waveformChannels = (int)j["channels"];
+
+	for (auto& wavePoint : j["data"]) {
+		clip->waveformData.emplace_back((int16_t)wavePoint);
+	}
+}
+
 static float smoothstep(float edge0, float edge1, float x) {
 	x = ImClamp((x - edge0) / (edge1 - edge0), 0.0f, 1.0f);
 	return x * x * (3 - 2 * x);
@@ -291,6 +317,18 @@ void Timeline::onUpdate() {
 				float clipWidth = (float)clip->length * (editorState->zoom / 100.0f);
 				BeginChild("Clip", ImVec2(clipWidth, 143.0f), 0, 0);
 
+				if (selectedClip != nullptr && selectedClip == clip.get()) {
+					GetWindowDrawList()->AddRect(
+						ImVec2(GetCursorScreenPos()),
+						ImVec2(GetCursorScreenPos().x + clipWidth, GetCursorScreenPos().y + 143),
+						IM_COL32(255, 255, 255, 255),
+						5.0f,
+						0,
+						4.0f
+					);
+				}
+				if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseClicked(ImGuiMouseButton_Left)) selectedClip = clip.get();
+
 				// Clip dragging logic
 				if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseDown(ImGuiMouseButton_Left) && !clipBeingDragged) {
 					clipBeingDragged = clip.get();
@@ -314,11 +352,39 @@ void Timeline::onUpdate() {
 				InputText("##ClipName", &clip->name);
 				SameLine();
 				if (SmallButton(ICON_CI_CLOSE)) track.clips.erase(track.clips.begin() + clipIt + 1);
-				Text("pos (u64) %lu\nlength (u64) %lu\npos + len (end rail pos) %lu",
-					clip->position,
-					clip->length,
-					clip->position + clip->length);
+				if (SmallButton(ICON_CI_CHROME_RESTORE)) {
+					clip->shouldDrawWaveform =! clip->shouldDrawWaveform;
 
+					if (clip->shouldDrawWaveform && clip->waveformData.empty()) {
+						EC_PRINT(EC_THIS, "Clip waveform data empty! Loading now");
+						loadClipDataFromAXEwf(clip);
+					}
+				}
+				SetItemTooltip("Draw waveform(debug)");
+				if (IsWindowHovered() && BeginTooltip()) {
+					Text("pos (u64) %lu\nlength (u64) %lu\npos + len (end rail pos) %lu",
+						clip->position,
+						clip->length,
+						clip->position + clip->length);
+					EndTooltip();
+				}
+
+				if (clip->shouldDrawWaveform && !clip->waveformData.empty()) {
+					ImDrawList* wdl = GetWindowDrawList();
+					ImVec2 basePos = GetCursorScreenPos();
+					wdl->AddRect(ImVec2(basePos), basePos + GetContentRegionAvail(), IM_COL32(0, 255, 0, 255));
+
+					//Draw baselines
+					// There are L and R channels here
+					auto halfwayY = basePos.y + (GetContentRegionAvail().y / 2);
+					wdl->AddLine(ImVec2(basePos.x, halfwayY), ImVec2(basePos.x + GetContentRegionAvail().x, halfwayY), IM_COL32(0, 255, 0, 255), 3);
+
+					if (clip->waveformChannels == 1) {
+						for (size_t i = 0; i < clip->waveformData.size(); i++) {
+							wdl->AddLine(ImVec2(basePos.x + i, halfwayY + clip->waveformData.at(i) * 0.005), ImVec2(basePos.x + i, halfwayY), IM_COL32(00, 255, 0, 255));
+						}
+					}
+				}
 				EndChild();
 				PopID();
 				SameLine();

@@ -1,4 +1,5 @@
 #include "AXEClipBrowser.hpp"
+#include "AXEJobSystem.hpp"
 #include "Configuration/EngineConfiguration.hpp"
 #include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
@@ -85,36 +86,41 @@ void ClipBrowser::shutdown() {}
 void ClipBrowser::refreshFiles() {
 	clips.clear();
 
-	if (!std::filesystem::exists(globalLibraryPath)) {
-		ERROUT("Failed to read GlobalLibrary directory in AXEProjects!!");
-		EC_ERROUT(EC_THIS, "Failed to read GlobalLibrary directory in AXEProjects!!");
-		return;
-	}
+	JobSystem::submitJob("Sort through clips", [this]() -> bool {
 
-	for (const std::filesystem::directory_entry& file : std::filesystem::recursive_directory_iterator(globalLibraryPath)) {
-		std::string fp = file.path().string();
-		EC_PRINT(EC_THIS, "%s", fp.substr().c_str());
-
-		ClipBrowserItemInfo item;
-		item.fullpath = fp;
-		item.relativePath = fp.substr(globalLibraryPath.length() + 1);
-		item.prettyName = fp.substr(fp.find_last_of("/") + 1);
-		item.isDirectory = std::filesystem::is_directory(fp);
-
-		if (fp.ends_with(".wav")) {
-			item.prettyType = "Waveform Audio";
-		} else if (fp.ends_with(".flac")) {
-			item.prettyType = "Free Lossless Audio Codec";
-		} else if (fp.ends_with(".mp3")) {
-			item.prettyType = "MPEG-1 Audio Layer III";
-		} else if (fp.ends_with(".ogg")) {
-			item.prettyType = "OGG / Vorbis Audio Codec";
-		} else {
-			item.prettyType = "?? Unknown other file type ??";
+		if (!std::filesystem::exists(globalLibraryPath)) {
+			ERROUT("Failed to read GlobalLibrary directory in AXEProjects!! I'm gonna complain instead of making the dir!!");
+			EC_ERROUT(EC_THIS, "Failed to read GlobalLibrary directory in AXEProjects!! I'm gonna complain instead of making the dir!!");
+			return false;
 		}
 
-		clips.push_back(item);
-	}
+		for (const std::filesystem::directory_entry& file : std::filesystem::recursive_directory_iterator(globalLibraryPath)) {
+			std::string fp = file.path().string();
+			// EC_PRINT(EC_THIS, "%s", fp.substr().c_str());
+
+			ClipBrowserItemInfo item;
+			item.fullpath = fp;
+			item.relativePath = fp.substr(globalLibraryPath.length() + 1);
+			item.prettyName = fp.substr(fp.find_last_of("/") + 1);
+			item.isDirectory = std::filesystem::is_directory(fp);
+
+			if (fp.ends_with(".wav")) {
+				item.prettyType = "Waveform Audio";
+			} else if (fp.ends_with(".flac")) {
+				item.prettyType = "Free Lossless Audio Codec";
+			} else if (fp.ends_with(".mp3")) {
+				item.prettyType = "MPEG-1 Audio Layer III";
+			} else if (fp.ends_with(".ogg")) {
+				item.prettyType = "OGG / Vorbis Audio Codec";
+			} else {
+				item.prettyType = "?? Unknown other file type ??";
+			}
+
+			clips.push_back(item);
+		}
+
+		return true;
+	});
 
 }
 

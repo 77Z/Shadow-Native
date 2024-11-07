@@ -1,5 +1,8 @@
 #include "AXETypes.hpp"
 #include "Debug/Logger.hpp"
+#include "imgui/imgui_utils.hpp"
+#include "json_impl.hpp"
+#include <string>
 #include <vector>
 #define IMGUI_DEFINE_MATH_OPERATORS
 // #include "ImCurveEdit.h"
@@ -180,10 +183,16 @@ void initCurveTest() {
 
 }
 
+static std::string axewftoload = "";
+static bool dataLoaded = false;
+json x;
+
 void updateCurveTest() {
 	using namespace ImGui;
 
 	Begin("Curve Edit");
+
+	// Terrible code btw
 
 	if (Button("sound")) {
 		// ma_engine_play_sound(&engine, "./Resources/sound.wav", nullptr);
@@ -191,6 +200,37 @@ void updateCurveTest() {
 		ma_sound_seek_to_pcm_frame(&sound, 0);
 		ma_sound_start(&sound);
 	}
+
+	InputText("AXEwf to load", &axewftoload);
+	SameLine();
+	if (Button("Load")) {
+		x = JSON::readBsonFile(axewftoload);
+		dataLoaded = true;
+	}
+
+	if (dataLoaded) {
+
+		Text("Hash              %s", std::string(x["audioHash"]).c_str());
+		Text("Channels          %s", std::to_string((int)x["channels"]).c_str());
+		Text("Bits              %s", std::to_string((int)x["bits"]).c_str());
+		Text("Sample Rate       %s", std::to_string((int)x["sample_rate"]).c_str());
+		Text("Samples per pixel %s", std::to_string((int)x["samples_per_pixel"]).c_str());
+
+		for (auto& point : x["data"]) {
+			TextUnformatted(std::to_string((int)point).c_str());
+		}
+
+
+	}
+
+
+
+
+
+
+
+
+
 
 	// DragScalar("const char *label", ImGuiDataType_U32, "void *p_data");
 

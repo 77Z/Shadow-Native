@@ -161,6 +161,9 @@ struct Clip {
 	// Volatile data
 	ma_sound engineSound;
 	bool loaded = false;
+	bool shouldDrawWaveform = false;
+	std::vector<int16_t> waveformData;
+	int waveformChannels = 0;
 };
 
 struct Track {

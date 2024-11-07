@@ -29,6 +29,7 @@ private:
 	bool playing = false;
 
 	// std::shared_ptr<Clip> clipBeingDragged = nullptr;
+	Clip* selectedClip = nullptr;
 	Clip* clipBeingDragged = nullptr;
 	float clipStoredMouseOffsetX = 0.0f;
 	int tableHoveredRow = -1;
