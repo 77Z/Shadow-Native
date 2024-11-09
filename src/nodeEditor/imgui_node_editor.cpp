@@ -4218,8 +4218,10 @@ void ed::SelectAction::Draw(ImDrawList* drawList)
 	auto min  = ImVec2(std::min(m_StartPoint.x, m_EndPoint.x), std::min(m_StartPoint.y, m_EndPoint.y));
 	auto max  = ImVec2(ImMax(m_StartPoint.x, m_EndPoint.x), ImMax(m_StartPoint.y, m_EndPoint.y));
 
-	drawList->AddRectFilled(min, max, fillColor);
-	drawList->AddRect(min, max, outlineColor);
+	// VINCE MOD: I made it thicker and rounded to match the other selections in
+	// AXE
+	drawList->AddRectFilled(min, max, fillColor, 6);
+	drawList->AddRect(min, max, outlineColor, 6, 0, 3);
 }
 
 

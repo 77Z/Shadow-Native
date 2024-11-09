@@ -4,6 +4,7 @@
 #include "AXEClipBrowser.hpp"
 #include "AXETypes.hpp"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include <memory>
 
 namespace Shadow::AXE {
@@ -37,6 +38,9 @@ private:
 	Automation* automationStartRailBeingDragged = nullptr;
 	Automation* automationEndRailBeingDragged = nullptr;
 	ImGuiID autoPointBeingDragged = 0;
+	ImGuiSelectionBasicStorage clipSelection;
+
+	ImRect selectionRect;
 
 	void updateTrackAutomationsPopup();
 };

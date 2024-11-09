@@ -151,7 +151,8 @@ struct Clip {
 	// std::vector<Automation> automations;
 
 	uint64_t position = 0;
-	uint64_t length = 0;
+	// uint64_t length = 0;
+	unsigned long long length = 0;
 
 	float balence = 0.0f;	// -1 L : +1 R
 	float volume = 100.0f;	// 0 - 100
@@ -161,7 +162,7 @@ struct Clip {
 	// Volatile data
 	ma_sound engineSound;
 	bool loaded = false;
-	bool shouldDrawWaveform = false;
+	bool shouldDrawWaveform = true;
 	std::vector<int16_t> waveformData;
 	int waveformChannels = 0;
 };
@@ -222,6 +223,7 @@ struct EditorState {
 	bool showNodeEditorDebugger = true;
 	bool showClipBrowser = true;
 	bool showEqualizer = true;
+	bool showGlobalSettings = false;
 };
 
 }

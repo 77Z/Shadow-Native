@@ -278,6 +278,35 @@ void Timeline::onUpdate() {
 		TableSetupColumn("Timeline", ImGuiTableColumnFlags_NoHeaderLabel);
 		TableHeadersRow();
 
+		// Multi-select
+		// ImGuiMultiSelectIO* msIo = BeginMultiSelect(ImGuiMultiSelectFlags_BoxSelect2d | ImGuiMultiSelectFlags_ClearOnEscape/* , clipSelection.Size */);
+		// clipSelection.ApplyRequests(msIo);
+
+		if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseDown(ImGuiMouseButton_Left)) {
+			if (selectionRect.Min == ImVec2(0, 0) && IsWindowHovered()) {
+				selectionRect.Min = GetMousePos();
+			}
+
+			selectionRect.Max = GetMousePos();
+		} else if (IsMouseReleased(ImGuiMouseButton_Left)) {
+			selectionRect.Min = ImVec2(0, 0);
+		}
+
+		// Draw multi-select rect
+
+		if (selectionRect.Min != ImVec2(0, 0)) {
+			// Different rectangle bounds needed incase Min is greater than Max
+			// in the selectionRect.
+			ImRect postVisDrawRect;
+			postVisDrawRect.Min = selectionRect.Min;
+			postVisDrawRect.Max = selectionRect.Max;
+			if (selectionRect.Min.x > selectionRect.Max.x) { postVisDrawRect.Max.x = selectionRect.Min.x; postVisDrawRect.Min.x = selectionRect.Max.x; }
+			if (selectionRect.Min.y > selectionRect.Max.y) { postVisDrawRect.Max.y = selectionRect.Min.y; postVisDrawRect.Min.y = selectionRect.Max.y; }
+
+			drawList->AddRectFilled(postVisDrawRect.Min, postVisDrawRect.Max, IM_COL32(255, 0, 0, 50), 6);
+			drawList->AddRect(postVisDrawRect.Min, postVisDrawRect.Max, IM_COL32(255, 0, 0, 255), 6, 0, 3);
+		}
+
 		int trackIt = 0;
 		for (auto& track : songInfo->tracks) {
 			PushID(trackIt);
@@ -348,21 +377,24 @@ void Timeline::onUpdate() {
 					#endif
 				}
 
-				SetNextItemWidth(clipWidth - 55.0f);
+				SetNextItemWidth(clipWidth - (editorState->zoom > 70 ? 55.0f : 0.0f));
 				InputText("##ClipName", &clip->name);
-				SameLine();
-				if (SmallButton(ICON_CI_CLOSE)) track.clips.erase(track.clips.begin() + clipIt + 1);
-				if (SmallButton(ICON_CI_CHROME_RESTORE)) {
-					clip->shouldDrawWaveform =! clip->shouldDrawWaveform;
+				if (editorState->zoom > 70) {
+					SameLine();
+					if (SmallButton(ICON_CI_CLOSE)) track.clips.erase(track.clips.begin() + clipIt + 1);
+				}
+				// if (SmallButton(ICON_CI_CHROME_RESTORE)) {
+					// clip->shouldDrawWaveform =! clip->shouldDrawWaveform;
 
+					//TODO: move this to more static code
 					if (clip->shouldDrawWaveform && clip->waveformData.empty()) {
 						EC_PRINT(EC_THIS, "Clip waveform data empty! Loading now");
 						loadClipDataFromAXEwf(clip);
 					}
-				}
+				// }
 				SetItemTooltip("Draw waveform(debug)");
 				if (IsWindowHovered() && BeginTooltip()) {
-					Text("pos (u64) %lu\nlength (u64) %lu\npos + len (end rail pos) %lu",
+					Text("pos (u64) %lu\nlength (u64) %llu\npos + len (end rail pos) %llu",
 						clip->position,
 						clip->length,
 						clip->position + clip->length);
@@ -372,16 +404,18 @@ void Timeline::onUpdate() {
 				if (clip->shouldDrawWaveform && !clip->waveformData.empty()) {
 					ImDrawList* wdl = GetWindowDrawList();
 					ImVec2 basePos = GetCursorScreenPos();
-					wdl->AddRect(ImVec2(basePos), basePos + GetContentRegionAvail(), IM_COL32(0, 255, 0, 255));
+					// debug rect
+					// wdl->AddRect(ImVec2(basePos), basePos + GetContentRegionAvail(), IM_COL32(0, 255, 0, 255));
 
 					//Draw baselines
 					// There are L and R channels here
 					auto halfwayY = basePos.y + (GetContentRegionAvail().y / 2);
-					wdl->AddLine(ImVec2(basePos.x, halfwayY), ImVec2(basePos.x + GetContentRegionAvail().x, halfwayY), IM_COL32(0, 255, 0, 255), 3);
+					wdl->AddLine(ImVec2(basePos.x, halfwayY), ImVec2(basePos.x + GetContentRegionAvail().x, halfwayY), IM_COL32(255, 0, 0, 255), 3);
 
 					if (clip->waveformChannels == 1) {
 						for (size_t i = 0; i < clip->waveformData.size(); i++) {
-							wdl->AddLine(ImVec2(basePos.x + i, halfwayY + clip->waveformData.at(i) * 0.005), ImVec2(basePos.x + i, halfwayY), IM_COL32(00, 255, 0, 255));
+							float x = basePos.x + (i * editorState->zoom / 100);
+							wdl->AddLine(ImVec2(x, halfwayY + clip->waveformData.at(i) * 0.003), ImVec2(x, halfwayY), IM_COL32(255, 0, 0, 255));
 						}
 					}
 				}
@@ -644,6 +678,7 @@ void Timeline::onUpdate() {
 
 		PopClipRect();
 
+		// msIo = EndMultiSelect();
 		EndTable();
 	}
 
@@ -677,7 +712,8 @@ void Timeline::onUpdate() {
 				res = ma_data_source_get_length_in_pcm_frames(&clip->engineSound, &len);
 				if (res != MA_SUCCESS) EC_ERROUT(EC_THIS, "Engine failure calc clip length! Err enum %i", res);
 
-				clip->length = (uint64_t)len;
+				// clip->length = (uint64_t)len;
+				clip->length = len;
 				clip->position = static_cast<uint64_t>(GetMousePos().x - GetWindowPos().x);
 
 				EC_PRINT(EC_THIS, "user dropped %s", clipPath);

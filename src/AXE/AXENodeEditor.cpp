@@ -37,10 +37,15 @@ AXENodeEditor::AXENodeEditor(Song* song): song(song) {
 	ed::SetCurrentEditor(editorCtx);
 
 	auto& colors = ed::GetStyle().Colors;
-	colors[ed::StyleColor_Bg] = ImColor(0, 0, 0, 255);
+	colors[ed::StyleColor_Bg] =            ImColor(0, 0, 0, 255);
 	colors[ed::StyleColor_HovNodeBorder] = ImColor(255, 69, 0, 255);
 	colors[ed::StyleColor_SelNodeBorder] = ImColor(255, 0, 0, 255);
-	colors[ed::StyleColor_PinRect] = ImColor(255, 0, 0, 255);
+	colors[ed::StyleColor_PinRect] =       ImColor(255, 0, 0, 255);
+
+	colors[ed::StyleColor_LinkSelRect] =       ImColor(255, 0, 0, 50);
+	colors[ed::StyleColor_LinkSelRectBorder] = ImColor(255, 0, 0, 255);
+	colors[ed::StyleColor_NodeSelRect] =       ImColor(255, 0, 0, 50);
+	colors[ed::StyleColor_NodeSelRectBorder] = ImColor(255, 0, 0, 255);
 
 	ed::SetCurrentEditor(nullptr);
 }
@@ -506,7 +511,8 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		float wrapX = GetFontSize() * 35.0f;
 		ImVec2 textSize = CalcTextSize(helpText.c_str(), nullptr, false, wrapX);
 		RenderTextWrapped(GetWindowPos() + GetWindowSize() - textSize - ImVec2(10,10), helpText.c_str(), nullptr, wrapX);
-		GetForegroundDrawList()->AddRect(GetWindowPos(), GetWindowPos() + GetWindowSize(), IM_COL32(255, 0, 0, 255));
+		// debug rect
+		// GetForegroundDrawList()->AddRect(GetWindowPos(), GetWindowPos() + GetWindowSize(), IM_COL32(255, 0, 0, 255));
 		helpText = "";
 	}
 

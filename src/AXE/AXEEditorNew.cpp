@@ -40,6 +40,7 @@ void unloadSong(Song* song, ma_engine* audioEngine);
 void updateCurveTest();
 void initCurveTest();
 void cacheWaveforms();
+void onUpdateGlobalSettingsWindow(bool* p_open);
 }
 namespace bx {
 void debugBreak();
@@ -103,10 +104,10 @@ int startAXEEditor(std::string projectFile) {
 	ma_context context;
 	ma_context_init(nullptr, 0, nullptr, &context);
 	ma_device_info* pPlaybackDeviceInfos;
-    ma_uint32 playbackDeviceCount;
-    ma_device_info* pCaptureDeviceInfos;
-    ma_uint32 captureDeviceCount;
-    ma_uint32 iDevice;
+	ma_uint32 playbackDeviceCount;
+	ma_device_info* pCaptureDeviceInfos;
+	ma_uint32 captureDeviceCount;
+	ma_uint32 iDevice;
 	ma_context_get_devices(&context, &pPlaybackDeviceInfos, &playbackDeviceCount, &pCaptureDeviceInfos, &captureDeviceCount);
 	for (iDevice = 0; iDevice < playbackDeviceCount; iDevice++)
 		EC_WARN("All", "   %u: %s\n", iDevice, pCaptureDeviceInfos[iDevice].name);
@@ -258,139 +259,143 @@ int startAXEEditor(std::string projectFile) {
 
 		// Header and Menubar
 		{
-			ImGuiViewport* viewport = ImGui::GetMainViewport();
-			ImGui::SetNextWindowPos(viewport->Pos);
-			ImGui::SetNextWindowSize(viewport->Size);
-			ImGui::SetNextWindowViewport(viewport->ID);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1.0f, 1.0f));
+			using namespace ImGui;
+
+			ImGuiViewport* viewport = GetMainViewport();
+			SetNextWindowPos(viewport->Pos);
+			SetNextWindowSize(viewport->Size);
+			SetNextWindowViewport(viewport->ID);
+			PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1.0f, 1.0f));
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
 				| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
 				| ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus
 				| ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-			ImGui::PushStyleColor(ImGuiCol_MenuBarBg, IM_COL32(0, 0, 0, 255));
+			PushStyleColor(ImGuiCol_MenuBarBg, IM_COL32(0, 0, 0, 255));
 
-			ImGui::Begin("RootWindow", nullptr, window_flags);
+			Begin("RootWindow", nullptr, window_flags);
 
-			ImGui::PopStyleColor();
-			ImGui::PopStyleVar(3);
+			PopStyleColor();
+			PopStyleVar(3);
 
-			if (ImGui::BeginMenuBar()) {
-				if (ImGui::BeginMenu("File")) {
-					if (ImGui::MenuItem("Save Project", "CTRL + S")) {
+			if (BeginMenuBar()) {
+				if (BeginMenu("File")) {
+					if (MenuItem("Save Project", "CTRL + S")) {
 						serializeSong(&songInfo, projectFile);
-						ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Project Saved"});
+						InsertNotification({ImGuiToastType::Info, 3000, "Project Saved"});
 					}
-					ImGui::Separator();
-					ImGui::CheckboxFlags("Drag windows out", &ImGui::GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable);
-					ImGui::Separator();
-					if (ImGui::MenuItem("Exit")) window.close();
-					ImGui::EndMenu();
+					Separator();
+					CheckboxFlags("Drag windows out", &GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable);
+					Separator();
+					if (MenuItem("Exit")) window.close();
+					EndMenu();
 				}
-				if (ImGui::BeginMenu("Edit")) {
-					ImGui::MenuItem("Copy", "CTRL + C");
-					ImGui::MenuItem("Paste", "CTRL + V");
-					ImGui::Separator();
-					ImGui::MenuItem("Project Metadata", nullptr, &editorState.showProjectMetadata);
-					ImGui::MenuItem("Node Editor", nullptr, &editorState.showNodeEditor);
-					ImGui::MenuItem("Visual Equalizer", nullptr, &editorState.showEqualizer);
-					ImGui::EndMenu();
+				if (BeginMenu("Edit")) {
+					MenuItem("Copy", "CTRL + C");
+					MenuItem("Paste", "CTRL + V");
+					Separator();
+					MenuItem("Project Metadata", nullptr, &editorState.showProjectMetadata);
+					MenuItem("Node Editor", nullptr, &editorState.showNodeEditor);
+					MenuItem("Visual Equalizer", nullptr, &editorState.showEqualizer);
+					Separator();
+					MenuItem("AXE Global Settings", "CTRL + ,", &editorState.showGlobalSettings);
+					EndMenu();
 				}
-				if (ImGui::BeginMenu("Debug Tools")) {
-					ImGui::MenuItem("Shadow Engine Debug Console", nullptr, &editorState.showShadowEngineConsole);
-					ImGui::MenuItem("UI Console", nullptr, &editorState.showImGuiConsole);
-					ImGui::MenuItem("UI Metrics", nullptr, &editorState.showImGuiMetrics);
-					ImGui::MenuItem("UI Stack Tool", nullptr, &editorState.showImGuiStackTool);
-					ImGui::MenuItem("Clipboard Buffer", nullptr, &editorState.showClipboardBuffer);
-					if (ImGui::MenuItem("Reload Song", "CTRL + L")) {
+				if (BeginMenu("Debug Tools")) {
+					MenuItem("Shadow Engine Debug Console", nullptr, &editorState.showShadowEngineConsole);
+					MenuItem("UI Console", nullptr, &editorState.showImGuiConsole);
+					MenuItem("UI Metrics", nullptr, &editorState.showImGuiMetrics);
+					MenuItem("UI Stack Tool", nullptr, &editorState.showImGuiStackTool);
+					MenuItem("Clipboard Buffer", nullptr, &editorState.showClipboardBuffer);
+					if (MenuItem("Reload Song", "CTRL + L")) {
 						songInfo.tracks.clear();
 						deserializeSong(&songInfo, projectFile);
 						bootstrapSong(&songInfo, &engine);
-						ImGui::InsertNotification({ImGuiToastType::Info, 3000, "Loaded project from computer"});
+						InsertNotification({ImGuiToastType::Info, 3000, "Loaded project from computer"});
 					}
-					ImGui::MenuItem("Node Editor Debugger", nullptr, &editorState.showNodeEditorDebugger);
-					ImGui::MenuItem("Automation Debug Mode", nullptr, &editorState.automationDebugMode);
-					if (ImGui::MenuItem("Re-cache waveforms")) cacheWaveforms();
-					ImGui::Separator();
-					if (ImGui::MenuItem("Break Here")) {
+					MenuItem("Node Editor Debugger", nullptr, &editorState.showNodeEditorDebugger);
+					MenuItem("Automation Debug Mode", nullptr, &editorState.automationDebugMode);
+					if (MenuItem("Re-cache waveforms")) cacheWaveforms();
+					Separator();
+					if (MenuItem("Break Here")) {
 						bx::debugBreak();
 					}
-					if (ImGui::BeginItemTooltip()) {
-						ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-						if (fmodf((float)ImGui::GetTime(), 0.4f) < 0.2f) {
-							ImGui::TextUnformatted("WARNING: WITHOUT A DEBUGGER ATTACHED, THIS WILL CRASH AXE!!!");
+					if (BeginItemTooltip()) {
+						PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
+						if (fmodf((float)GetTime(), 0.4f) < 0.2f) {
+							TextUnformatted("WARNING: WITHOUT A DEBUGGER ATTACHED, THIS WILL CRASH AXE!!!");
 						}
-						ImGui::PopStyleColor();
-						ImGui::EndTooltip();
+						PopStyleColor();
+						EndTooltip();
 					}
-					ImGui::EndMenu();
+					EndMenu();
 				}
-				if (ImGui::BeginMenu("Help!")) {
-					if (ImGui::MenuItem("Diagnose issues!")) ImGui::OpenPopup("Dump and Ship");
-					ImGui::Separator();
-					ImGui::MenuItem("ShadowAudio information and help", nullptr, &editorState.showHelpDocs);
-					ImGui::Text("If you need help, just text me");
-					if (ImGui::MenuItem("Shadow Engine Website")) Util::openURL("https://shadow.77z.dev");
-					ImGui::EndMenu();
+				if (BeginMenu("Help!")) {
+					if (MenuItem("Diagnose issues!")) OpenPopup("Dump and Ship");
+					Separator();
+					MenuItem("ShadowAudio information and help", nullptr, &editorState.showHelpDocs);
+					Text("If you need help, just text me");
+					if (MenuItem("Shadow Engine Website")) Util::openURL("https://shadow.77z.dev");
+					EndMenu();
 				}
-				ImGui::EndMenuBar();
+				EndMenuBar();
 			}
 
-			ImGui::PushItemWidth(100.0f * editorState.sf);
-			ImGui::InputFloat("BPM", &songInfo.bpm, 1.0f, 5.0f);
-			ImGui::PushItemWidth(120.0f * editorState.sf);
-			ImGui::SameLine();
-			// ImGui::InputInt2("Time Signature", songInfo.timeSignature);
-			// ImGui::SameLine();
+			PushItemWidth(100.0f * editorState.sf);
+			InputFloat("BPM", &songInfo.bpm, 1.0f, 5.0f);
+			PushItemWidth(120.0f * editorState.sf);
+			SameLine();
+			// InputInt2("Time Signature", songInfo.timeSignature);
+			// SameLine();
 
 			const char* keyName = (songInfo.key >= 0 && songInfo.key < Keys_Count) ? keysPretty[songInfo.key] : "? Unknown ?";
-			// ImGui::SliderInt("Key", &songInfo.key, 0, Keys_Count - 1, keyName);
-			if (ImGui::BeginCombo("Key", keyName)) {
+			// SliderInt("Key", &songInfo.key, 0, Keys_Count - 1, keyName);
+			if (BeginCombo("Key", keyName)) {
 				for (int n = 0; n < ((int)(sizeof(keysPretty) / sizeof(*(keysPretty)))); n++) {
 					const bool isSelected = (songInfo.key == n);
-					if (ImGui::Selectable(keysPretty[n], isSelected))
+					if (Selectable(keysPretty[n], isSelected))
 						songInfo.key = n;
 
-					if (isSelected) ImGui::SetItemDefaultFocus();
+					if (isSelected) SetItemDefaultFocus();
 				}
-				ImGui::EndCombo();
+				EndCombo();
 			}
 
-			ImGui::SameLine();
-			ImGui::SliderFloat("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
+			SameLine();
+			SliderFloat("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
 
-			ImGui::SameLine();
-			ImGui::SliderFloat("Zoom", &editorState.zoom, 10.0f, 400.0f, "%.0f%%");
+			SameLine();
+			SliderFloat("Zoom", &editorState.zoom, 10.0f, 400.0f, "%.0f%%");
 
-			ImGui::SameLine();
-			if (ImGui::Button(ICON_CI_ZOOM_IN)) editorState.zoom = 100.0f;
-			ImGui::SetItemTooltip(ICON_CI_ZOOM_IN " Reset zoom");
+			SameLine();
+			if (Button(ICON_CI_ZOOM_IN)) editorState.zoom = 100.0f;
+			SetItemTooltip(ICON_CI_ZOOM_IN " Reset zoom");
 
-			ImGui::SameLine();
-			if (ImGui::Button(ICON_CI_DIFF_ADDED)) {
+			SameLine();
+			if (Button(ICON_CI_DIFF_ADDED)) {
 				Track newTrack;
 				newTrack.name = "Untitled Track";
 				songInfo.tracks.push_back(newTrack);
 			}
-			ImGui::SetItemTooltip("New Track");
+			SetItemTooltip("New Track");
 
-			ImGui::SameLine();
-			ImGui::ToggleButton(ICON_CI_MAGNET, &editorState.snappingEnabled);
-			ImGui::SetItemTooltip(ICON_CI_MAGNET " Toggle clip snapping");
+			SameLine();
+			ToggleButton(ICON_CI_MAGNET, &editorState.snappingEnabled);
+			SetItemTooltip(ICON_CI_MAGNET " Toggle clip snapping");
 
-			ImGui::SameLine();
-			if (ImGui::Button(timeline.isPlaying() ? ICON_CI_DEBUG_PAUSE : ICON_CI_PLAY)) {
+			SameLine();
+			if (Button(timeline.isPlaying() ? ICON_CI_DEBUG_PAUSE : ICON_CI_PLAY)) {
 				timeline.togglePlayback();
 			}
-			ImGui::SetItemTooltip("Play/Pause song from current position (SPACE)");
+			SetItemTooltip("Play/Pause song from current position (SPACE)");
 
-			ImGui::SameLine();
+			SameLine();
 			JobSystem::onUpdateStatusBar();
 
-			ImGui::SetCursorPosY(55.0f * editorState.sf);
-			ImGui::DockSpace(ImGui::GetID("AXEDockspace"));
-			ImGui::End();
+			SetCursorPosY(55.0f * editorState.sf);
+			DockSpace(GetID("AXEDockspace"));
+			End();
 		}
 
 		//TODO: change this to callback sliders
@@ -518,6 +523,7 @@ int startAXEEditor(std::string projectFile) {
 		nodeEditor.updateDebugMenu(editorState.showNodeEditorDebugger);
 		clipBrowser.onUpdate(editorState.showClipBrowser);
 		equalizer.onUpdate(editorState.showEqualizer);
+		onUpdateGlobalSettingsWindow(&editorState.showGlobalSettings);
 		ImGui::RenderNotifications();
 
 		// Rendering
