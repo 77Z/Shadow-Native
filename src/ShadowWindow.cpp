@@ -24,11 +24,12 @@
 namespace Shadow {
 
 ShadowWindow::ShadowWindow(
-	int width, int height, std::string title, bool decorations, bool fullscreen)
+	int width, int height, std::string title, bool decorations, bool openGlAPI, bool fullscreen)
 	: width(width)
 	, height(height)
 	, windowTitle(title)
 	, decorations(decorations)
+	, openGlAPI(openGlAPI)
 	, fullscreen(fullscreen) {
 	initWindow();
 }
@@ -67,8 +68,10 @@ float ShadowWindow::getContentScale() {
 void ShadowWindow::initWindow() {
 	glfwSetErrorCallback(glfw_errorCallback);
 
-	glfwInit();
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	if (!glfwInit()) ERROUT("GLFW FAILED TO INIT, EXPECT FAILURE FROM HERE");
+	if (!openGlAPI) {
+		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	}
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	glfwWindowHint(GLFW_DECORATED, (int)decorations);
 
@@ -76,7 +79,6 @@ void ShadowWindow::initWindow() {
 
 	window = glfwCreateWindow(width, height, windowTitle.c_str(), fullscreen ? primary : nullptr, nullptr);
 
-	// windowUserPointers.push_back(this);
 	windowUserPointers["window"] = this;
 	glfwSetWindowUserPointer(window, &windowUserPointers);
 

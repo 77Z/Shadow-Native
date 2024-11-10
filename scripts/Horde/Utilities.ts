@@ -75,7 +75,10 @@ Options:
 --clean                : Deletes BuildDir
 --confgen              : Generate engine configuration only
 --noshaders            : Skip shader build file generation (overides
-                         Shaders.Enabled setting in config file)`,
+                         Shaders.Enabled setting in config file)
+--dumpToJson           : Dumps JSON5 build file to raw JSON for tooling
+--dumpBuildDir         : Dumps the fully formatted path of the BuildDir
+                         configuration to stdout`,
 	);
 	Deno.exit();
 }

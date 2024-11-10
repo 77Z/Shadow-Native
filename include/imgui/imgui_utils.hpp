@@ -85,6 +85,8 @@ inline bool ImageButton(bgfx::TextureHandle _handle, const ImVec2& _size,
 
 bool Spinner(const char* label, float radius, int thickness, const ImU32& color);
 
+bool ToggleButton(const char* label, bool* v);
+
 }
 
 #endif /* SHADOW_NATIVE_IMGUI_UTILS_HPP */

@@ -10,7 +10,9 @@ using json = nlohmann::json;
 
 namespace Shadow::JSON {
 
-void dumpJsonToBson(json obj, std::string filepath);
+void dumpJsonToBson(json& obj, const std::string& filepath);
+
+void dumpJsonToFile(json& obj, const std::string& filepath, bool formatted = false);
 
 json readBsonFile(std::string filepath);
 

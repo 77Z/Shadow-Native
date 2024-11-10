@@ -152,7 +152,7 @@ static bool projectNode(ProjectEntry project) {
 	ImRect boundingBox(pos, ImVec2(pos.x + size.x, pos.y + size.y));
 
 	const ImGuiID id = window->GetID(label);
-	const ImVec2 label_size = ImGui::CalcTextSize(label, NULL, true);
+	const ImVec2 label_size = ImGui::CalcTextSize(label, nullptr, true);
 
 	ImGui::ItemSize(size);
 	if (!ImGui::ItemAdd(boundingBox, id))
@@ -177,7 +177,7 @@ static bool projectNode(ProjectEntry project) {
 	ImGui::RenderFrame(boundingBox.Min, boundingBox.Max, color, true, 3.0f);
 
 	ImGui::RenderTextClipped(ImVec2(boundingBox.Min.x, boundingBox.Min.y + 100),
-		ImVec2(boundingBox.Max.x, boundingBox.Max.y + 100), label, NULL, &label_size, ImVec2(0, 0),
+		ImVec2(boundingBox.Max.x, boundingBox.Max.y + 100), label, nullptr, &label_size, ImVec2(0, 0),
 		&boundingBox);
 
 	window->DrawList->AddImage(ImGui::toId(project.icon, 0, 0), boundingBox.Min,
@@ -361,7 +361,8 @@ int Editor::startProjectBrowser() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+		//TODO: fixme
+		// ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
 		ImGui::ShowDemoWindow();
 

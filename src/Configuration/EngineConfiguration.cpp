@@ -19,6 +19,7 @@ namespace Shadow::EngineConfiguration {
 		std::filesystem::create_directory(configDir);
 		std::filesystem::create_directory(configDir + "/Projects");
 		std::filesystem::create_directory(configDir + "/AXEProjects");
+		std::filesystem::create_directory(configDir + "/AXEProjects/GlobalLibrary");
 
 		json engineConfigFile;
 

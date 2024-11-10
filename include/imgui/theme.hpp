@@ -12,10 +12,13 @@ inline void SetupTheme() {
 	style.WindowRounding = 7.0f;
 	style.FrameRounding = 2.0f;
 
+	style.WindowTitleAlign.x = 0.5f;
+
 	style.Colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	style.Colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
 	style.Colors[ImGuiCol_WindowBg] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
-	style.Colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	// style.Colors[ImGuiCol_ChildBg] = ImVec4(0.10f, 0.10f, 0.00f, 0.50f);
+	style.Colors[ImGuiCol_ChildBg] = ImVec4(1.00f, 0.00f, 0.00f, 0.10f);
 	style.Colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
 	style.Colors[ImGuiCol_Border] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 	style.Colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
@@ -26,7 +29,7 @@ inline void SetupTheme() {
 	style.Colors[ImGuiCol_TitleBgActive] = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
 	style.Colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.00f, 0.00f, 0.00f, 0.51f);
 	style.Colors[ImGuiCol_MenuBarBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
-	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.04f, 0.04f, 0.04f, 1.00f);
+	style.Colors[ImGuiCol_ScrollbarBg] = ImVec4(0.04f, 0.04f, 0.04f, 0.00f);
 	style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
 	style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
 	style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
@@ -35,7 +38,8 @@ inline void SetupTheme() {
 	style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(1.00f, 0.17f, 0.17f, 1.00f);
 	style.Colors[ImGuiCol_Button] = ImVec4(1.00f, 0.17f, 0.17f, 1.00f);
 	style.Colors[ImGuiCol_ButtonHovered] = ImVec4(1.00f, 0.43f, 0.43f, 1.00f);
-	style.Colors[ImGuiCol_ButtonActive] = ImVec4(1.00f, 0.17f, 0.17f, 1.00f);
+	// style.Colors[ImGuiCol_ButtonActive] = ImVec4(1.00f, 0.17f, 0.17f, 1.00f);
+	style.Colors[ImGuiCol_ButtonActive] = ImVec4(0.53f, 0.00f, 0.00f, 1.00f);
 	style.Colors[ImGuiCol_Header] = ImVec4(1.00f, 0.17f, 0.17f, 1.00f);
 	style.Colors[ImGuiCol_HeaderHovered] = ImVec4(1.00f, 0.43f, 0.43f, 1.00f);
 	style.Colors[ImGuiCol_HeaderActive] = ImVec4(1.00f, 0.17f, 0.17f, 1.00f);
@@ -65,6 +69,9 @@ inline void SetupTheme() {
 	style.Colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 	style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 	style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.13f, 0.13f, 0.13f, 0.00f);
+	style.Colors[ImGuiCol_DockingPreview] = ImVec4(0.98f, 0.26f, 0.26f, 0.70f);
+	style.Colors[ImGuiCol_TabSelectedOverline] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
+	style.Colors[ImGuiCol_TabDimmedSelectedOverline] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
 }
 
 }

@@ -18,6 +18,12 @@
 #include <fstream>
 #include <vector>
 #include "generated/autoconf.h"
+#include <Editor/SlimEditor.hpp>
+
+// Forward Decls
+namespace Shadow::AXE {
+int startAXEAuthenticationWindow(int argc, char** argv);
+}
 
 namespace Shadow {
 int Main(int argc, char** argv) {
@@ -30,23 +36,21 @@ int Main(int argc, char** argv) {
 
 	InitBXFilesystem();
 
-	// return Shadow::StartProductionRuntime();
-
 #if CONFIG_SHADOW_PRODUCTION_BUILD
 	return Shadow::StartProductionRuntime();
 #else
 
 	EC_PRINT("All", "Welcome to Shadow Engine");
 
-	// PPK_ASSERT(true, "eval true");
-	// PPK_ASSERT(false, "eval false");
-
 	if (argc > 1) {
 		if (strcmp(argv[1], "axe") == 0) {
-			ret = Shadow::AXE::startAXEProjectBrowser();
+			ret = Shadow::AXE::startAXEProjectBrowser(argc, argv);
 		} else if (strcmp(argv[1], "axeEditor") == 0) {
-			ret = Shadow::AXE::startAXEEditor(
-				{ "Bruz", "/home/vince/.config/Shadow/AXEProjects/bruz" });
+			ret = Shadow::AXE::startAXEEditor("/home/vince/.config/Shadow/AXEProjects/testsong.axe");
+		} else if (strcmp(argv[1], "axeEditorWithProject") == 0) {
+			ret = Shadow::AXE::startAXEEditor(std::string(argv[2]));
+		} else if (strcmp(argv[1], "auth") == 0) {
+			ret = Shadow::AXE::startAXEAuthenticationWindow(argc, argv);
 		} else if (strcmp(argv[1], "editorwis") == 0) {
 			ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
 		} else if (strcmp(argv[1], "dev") == 0) {
@@ -67,6 +71,8 @@ int Main(int argc, char** argv) {
 			outfile.close();
 		} else if (strcmp(argv[1], "ModelViewer") == 0) {
 			ModelViewer mdlview((std::string(argv[2])));
+		} else if (strcmp(argv[1], "SlimEditor") == 0) {
+			Editor::startSlimEditor(std::string(argv[2]));
 		}
 	} else {
 		// return Shadow::StartRuntime();

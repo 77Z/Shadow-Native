@@ -141,7 +141,7 @@ Chunk loadChunk(const char* chunkFileLocation) {
 	headerVerificationBuf[12] = '\0';
 	if (strcmp(headerVerificationBuf, "SHADOW CHUNK") != 0) {
 		std::cerr << "Header doesn't match! Is this a chunker file??" << std::endl;
-		abort();
+		exit(1);
 	}
 
 	// Version verification
@@ -150,7 +150,7 @@ Chunk loadChunk(const char* chunkFileLocation) {
 	file.read((char*)&versionBuf, 1);
 	if (versionBuf != CHUNKER_FORMAT_VERSION) {
 		std::cerr << "Wrong chunk version!" << std::endl;
-		abort();
+		exit(1);
 	}
 	chunk.version = versionBuf;
 
