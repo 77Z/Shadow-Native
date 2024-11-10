@@ -28,6 +28,7 @@
 #include "../imgui/imgui_knobs.hpp"
 #include "AXEEqualizer.hpp"
 #include "AXEJobSystem.hpp"
+#include "AXEGlobalSettingsWindow.hpp"
 
 // Forward declarations
 namespace Shadow::Util {
@@ -40,7 +41,6 @@ void unloadSong(Song* song, ma_engine* audioEngine);
 void updateCurveTest();
 void initCurveTest();
 void cacheWaveforms();
-void onUpdateGlobalSettingsWindow(bool* p_open);
 }
 namespace bx {
 void debugBreak();
@@ -80,6 +80,8 @@ static ClipBrowser* gblClipBrowser;
 int startAXEEditor(std::string projectFile) {
 
 	initCurveTest();
+
+	loadGlobalSettingsFromDisk();
 
 	ma_result result;
 	ma_engine_config engineConfig = ma_engine_config_init();
@@ -429,6 +431,14 @@ int startAXEEditor(std::string projectFile) {
 			using namespace ImGui;
 			Begin("ShadowAudio");
 
+			SeparatorText("Basic debugging info");
+
+			ImGuiIO& io = GetIO();
+			Text("UI FPS: %.0f (average frametime: %.3f ms/frame)", io.Framerate, 1000.0f / io.Framerate);
+			Text("%d verts  :  %d indices  :  %d tris", io.MetricsRenderVertices, io.MetricsRenderIndices, io.MetricsRenderIndices / 3);
+
+			Separator();
+
 			if (Button("Play sound at 4s time")) {
 				// ma_engine_play_sound(&engine, "./Resources/sound.wav", nullptr);
 				ma_sound_seek_to_pcm_frame(&sound, 0);
@@ -523,7 +533,7 @@ int startAXEEditor(std::string projectFile) {
 		nodeEditor.updateDebugMenu(editorState.showNodeEditorDebugger);
 		clipBrowser.onUpdate(editorState.showClipBrowser);
 		equalizer.onUpdate(editorState.showEqualizer);
-		onUpdateGlobalSettingsWindow(&editorState.showGlobalSettings);
+		onUpdateGlobalSettingsWindow(editorState.showGlobalSettings);
 		ImGui::RenderNotifications();
 
 		// Rendering

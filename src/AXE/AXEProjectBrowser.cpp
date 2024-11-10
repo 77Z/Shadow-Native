@@ -142,6 +142,9 @@ int startAXEProjectBrowser(int argc, char** argv) {
 			ImGui::TreePop();
 		}
 
+		ImGui::SeparatorText("Existing Projects");
+
+		ImGui::Indent();
 		for (auto& project : projects) {
 			if (ImGui::Selectable(project.c_str())) {
 				projectFileToOpenAfterDeath = EngineConfiguration::getConfigDir() + "/AXEProjects/" + project;
@@ -149,6 +152,7 @@ int startAXEProjectBrowser(int argc, char** argv) {
 				window.close();
 			}
 		}
+		ImGui::Unindent();
 
 		ImGui::End();
 
