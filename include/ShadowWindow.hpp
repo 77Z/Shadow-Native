@@ -1,12 +1,9 @@
 #ifndef SHADOW_NATIVE_SHADOW_WINDOW_HPP
 #define SHADOW_NATIVE_SHADOW_WINDOW_HPP
 
-#include "Debug/Logger.hpp"
-#include "ShadowWindowUserPointerCarePackage.hpp"
 #include <GLFW/glfw3.h>
 #include <string>
 #include <unordered_map>
-#include <vector>
 
 typedef std::unordered_map<std::string, void*> UserPointersMap;
 
@@ -79,11 +76,8 @@ private:
 	int height;
 	bool framebufferResized = false;
 	bool decorations = true;
-<<<<<<< HEAD
 	bool fullscreen = false;
-=======
 	bool openGlAPI = false;
->>>>>>> 05b59d56daaa9a91f077fc78a1c93c7ac5ef7367
 };
 }
 

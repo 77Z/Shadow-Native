@@ -1,7 +1,6 @@
 #ifndef SHADOW_NATIVE_CONFIGURATION_ENGINE_CONFIGURATION_HPP
 #define SHADOW_NATIVE_CONFIGURATION_ENGINE_CONFIGURATION_HPP
 
-#include "Debug/Logger.hpp"
 #include "ShadowWindow.hpp"
 #include "bx/platform.h"
 #include "generated/autoconf.h"

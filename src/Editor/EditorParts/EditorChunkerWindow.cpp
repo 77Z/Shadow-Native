@@ -1,62 +1,42 @@
 #include "Editor/EditorParts/EditorParts.hpp"
-#include "bx/debug.h"
 #include "imgui.h"
-#include "imgui/imgui_utils.hpp"
-// #include "" // Chunker
-#include <cstdint>
-#include <string>
 
 namespace Shadow::Editor::EditorParts {
 
+#if 0
 static std::string SDinputPath = "";
 static std::string SDoutputPath = "";
 static bool SDcompress = true;
-
-struct buf {
-	uint8_t id;
-	float data;
-};
-
-struct __attribute__((__packed__)) packed_buf {
-	uint8_t id;
-	float data;
-};
+#endif
 
 void chunkerWindowUpdate() {
-	ImGui::Begin("Chunker");
+	using namespace ImGui;
 
-	ImGui::TextWrapped("Output is shown in the Chunker category of the EditorConsole");
+	Begin("Chunker");
 
-	ImGui::SeparatorText("Serialize Directory");
+	TextWrapped("Use the Shadow-Helper utility to generate chunker files");
 
-	ImGui::InputText("Input Path", &SDinputPath);
-	ImGui::InputText("Output Path", &SDoutputPath);
-	ImGui::Checkbox("Compress contents", &SDcompress);
-	if (ImGui::Button("Chunk")) {
+#if 0
+	TextWrapped("Output is shown in the Chunker category of the EditorConsole");
+
+	SeparatorText("Serialize Directory");
+
+	InputText("Input Path", &SDinputPath);
+	InputText("Output Path", &SDoutputPath);
+	Checkbox("Compress contents", &SDcompress);
+	if (Button("Chunk")) {
 		// Shadow::Chunker::Chunk chunk;
 		// chunk.
 	}
 
-	ImGui::SeparatorText("Deserialize Chunker File");
+	SeparatorText("Deserialize Chunker File");
 
-	// ImGui::InputText("Folder to chunk", std::string *str)
+	// InputText("Folder to chunk", std::string *str)
 
-	ImGui::SeparatorText("Debug");
+	SeparatorText("Debug");
+#endif
 
-	if (ImGui::Button("Alloc and break struct")) {
-		buf buffer;
-		packed_buf packed_buffer;
-		
-		buffer.id = 0xFF;
-		buffer.data = 3.232;
-
-		packed_buffer.id = 0xEC;
-		packed_buffer.data = 3.14159265;
-
-		bx::debugBreak();
-	}
-
-	ImGui::End();
+	End();
 }
 
 }

@@ -1,10 +1,8 @@
 #include "Editor/EditorParts/EditorParts.hpp"
 #include "bgfx/bgfx.h"
 #include "bx/bx.h"
-#include "dummy.hpp"
 #include "imgui.h"
 #include <cstdint>
-#include "IconsFontAwesome5.h"
 
 namespace Shadow::Editor::EditorParts {
 
@@ -86,19 +84,6 @@ void resourcesWindowUpdate() {
 	resourceBar("  U", "Uniforms",				stats->numUniforms,				caps->limits.maxUniforms,				maxWidth, itemHeight);
 	resourceBar(" VB", "Vertex buffers",			stats->numVertexBuffers,		caps->limits.maxVertexBuffers,			maxWidth, itemHeight);
 	resourceBar(" VL", "Vertex layouts",			stats->numVertexLayouts,		caps->limits.maxVertexLayouts,			maxWidth, itemHeight);
-
-	if (ImGui::Button("Dummy func")) {
-		Shadow::dummy();
-	}
-
-	ImGui::Text(ICON_FA_CERTIFICATE);
-	ImGui::Text(ICON_FA_HAND_POINT_RIGHT);
-	ImGui::Text(ICON_FA_HAND_POINT_LEFT);
-	ImGui::Text(ICON_FA_HAND_POINT_UP);
-	ImGui::Text(ICON_FA_ARROW_CIRCLE_LEFT);
-	ImGui::Text(ICON_FA_ARROW_CIRCLE_RIGHT);
-	ImGui::Text(ICON_FA_ARROW_CIRCLE_UP);
-	ImGui::Text(ICON_FA_ARROW_CIRCLE_DOWN);
 
 	ImGui::End();
 }

@@ -266,7 +266,7 @@ void ContentBrowser::onUpdate() {
 	ImGui::SameLine();
 
 	ImGui::BeginDisabled(getCurrentDir() == "/");
-	if (ImGui::Button("\xef\x82\xa3")) {
+	if (ImGui::Button("^")) {
 		std::string currentDir = getCurrentDir();
 		std::string newDir = currentDir.substr(0, currentDir.find_last_of("/"));
 		loadDir(&activeFileIndex, newDir.empty() ? "/" : newDir);
@@ -279,7 +279,7 @@ void ContentBrowser::onUpdate() {
 
 	ImGui::SameLine();
 
-	if (ImGui::Button("\xef\x82\xa6")) {
+	if (ImGui::Button("Reload")) {
 		reloadCurrentDir();
 	}
 

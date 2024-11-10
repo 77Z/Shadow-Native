@@ -24,7 +24,7 @@
 
 namespace Shadow {
 
-int StartProductionRuntime() {
+int StartProductionRuntimeWHAT() {
 
 	ShadowWindow window(1280, 720, "WIS", true, true);
 
