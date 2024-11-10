@@ -11,13 +11,13 @@ namespace Shadow {
 	// ! to operate on. Not really practical.
 	ModelViewer::ModelViewer(const std::string& filePath) {
 		ShadowWindow modelViewerWindow(800, 1200, "Shadow Engine Model Viewer");
-		RenderBootstrapper rb(&modelViewerWindow, bgfx::RendererType::Vulkan);
+		RenderBootstrapper rb(&modelViewerWindow, bgfx::RendererType::Vulkan, 0);
 
 		while (!modelViewerWindow.shouldClose()) {
 			modelViewerWindow.waitEvents();
 			rb.startFrame();
 
-			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport()->ID);
 
 			ImGui::Begin("Model Viewport");
 			ImGui::Text("%s", filePath.c_str());

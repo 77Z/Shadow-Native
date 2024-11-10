@@ -23,11 +23,13 @@
 
 namespace Shadow {
 
-ShadowWindow::ShadowWindow(int width, int height, std::string title, bool decorations)
+ShadowWindow::ShadowWindow(
+	int width, int height, std::string title, bool decorations, bool fullscreen)
 	: width(width)
 	, height(height)
 	, windowTitle(title)
-	, decorations(decorations) {
+	, decorations(decorations)
+	, fullscreen(fullscreen) {
 	initWindow();
 }
 
@@ -70,7 +72,9 @@ void ShadowWindow::initWindow() {
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	glfwWindowHint(GLFW_DECORATED, (int)decorations);
 
-	window = glfwCreateWindow(width, height, windowTitle.c_str(), nullptr, nullptr);
+	GLFWmonitor* primary = glfwGetPrimaryMonitor();
+
+	window = glfwCreateWindow(width, height, windowTitle.c_str(), fullscreen ? primary : nullptr, nullptr);
 
 	// windowUserPointers.push_back(this);
 	windowUserPointers["window"] = this;

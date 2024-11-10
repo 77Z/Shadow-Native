@@ -14,8 +14,8 @@
 
 namespace Shadow {
 
-RenderBootstrapper::RenderBootstrapper(
-	ShadowWindow* window, bgfx::RendererType::Enum renderer, bool vsync, const char* imguiIni)
+RenderBootstrapper::RenderBootstrapper(ShadowWindow* window, bgfx::RendererType::Enum renderer,
+	bgfx::ViewId viewId, bool vsync, const char* imguiIni)
 	: window(window)
 	, vsync(vsync) {
 	IMGUI_CHECKVERSION();
@@ -31,6 +31,9 @@ RenderBootstrapper::RenderBootstrapper(
 	init.resolution.reset = vsync ? BGFX_RESET_VSYNC : BGFX_RESET_NONE;
 
 	bgfx::init(init);
+
+	bgfx::setViewClear(viewId, BGFX_CLEAR_COLOR | BGFX_CLEAR_DEPTH, 0x222222FF, 1.0f, 0);
+	bgfx::setViewRect(viewId, 0, 0, bgfx::BackbufferRatio::Equal);
 
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();

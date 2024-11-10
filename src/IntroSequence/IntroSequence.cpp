@@ -64,7 +64,7 @@ int StartProductionRuntime() {
 		//:  }}}
 
 		
-		// Shitter camera
+		// basic camera
 		const bx::Vec3 at = {0.0f, 0.0f, 0.0f};
         const bx::Vec3 eye = {0.0f, 0.0f, -5.0f};
         float view[16];

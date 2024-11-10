@@ -8,8 +8,8 @@ namespace Shadow {
 
 class RenderBootstrapper {
 public:
-	RenderBootstrapper(ShadowWindow* window, bgfx::RendererType::Enum renderer, bool vsync = true,
-		const char* imguiIni = "imgui.ini");
+	RenderBootstrapper(ShadowWindow* window, bgfx::RendererType::Enum renderer, bgfx::ViewId viewId,
+		bool vsync = true, const char* imguiIni = "imgui.ini");
 
 	void startFrame();
 	void endFrame();
