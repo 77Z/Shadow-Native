@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <fstream>
 #include <utility>
+#include "GoDownInFlames.hpp"
 
 #define EC_THIS "Song Serializer"
 
@@ -136,9 +137,9 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 		output["nodeGraphs"].push_back(ngObj);
 	}
 
-	JSON::dumpJsonToFile(output, filepath + ".raw", true);
+	// JSON::dumpJsonToFile(output, filepath + ".raw", true);
 
-	// JSON::dumpJsonToBson(output, filepath);
+	JSON::dumpJsonToBson(output, filepath);
 
 	return true;
 }
@@ -147,7 +148,13 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 	EC_NEWCAT(EC_THIS);
 
 	std::ifstream infile(filepath);
-	if (!infile) ERROUT("Failed to read song file, expect failure from here");
+	if (!infile) {
+		ERROUT("Failed to read song file!");
+		ERROUT("Attempted to read path %s", filepath.c_str());
+
+		BAILOUT("Failed to read song file, talk to Vince and check stdout");
+		return false;
+	}
 	json decodedSong = json::from_bson(infile);
 	infile.close();
 

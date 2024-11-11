@@ -24,7 +24,7 @@
 #include <csignal>
 #include <cstdint>
 #include "../../lib/bgfx/3rdparty/dear-imgui/widgets/gizmo.h"
-#include "IconsFontAwesome5.h"
+#include "../AXE/IconsCodicons.h"
 
 #define EDITOR_UI_VIEW_ID 2
 #define EDITOR_VIEWPORT_VIEW_ID 10
@@ -121,21 +121,41 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 					|	ImGuiConfigFlags_NavEnableGamepad;
 		io.ConfigDockingTransparentPayload = true;
 
-		float sf = editorWindow.getContentScale();
-		io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
-		// io.Fonts->AddFontDefault();
-		ImGui::GetStyle().ScaleAllSizes(sf);
-		io.IniFilename = "./Resources/editor.ini";
+		// Font loading and scaling
+		{
+			// IMGUI_ENABLE_FREETYPE in imconfig to use Freetype for higher quality font rendering
+			float sf = editorWindow.getContentScale();
 
-		// Icons
-		// const float iconFontSize = 50.0f /* base font size */ * 2.0f / 3.0f;
-		// static const ImWchar icon_ranges[] = { ICON_MIN_FA, ICON_MAX_16_FA, 0 };
-		// ImFontConfig icon_config;
-		// icon_config.MergeMode = true;
-		// icon_config.PixelSnapH = true;
-		// icon_config.GlyphMinAdvanceX = iconFontSize;
-		// io.Fonts->AddFontFromFileTTF("./Resources/VFontAwesome.ttf", iconFontSize, &icon_config, icon_ranges);
-		// io.Fonts->AddFontFromFileTTF("./Resources/" FONT_ICON_FILE_NAME_FAS, iconFontSize, &icon_config, icon_ranges);
+			float fontSize = 16.0f * sf;
+			float iconFontSize = (fontSize * 2.0f / 3.0f) * sf;
+
+			ImVector<ImWchar> ranges;
+			ImFontGlyphRangesBuilder builder;
+			builder.AddText((const char*)u8"♭");
+
+			ImFontConfig fontCfg;
+			fontCfg.OversampleH = 4;
+			fontCfg.OversampleV = 4;
+			fontCfg.PixelSnapH = false;
+
+			ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", fontSize, &fontCfg, ranges.Data);
+			// ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/arial.ttf", fontSize, &fontCfg, ranges.Data);
+
+			static const ImWchar iconRanges[] = { ICON_MIN_CI, ICON_MAX_CI, 0 };
+
+			ImFontConfig iconFontCfg;
+			iconFontCfg.GlyphMinAdvanceX = iconFontSize;
+			iconFontCfg.MergeMode = true;
+			iconFontCfg.PixelSnapH = true;
+			iconFontCfg.OversampleH = 2;
+			iconFontCfg.OversampleV = 2;
+			iconFontCfg.GlyphOffset.y = 6;
+			iconFontCfg.DstFont = primaryFont;
+
+			io.Fonts->AddFontFromFileTTF("./Resources/codicon.ttf", 20.0f * sf, &iconFontCfg, iconRanges);
+
+			ImGui::GetStyle().ScaleAllSizes(sf);
+		}
 
 		ImGui::SetupTheme();
 

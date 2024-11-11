@@ -45,7 +45,7 @@ void cacheWaveforms() {
 				EC_PRINT(EC_THIS, "Operating on file %s", uniqueName.c_str());
 				EC_PRINT(EC_THIS, "    - HASH: %s", std::to_string(checksum).c_str());
 
-				std::system(std::string("audiowaveform -z " + std::to_string(getGlobalSettings()->samplesPerPixel) + " -i " + file.path().string() + " -o " + cachePath + "/" + preProcessedWaveformFileName).c_str());
+				std::system(std::string("audiowaveform -z " + std::to_string(/* getGlobalSettings()->samplesPerPixel */ 100) + " -i " + file.path().string() + " -o " + cachePath + "/" + preProcessedWaveformFileName).c_str());
 
 				// Post-process data
 				// We inject arbitrary props at this point

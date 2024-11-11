@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include "../AXE/IconsCodicons.h"
 
 namespace ImGui::ContentBrowser {
 
@@ -186,7 +187,7 @@ void ContentBrowser::drawPathNavigationRail() {
 		}
 
 		ImGui::SameLine();
-		ImGui::Text(">");
+		ImGui::Text(ICON_CI_CHEVRON_RIGHT);
 		ImGui::SameLine();
 
 		// Each directory in the loop stacks onto this string allowing for
@@ -198,7 +199,7 @@ void ContentBrowser::drawPathNavigationRail() {
 			if (ImGui::Button((dir + "##blah").c_str()))
 				loadDir(&activeFileIndex, builder);
 			ImGui::SameLine();
-			ImGui::Text(">");
+			ImGui::Text(ICON_CI_CHEVRON_RIGHT);
 			ImGui::SameLine();
 		}
 		ImGui::PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(0, 0, 0, 0));
@@ -266,7 +267,7 @@ void ContentBrowser::onUpdate() {
 	ImGui::SameLine();
 
 	ImGui::BeginDisabled(getCurrentDir() == "/");
-	if (ImGui::Button("^")) {
+	if (ImGui::Button(ICON_CI_ARROW_UP)) {
 		std::string currentDir = getCurrentDir();
 		std::string newDir = currentDir.substr(0, currentDir.find_last_of("/"));
 		loadDir(&activeFileIndex, newDir.empty() ? "/" : newDir);
@@ -279,7 +280,7 @@ void ContentBrowser::onUpdate() {
 
 	ImGui::SameLine();
 
-	if (ImGui::Button("Reload")) {
+	if (ImGui::Button(ICON_CI_REFRESH)) {
 		reloadCurrentDir();
 	}
 

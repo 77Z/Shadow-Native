@@ -175,12 +175,6 @@ int startAXEEditor(std::string projectFile) {
 			&& down) {
 				ImGui::InsertNotification({ImGuiToastType::Success, 3000, "Bruh"});
 			}
-
-#if 0
-		if (key == KeyButton_Space && down) {
-			timeline.togglePlayback();
-		}
-#endif
 	});
 
 	IMGUI_CHECKVERSION();

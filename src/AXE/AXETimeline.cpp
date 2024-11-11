@@ -392,7 +392,6 @@ void Timeline::onUpdate() {
 						loadClipDataFromAXEwf(clip);
 					}
 				// }
-				SetItemTooltip("Draw waveform(debug)");
 				if (IsWindowHovered() && BeginTooltip()) {
 					Text("pos (u64) %lu\nlength (u64) %llu\npos + len (end rail pos) %llu",
 						clip->position,
@@ -412,12 +411,17 @@ void Timeline::onUpdate() {
 					auto halfwayY = basePos.y + (GetContentRegionAvail().y / 2);
 					wdl->AddLine(ImVec2(basePos.x, halfwayY), ImVec2(basePos.x + GetContentRegionAvail().x, halfwayY), IM_COL32(255, 0, 0, 255), 3);
 
+					GetForegroundDrawList()->AddRect(GetMainViewport()->Pos, GetMainViewport()->Size, IM_COL32(0, 255, 0, 255));
+					PushClipRect(GetMainViewport()->Pos, GetMainViewport()->Size, false);
+
 					if (clip->waveformChannels == 1) {
 						for (size_t i = 0; i < clip->waveformData.size(); i++) {
 							float x = basePos.x + (i * editorState->zoom / 100);
 							wdl->AddLine(ImVec2(x, halfwayY + clip->waveformData.at(i) * 0.003), ImVec2(x, halfwayY), IM_COL32(255, 0, 0, 255));
 						}
 					}
+
+					PopClipRect();
 				}
 				EndChild();
 				PopID();
@@ -705,12 +709,25 @@ void Timeline::onUpdate() {
 				clip->baseAudioSource = clipPathString;
 				clip->name = "Untitled Clip";
 
-				ma_uint64 len = 0;
+				// ma_uint64 len = 0;
+				// res = ma_sound_init_from_file(audioEngine, clipPath, soundFlags, nullptr, nullptr, &clip->engineSound);
+				// if (res != MA_SUCCESS) EC_ERROUT(EC_THIS, "Engine failure to load audio from file! Err enum %i", res);
+				// else clip->loaded = true;
+				// res = ma_data_source_get_length_in_pcm_frames(&clip->engineSound, &len);
+				// if (res != MA_SUCCESS) EC_ERROUT(EC_THIS, "Engine failure calc clip length! Err enum %i", res);
+
+				ma_decoder decoder;
 				res = ma_sound_init_from_file(audioEngine, clipPath, soundFlags, nullptr, nullptr, &clip->engineSound);
-				if (res != MA_SUCCESS) EC_ERROUT(EC_THIS, "Engine failure to load audio from file! Err enum %i", res);
-				else clip->loaded = true;
-				res = ma_data_source_get_length_in_pcm_frames(&clip->engineSound, &len);
-				if (res != MA_SUCCESS) EC_ERROUT(EC_THIS, "Engine failure calc clip length! Err enum %i", res);
+				res = ma_decoder_init_file(clipPath, nullptr, &decoder);
+
+				ma_uint64 len;
+				res = ma_decoder_get_length_in_pcm_frames(&decoder, &len);
+				len = len / 100;
+
+				clip->loaded = true;
+
+				ma_decoder_uninit(&decoder);
+
 
 				// clip->length = (uint64_t)len;
 				clip->length = len;

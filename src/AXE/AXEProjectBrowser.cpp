@@ -3,6 +3,7 @@
 #include "AXETypes.hpp"
 #include "Configuration/EngineConfiguration.hpp"
 #include "Debug/Logger.hpp"
+#include "IconsCodicons.h"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
@@ -77,12 +78,40 @@ int startAXEProjectBrowser(int argc, char** argv) {
 	ImGui_ImplGlfw_InitForOpenGL(window.window, true);
 	ImGui_ImplOpenGL3_Init(glsl_version);
 
+	// Font loading and scaling
 	// IMGUI_ENABLE_FREETYPE in imconfig to use Freetype for higher quality font rendering
 	float sf = window.getContentScale();
-	// float sf = 1.5;
-	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
+
+	float fontSize = 16.0f * sf;
+	float iconFontSize = (fontSize * 2.0f / 3.0f) * sf;
+
+	ImVector<ImWchar> ranges;
+
+	ImFontConfig fontCfg;
+	fontCfg.OversampleH = 4;
+	fontCfg.OversampleV = 4;
+	fontCfg.PixelSnapH = false;
+
+	ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", fontSize, &fontCfg, ranges.Data);
+	// ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/arial.ttf", fontSize, &fontCfg, ranges.Data);
+
+	static const ImWchar iconRanges[] = { ICON_MIN_CI, ICON_MAX_CI, 0 };
+
+	ImFontConfig iconFontCfg;
+	iconFontCfg.GlyphMinAdvanceX = iconFontSize;
+	iconFontCfg.MergeMode = true;
+	iconFontCfg.PixelSnapH = true;
+	iconFontCfg.OversampleH = 2;
+	iconFontCfg.OversampleV = 2;
+	iconFontCfg.GlyphOffset.y = 6;
+	iconFontCfg.DstFont = primaryFont;
+
+	io.Fonts->AddFontFromFileTTF("./Resources/codicon.ttf", 20.0f * sf, &iconFontCfg, iconRanges);
+
 	ImFont* headingFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 40.0f * sf);
+
 	ImGui::GetStyle().ScaleAllSizes(sf);
+
 
 	std::vector<std::string> projects = reloadProjects();
 
@@ -116,7 +145,7 @@ int startAXEProjectBrowser(int argc, char** argv) {
 		ImGui::PopStyleVar(3);
 
 		ImGui::PushFont(headingFont);
-		ImGui::Text("  Shadow Engine AXE DAW (Hi Wyatt!)");
+		ImGui::Text(" Shadow Engine AXE Audio");
 		ImGui::PopFont();
 
 		if (ImGui::TreeNode("New Song")) {
@@ -146,7 +175,7 @@ int startAXEProjectBrowser(int argc, char** argv) {
 
 		ImGui::Indent();
 		for (auto& project : projects) {
-			if (ImGui::Selectable(project.c_str())) {
+			if (ImGui::Selectable((std::string(ICON_CI_SYMBOL_METHOD) + " " + project).c_str())) {
 				projectFileToOpenAfterDeath = EngineConfiguration::getConfigDir() + "/AXEProjects/" + project;
 				openEditorAfterDeath = true;
 				window.close();
@@ -179,7 +208,7 @@ int startAXEProjectBrowser(int argc, char** argv) {
 
 	glfwTerminate();
 
-	std::system((std::string(argv[0]) + " axeEditorWithProject " + projectFileToOpenAfterDeath).c_str());
+	if (openEditorAfterDeath) std::system((std::string(argv[0]) + " axeEditorWithProject \"" + projectFileToOpenAfterDeath + "\"").c_str());
 
 	return 0;
 }

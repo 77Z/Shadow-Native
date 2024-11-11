@@ -9,7 +9,6 @@
 #include <cstdio>
 #include <inttypes.h>
 #include <iostream>
-#include <string>
 #include <termcolor.hpp>
 
 // Don't want to use BX_UNUSED here because Logger should be independent
