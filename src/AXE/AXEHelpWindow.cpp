@@ -114,6 +114,15 @@ void updateHelpWindow(bool& p_open) {
 	TextWrapped("Sample Rate	the number of PCM frames that are processed per second. Always "
 				"expressed in Hz, such as 44100, 48000, etc.");
 
+	
+	Spacing();
+	SeparatorText("Pushing the limits in AXE Audio");
+
+	TextWrapped("My personal favorite part about AXE is that you can push the software to the absolute limit of your hardware and it won't complain one bit. Most sliders and dials have sensible default minimums and maximums that you can adjust. But one of the key features of AXE is that you can CTRL + Click on pretty much every one of these fields and put in something beyond the max, or below the min. Be stupid with it, but everything past the built-in max and mins is on you. CTRL + S to save your work before you do something dumb, because that one's on you, but go ahead, try it, you might just do something cool.");
+	Spacing();
+	TextWrapped("Want to see what a filter order of 1,000,000 looks like on a low pass filter? Me too! Try it! It probably sounds cool, but it also will probably crash your computer. I don't know! Just press CTRL + S please!");
+	TextWrapped("Volume of 500%%? Go for it. Timeline zoom to -150%%? Why not! JUST PRESS CTRL + S");
+
 	End();
 }
 }

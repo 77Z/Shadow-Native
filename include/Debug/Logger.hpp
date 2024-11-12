@@ -14,9 +14,9 @@
 // Don't want to use BX_UNUSED here because Logger should be independent
 #define SHADOW_NATIVE_LOGGER_UNUSED(expression) (void)(true ? (void)0 : ((void)(expression)))
 
-#define PRINT(fmt, ...) Shadow::Logger::debugPrintf(__FILE__, fmt, ##__VA_ARGS__)
-#define WARN(fmt, ...) Shadow::Logger::debugWarnf(__FILE__, fmt, ##__VA_ARGS__)
-#define ERROUT(fmt, ...) Shadow::Logger::debugErrorf(__FILE__, fmt, ##__VA_ARGS__)
+#define PRINT(fmt, ...) Shadow::Logger::debugPrintf(__FILE_NAME__, fmt, ##__VA_ARGS__)
+#define WARN(fmt, ...) Shadow::Logger::debugWarnf(__FILE_NAME__, fmt, ##__VA_ARGS__)
+#define ERROUT(fmt, ...) Shadow::Logger::debugErrorf(__FILE_NAME__, fmt, ##__VA_ARGS__)
 
 namespace Shadow::Logger {
 

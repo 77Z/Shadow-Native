@@ -208,9 +208,10 @@ int startAXEProjectBrowser(int argc, char** argv) {
 
 	glfwTerminate();
 
-	if (openEditorAfterDeath) std::system((std::string(argv[0]) + " axeEditorWithProject \"" + projectFileToOpenAfterDeath + "\"").c_str());
+	int ret = 0;
+	if (openEditorAfterDeath) ret = std::system((std::string(argv[0]) + " axeEditorWithProject \"" + projectFileToOpenAfterDeath + "\"").c_str());
 
-	return 0;
+	return ret;
 }
 
 }

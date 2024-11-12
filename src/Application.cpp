@@ -24,6 +24,9 @@
 namespace Shadow::AXE {
 int startAXEAuthenticationWindow(int argc, char** argv);
 }
+namespace Shadow {
+int startCrashpad(int argc, char** argv);
+}
 
 namespace Shadow {
 int Main(int argc, char** argv) {
@@ -73,6 +76,8 @@ int Main(int argc, char** argv) {
 			ModelViewer mdlview((std::string(argv[2])));
 		} else if (strcmp(argv[1], "SlimEditor") == 0) {
 			Editor::startSlimEditor(std::string(argv[2]));
+		} else if (strcmp(argv[1], "Crashpad") == 0) {
+			ret = startCrashpad(argc, argv);
 		}
 	} else {
 		// return Shadow::StartRuntime();
