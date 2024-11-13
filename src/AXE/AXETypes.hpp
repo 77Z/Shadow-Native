@@ -224,6 +224,7 @@ struct EditorState {
 	bool showClipBrowser = true;
 	bool showEqualizer = true;
 	bool showGlobalSettings = false;
+	bool showPianoRoll = true;
 };
 
 }

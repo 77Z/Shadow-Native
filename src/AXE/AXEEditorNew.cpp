@@ -29,6 +29,7 @@
 #include "AXEEqualizer.hpp"
 #include "AXEJobSystem.hpp"
 #include "AXEGlobalSettingsWindow.hpp"
+#include "AXEPianoRoll.hpp"
 
 // Forward declarations
 namespace Shadow::Util {
@@ -150,6 +151,7 @@ int startAXEEditor(std::string projectFile) {
 	ClipBrowser clipBrowser;
 	AXENodeEditor nodeEditor(&songInfo);
 	AXEEqualizer equalizer;
+	PianoRoll pianoRoll;
 
 	// Keyboard Shortcuts
 	keyboard.registerKeyCallback([&](KeyButton_ key, bool down, KeyModifiers_ mods) {
@@ -527,6 +529,7 @@ int startAXEEditor(std::string projectFile) {
 		nodeEditor.updateDebugMenu(editorState.showNodeEditorDebugger);
 		clipBrowser.onUpdate(editorState.showClipBrowser);
 		equalizer.onUpdate(editorState.showEqualizer);
+		pianoRoll.onUpdate(editorState.showPianoRoll);
 		onUpdateGlobalSettingsWindow(editorState.showGlobalSettings);
 		ImGui::RenderNotifications();
 

@@ -5,7 +5,6 @@
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "../../lib/bgfx/3rdparty/dear-imgui/widgets/gizmo.h"
-#include "IconsFontAwesome5.h"
 
 namespace Shadow::Editor::EditorParts {
 
