@@ -53,27 +53,27 @@ void PianoRoll::onUpdate(bool& p_open) {
 			cur_key++;
 		}
 	}
-	// cur_key = 22;
-	// for (int key = 0; key < 52; key++) {
-	// 	if (hasBlack(key)) {
-	// 		ImU32 col = Black;
-	// 		if (key_states[cur_key]) {
-	// 			col = Red;
-	// 		}
-	// 		draw_list->AddRectFilled(
-	// 				ImVec2(p.x + key * width + width * 3 / 4, p.y),
-	// 				ImVec2(p.x + key * width + width * 5 / 4 + 1, p.y + 80),
-	// 				col, 0, ImDrawFlags_RoundCornersAll);
-	// 		draw_list->AddRect(
-	// 				ImVec2(p.x + key * width + width * 3 / 4, p.y),
-	// 				ImVec2(p.x + key * width + width * 5 / 4 + 1, p.y + 80),
-	// 				Black, 0, ImDrawFlags_RoundCornersAll);
+	cur_key = 22;
+	for (int key = 0; key < 52; key++) {
+		if (hasBlack(key)) {
+			ImU32 col = Black;
+			if (key_states[cur_key]) {
+				col = Red;
+			}
+			draw_list->AddRectFilled(
+					ImVec2(p.x + key * width + width * 3 / 4, p.y),
+					ImVec2(p.x + key * width + width * 5 / 4 + 1, p.y + 80),
+					col, 0, ImDrawFlags_RoundCornersAll);
+			draw_list->AddRect(
+					ImVec2(p.x + key * width + width * 3 / 4, p.y),
+					ImVec2(p.x + key * width + width * 5 / 4 + 1, p.y + 80),
+					Black, 0, ImDrawFlags_RoundCornersAll);
 
-	// 		cur_key += 2;
-	// 	} else {
-	// 		cur_key++;
-	// 	}
-	// }
+			cur_key += 2;
+		} else {
+			cur_key++;
+		}
+	}
 
 	End();
 

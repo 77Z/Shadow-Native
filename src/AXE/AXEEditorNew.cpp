@@ -147,7 +147,7 @@ int startAXEEditor(std::string projectFile) {
 
 	Keyboard keyboard(&window);
 
-	Timeline timeline(&songInfo, &editorState, &engine);
+	Timeline timeline(&songInfo, &editorState, &engine, &window);
 	ClipBrowser clipBrowser;
 	AXENodeEditor nodeEditor(&songInfo);
 	AXEEqualizer equalizer;

@@ -3,6 +3,7 @@
 
 #include "AXEClipBrowser.hpp"
 #include "AXETypes.hpp"
+#include "ShadowWindow.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
 #include <memory>
@@ -11,7 +12,7 @@ namespace Shadow::AXE {
 
 class Timeline {
 public:
-	Timeline(Song* songInfo, EditorState* editorState, ma_engine* audioEngine);
+	Timeline(Song* songInfo, EditorState* editorState, ma_engine* audioEngine, ShadowWindow* window);
 	~Timeline();
 
 	void onUpdate();
@@ -25,6 +26,7 @@ private:
 	Song* songInfo;
 	EditorState* editorState;
 	ma_engine* audioEngine;
+	ShadowWindow* window;
 
 	uint64_t playbackFrames = 0;
 	bool playing = false;

@@ -8,6 +8,14 @@
 typedef std::unordered_map<std::string, void*> UserPointersMap;
 
 namespace Shadow {
+
+enum ShadowEngineCursors_ {
+	ShadowEngineCursors_CropClipLeft,
+	ShadowEngineCursors_CropClipRight,
+
+	ShadowEngineCursors_COUNT
+};
+
 class ShadowWindow {
 public:
   ShadowWindow(int width, int height, std::string title, bool decorations = true, bool openGlAPI = false, bool fullscreen = false);
@@ -56,6 +64,8 @@ public:
 	void lockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
 	void unlockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
 
+	void setSECursor(ShadowEngineCursors_ cursor);
+
 	std::string windowTitle;
 
 	// std::vector<void*> windowUserPointers;
@@ -71,6 +81,7 @@ private:
 	static void glfw_dropCallback(GLFWwindow* window, int count, const char** paths);
 	// static void mouseInputPassthrough(GLFWwindow* window, int button, int action, int mods);
 	void initWindow();
+	void loadCursors();
 
 	int width;
 	int height;

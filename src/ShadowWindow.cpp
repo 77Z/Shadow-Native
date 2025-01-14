@@ -2,7 +2,10 @@
 #include "Debug/Logger.hpp"
 #include "ShadowWindowUserPointerCarePackage.hpp"
 #include "bx/platform.h"
+#include <cstring>
+#include <unordered_map>
 #include <vector>
+#include "stb_image.h"
 
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
 #define GLFW_EXPOSE_NATIVE_X11
@@ -20,8 +23,9 @@
 
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
-
 namespace Shadow {
+
+static std::pmr::unordered_map<ShadowEngineCursors_, GLFWcursor*> cursorMap;
 
 ShadowWindow::ShadowWindow(
 	int width, int height, std::string title, bool decorations, bool openGlAPI, bool fullscreen)
@@ -83,6 +87,48 @@ void ShadowWindow::initWindow() {
 	glfwSetWindowUserPointer(window, &windowUserPointers);
 
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
+	
+	loadCursors();
+}
+
+void ShadowWindow::loadCursors() {
+
+	auto loadInvdividualCursor = [](const char* imgPath, int xhot, int yhot) -> GLFWcursor* {
+		int width, height, channels;
+		unsigned char* pixels = stbi_load(imgPath, &width, &height, &channels, 4);
+
+		GLFWimage image;
+
+		if (!pixels) {
+			ERROUT("Failed to load cursor image %s", imgPath);
+			ERROUT("Falling back to white square, some cursors will not be rendered properly!");
+
+			unsigned char data[16 * 16 * 4];
+			memset(data, 0xff, sizeof(data));
+
+			image.width  = 16;
+			image.height = 16;
+			image.pixels = data;
+		} else {
+			// Successfully loaded
+
+			image.width = width;
+			image.height = height;
+			image.pixels = pixels;
+
+			stbi_image_free(pixels);
+		}
+
+		return glfwCreateCursor(&image, xhot, yhot);
+	};
+
+	cursorMap[ShadowEngineCursors_CropClipLeft] = loadInvdividualCursor("./Resources/icons/Cursors/CropClipLeft.png", 16, 11);
+	cursorMap[ShadowEngineCursors_CropClipRight] = loadInvdividualCursor("./Resources/icons/Cursors/CropClipRight.png", 0, 0);
+
+}
+
+void ShadowWindow::setSECursor(ShadowEngineCursors_ cursor) {
+	glfwSetCursor(window, cursorMap[cursor]);
 }
 
 void ShadowWindow::glfw_errorCallback(int error, const char* description) {

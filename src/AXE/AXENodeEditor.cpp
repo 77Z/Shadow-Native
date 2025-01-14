@@ -127,8 +127,10 @@ void AXENodeEditor::nodeAddMenu() {
 	MenuItem("Band Pass");
 	MenuItem("Notch");
 	MenuItem("Peaking EQ");
+	MenuItem("Compression");
 	SeparatorText("Effects");
 	if (MenuItem("Delay / Echo")) SpawnDelayNode();
+	MenuItem("Reverb");
 	SeparatorText("Generation");
 	MenuItem("Waveform");
 	MenuItem("Noise");
