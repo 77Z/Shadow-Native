@@ -1,15 +1,19 @@
 {
 
-	ProductName: "Shadow Engine Windows Build",
-	Version: "0.7.0",
+	ProductName: "Shadow Engine for Windows",
+	Version: "0.8.0",
 
 	// Extra string appended to version number to help identify and
 	// differentiate builds from each other. If not empty, a "-" will be
 	// prefixed to the local version, so no need to add it yourself
 	LocalVersion: "win",
 
-	CC: "gcc",
-	CXX: "g++",
+	// CC: "gcc",
+	// CXX: "g++",
+	// AR: "ar",
+
+	CC: "clang",
+	CXX: "clang++",
 	AR: "ar",
 
 	// CC: "clang",

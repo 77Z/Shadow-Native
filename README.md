@@ -23,10 +23,21 @@ probably be replaced in the future. This also means that running make with
 
 ## Windows
 
+You will need Visual Studio 2022 with the *Desktop Development with C++*
+package installed.
+
 Windows support is worked on occasionally and can be done by running Horde
 as `./Horde --config winbuild.json5`
 
 This expects a gcc/clang type compiler and isn't going to work with MSVC
+
+### WinGet Packages to install
+```
+Git.Git
+LLVM.LLVM
+Ninja-build.Ninja
+Microsoft.VCRedist.2015+.x64
+```
 
 # Dependencies on Arch Linux
 ```bash
