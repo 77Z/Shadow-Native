@@ -13,6 +13,7 @@ scripts/deno
 scripts/deno.exe
 node_modules
 AXEUI/nativeLink/headers
+ShadowCrashHandler
 *.node
 
 # Rust

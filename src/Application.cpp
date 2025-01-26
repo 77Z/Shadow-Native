@@ -19,7 +19,6 @@
 #include <vector>
 #include "generated/autoconf.h"
 #include <Editor/SlimEditor.hpp>
-#include "GoDownInFlames.hpp"
 
 #if BX_PLATFORM_WINDOWS
 #	include <Windows.h>
@@ -70,7 +69,7 @@ int Main(const std::vector<std::string>& args) {
 			outfile << sceneInput.dump(2);
 			outfile.close();
 		} else if (args[1] == "sceneEncode") {
-			WARN("Encoding %s to %s", args[2], args[3]);
+			WARN("Encoding %s to %s", args[2].c_str(), args[3].c_str());
 			std::ifstream infile(args[2]);
 			std::vector<uint8_t> bson = json::to_bson(json::parse(infile));
 			std::ofstream outfile(args[3]);

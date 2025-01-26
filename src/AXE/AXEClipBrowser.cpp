@@ -146,7 +146,11 @@ void ClipBrowser::addFileToLibrary(const std::string& filepath) {
 	try {
 		std::filesystem::copy_file(filepath, globalLibraryPath + "/" + filepath.substr(filepath.find_last_of("/") + 1));
 	} catch (const std::exception& e) {
-		// TODO: Throw user facing error here
+		ImGui::InsertNotification({
+			ImGuiToastType::Error,
+			5000,
+			"Failed to import audio file :/",
+		});
 	}
 
 	refreshFiles();

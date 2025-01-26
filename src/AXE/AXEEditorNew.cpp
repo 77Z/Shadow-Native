@@ -380,6 +380,18 @@ int startAXEEditor(std::string projectFile) {
 			SetItemTooltip("New Track");
 
 			SameLine();
+			if (Button("C")) {
+				// IMPL
+			}
+			SetItemTooltip("Slice clip...");
+
+			SameLine();
+			if (Button("CC")) {
+				// IMPL
+			}
+			SetItemTooltip("Multi slice clip cut");
+
+			SameLine();
 			ToggleButton(ICON_CI_MAGNET, &editorState.snappingEnabled);
 			SetItemTooltip(ICON_CI_MAGNET " Toggle clip snapping");
 
