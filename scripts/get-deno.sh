@@ -6,3 +6,5 @@ wget https://github.com/denoland/deno/releases/latest/download/deno-x86_64-unkno
 unzip deno-x86_64-unknown-linux-gnu.zip
 rm deno-x86_64-unknown-linux-gnu.zip
 chmod +x ./deno
+
+echo "Deno has been downloaded and unzipped successfully."

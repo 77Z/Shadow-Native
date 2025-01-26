@@ -3,6 +3,11 @@ import { HORDE_VERSION } from "./Product.ts";
 import { mkIfNotExist } from "./Utilities.ts";
 import { cliFlags, ProductVersion } from "./main.ts";
 
+function isWindows() {
+	if (Deno.build.os === "windows") return true;
+	return false;
+}
+
 export async function generateShadowEngineConfig(conf: BuildFile) {
 	await mkIfNotExist("./include/generated");
 
@@ -22,7 +27,7 @@ export async function generateShadowEngineConfig(conf: BuildFile) {
 #define HORDE_VERSION_MAJOR ${HORDE_VERSION.split(".")[0]}
 #define HORDE_VERSION_MINOR ${HORDE_VERSION.split(".")[1]}
 #define HORDE_VERSION_PATCH ${HORDE_VERSION.split(".")[2]}
-#define HORDE_PROJECT_PWD "${Deno.cwd()}"
+#define HORDE_PROJECT_PWD "${isWindows() ? Deno.cwd().replaceAll("\\", "/") : Deno.cwd()}"
 
 #define SHADOW_COMMIT_HASH "${new TextDecoder().decode(new Deno.Command("git", { args: ['rev-parse', 'HEAD'] }).outputSync().stdout).replaceAll('\n', '')}"
 

@@ -5,13 +5,13 @@
 
 // This will kill the process and try its best to alert the user that something
 // has gone wrong beyond repair
-#define BAILOUT(message) Shadow::internalGoDownInFlames(message, __FILE_NAME__, __LINE__)
+#define BAILOUT(message) Shadow::internalGoDownInFlames(message, __FILE_NAME__, __LINE__, __func__)
 
 namespace Shadow {
 
 /// Careful with the message you pass in here as it's really not sanitized well
 /// at all.
-void internalGoDownInFlames(const std::string& message, const std::string& file, int line);
+void internalGoDownInFlames(const std::string& message, const std::string& file, int line, const std::string& func);
 
 }
 

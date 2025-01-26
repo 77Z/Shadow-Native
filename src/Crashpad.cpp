@@ -52,6 +52,9 @@ static std::string getCoredumpLocation() {
 		ERROUT("Failed to get coredump: %s", e.what());
 		return "";
 	}
+
+#elif BX_PLATFORM_WINDOWS
+	latestFile = "";
 #else
 #	error Not implemented!
 #endif

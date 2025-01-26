@@ -8,6 +8,8 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h" // for imGui::GetCurrentWindow()
+#include "imgui/imgui_api_patches.hpp"
+
 
 // TODO
 // - multiline comments vs single-line: latter is blocking start of a ML
@@ -1132,7 +1134,8 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 	if (mHandleKeyboardInputs)
 	{
 		HandleKeyboardInputs();
-		ImGui::PushAllowKeyboardFocus(true);
+		// TODO: ImGui API Update?
+		// ImGui::PushAllowKeyboardFocus(true);
 	}
 
 	if (mHandleMouseInputs)
@@ -1142,7 +1145,9 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 	Render();
 
 	if (mHandleKeyboardInputs)
-		ImGui::PopAllowKeyboardFocus();
+		// TODO: ImGui API Update?
+		// ImGui::PopAllowKeyboardFocus();
+		(void)0;
 
 	if (!mIgnoreImGuiChild)
 		ImGui::EndChild();

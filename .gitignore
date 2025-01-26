@@ -10,6 +10,7 @@ imgui.ini
 include/config
 include/generated
 scripts/deno
+scripts/deno.exe
 node_modules
 AXEUI/nativeLink/headers
 *.node

@@ -149,7 +149,8 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	ImGuiIO io = GetIO();
 	if (IsWindowHovered()
 		&& io.KeyCtrl
-		&& IsKeyPressed(GetKeyIndex(ImGuiKey_B))
+		&& IsKeyPressed(ImGuiKey_B)
+		// && IsKeyPressed(GetKeyIndex(ImGuiKey_B))
 		&& openedNodeGraph) {
 		compileNodeGraph(openedNodeGraph);
 		for (auto& link: openedNodeGraph->links)
@@ -177,7 +178,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		BeginDisabled(!openedNodeGraph);
 		if (BeginMenu("+ Add")) {
 			nodeAddMenu();
-			EndMenu();
+			ImGui::EndMenu();
 		}
 		if (BeginMenu("Graph")) {
 			if (MenuItem("Compile", "CTRL + B")) {
@@ -187,11 +188,11 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 			}
 			if (MenuItem("Close"))
 				openedNodeGraph = nullptr;
-			EndMenu();
+			ImGui::EndMenu();
 		}
 		if (BeginMenu("View")) {
 			if (MenuItem("Recenter", "F")) ed::NavigateToContent();
-			EndMenu();
+			ImGui::EndMenu();
 		}
 		EndDisabled();
 		if (openedNodeGraph) {

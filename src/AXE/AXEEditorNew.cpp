@@ -287,7 +287,8 @@ int startAXEEditor(std::string projectFile) {
 					CheckboxFlags("Drag windows out", &GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable);
 					Separator();
 					if (MenuItem("Exit")) window.close();
-					EndMenu();
+					//TODO: Fix me!!
+					ImGui::EndMenu();
 				}
 				if (BeginMenu("Edit")) {
 					MenuItem("Copy", "CTRL + C");
@@ -298,7 +299,7 @@ int startAXEEditor(std::string projectFile) {
 					MenuItem("Visual Equalizer", nullptr, &editorState.showEqualizer);
 					Separator();
 					MenuItem("AXE Global Settings", "CTRL + ,", &editorState.showGlobalSettings);
-					EndMenu();
+					ImGui::EndMenu();
 				}
 				if (BeginMenu("Debug Tools")) {
 					MenuItem("Shadow Engine Debug Console", nullptr, &editorState.showShadowEngineConsole);
@@ -327,7 +328,7 @@ int startAXEEditor(std::string projectFile) {
 						PopStyleColor();
 						EndTooltip();
 					}
-					EndMenu();
+					ImGui::EndMenu();
 				}
 				if (BeginMenu("Help!")) {
 					if (MenuItem("Diagnose issues!")) OpenPopup("Dump and Ship");
@@ -335,7 +336,7 @@ int startAXEEditor(std::string projectFile) {
 					MenuItem("ShadowAudio information and help", nullptr, &editorState.showHelpDocs);
 					Text("If you need help, just text me");
 					if (MenuItem("Shadow Engine Website")) Util::openURL("https://shadow.77z.dev");
-					EndMenu();
+					ImGui::EndMenu();
 				}
 				EndMenuBar();
 			}

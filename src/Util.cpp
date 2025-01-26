@@ -18,6 +18,10 @@
 #include <string>
 #include <vector>
 
+#if BX_PLATFORM_WINDOWS
+#	include <Windows.h>
+#endif
+
 #include "generated/autoconf.h"
 #if CONFIG_MISSING_TEXTURE_ON_FAIL_LOAD
 #include <filesystem>
@@ -224,7 +228,6 @@ std::vector<std::string> splitString(const std::string& str, char delimeter) {
 void openURL(const std::string &url) {
 
 #if BX_PLATFORM_WINDOWS
-	// ! Untested
 	ShellExecuteA(nullptr, nullptr, url.c_str(), nullptr, nullptr, false);
 #elif !BX_PLATFORM_IOS
 	system(("xdg-open " + url).c_str());

@@ -15,6 +15,9 @@
 #define GLFW_EXPOSE_NATIVE_WIN32
 #define GLFW_EXPOSE_NATIVE_WGL
 
+#include <Windows.h>
+#include <dwmapi.h>
+
 #elif BX_PLATFORM_OSX
 #define GLFW_EXPOSE_NATIVE_COCOA
 #define GLFW_EXPOSE_NATIVE_NSGL
@@ -89,6 +92,32 @@ void ShadowWindow::initWindow() {
 	glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 	
 	loadCursors();
+
+	{ // Set Window Icon
+		int width, height, channels;
+		unsigned char* pixels = stbi_load("./Resources/logoScaled.png", &width, &height, &channels, 4);
+		GLFWimage glfwWindowIcon;
+		glfwWindowIcon.width = width;
+		glfwWindowIcon.height = height;
+		glfwWindowIcon.pixels = pixels;
+		stbi_image_free(pixels);
+		glfwSetWindowIcon(window, 1, &glfwWindowIcon);
+	}
+
+
+#if BX_PLATFORM_WINDOWS
+
+	// In this quick and dirty windows port I don't care for drawing
+	// my own client titlebar, so this call makes it at least look a
+	// little nicer on this ugly operating system.
+
+	HWND hWnd = glfwGetWin32Window(window);
+
+	COLORREF DARK_COLOR = 0x00000000;
+	DwmSetWindowAttribute(hWnd, DWMWINDOWATTRIBUTE::DWMWA_CAPTION_COLOR, &DARK_COLOR, sizeof(DARK_COLOR));
+	DwmSetWindowAttribute(hWnd, DWMWINDOWATTRIBUTE::DWMWA_BORDER_COLOR, &DARK_COLOR, sizeof(DARK_COLOR));
+
+#endif
 }
 
 void ShadowWindow::loadCursors() {

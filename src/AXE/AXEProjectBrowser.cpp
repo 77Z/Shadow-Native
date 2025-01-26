@@ -19,6 +19,7 @@
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 #include "ShadowWindow.hpp"
 #include "imgui/theme.hpp"
+#include "GoDownInFlames.hpp"
 
 namespace Shadow::AXE {
 
@@ -30,7 +31,8 @@ static std::string projectFileToOpenAfterDeath = "";
 static std::vector<std::string> reloadProjects() {
 	std::vector<std::string> ret;
 	for (const std::filesystem::directory_entry& file : std::filesystem::directory_iterator(EngineConfiguration::getConfigDir() + "/AXEProjects")) {
-		std::string name = file.path().filename();
+		// TODO: Windows only visual-c++ modification??
+		std::string name = file.path().filename().string();
 		if (name.ends_with(".axe")) {
 			ret.push_back(name);
 		}
@@ -38,7 +40,7 @@ static std::vector<std::string> reloadProjects() {
 	return ret;
 }
 
-int startAXEProjectBrowser(int argc, char** argv) {
+int startAXEProjectBrowser(const std::vector<std::string>& args) {
 	#if defined(IMGUI_IMPL_OPENGL_ES2)
 	// GL ES 2.0 + GLSL 100
 	const char* glsl_version = "#version 100";
@@ -209,7 +211,35 @@ int startAXEProjectBrowser(int argc, char** argv) {
 	glfwTerminate();
 
 	int ret = 0;
-	if (openEditorAfterDeath) ret = std::system((std::string(argv[0]) + " axeEditorWithProject \"" + projectFileToOpenAfterDeath + "\"").c_str());
+	if (openEditorAfterDeath) {
+#if BX_PLATFORM_WINDOWS
+		// TODO: This needs to properly return a status code for Crashpad to
+		// catch anything.
+		STARTUPINFOA si;
+		PROCESS_INFORMATION pi;
+		ZeroMemory(&si, sizeof(si));
+		si.cb = sizeof(si);
+		ZeroMemory(&pi, sizeof(pi));
+
+		std::string commandLineStr = args[0] + " axeEditorWithProject \"" + projectFileToOpenAfterDeath + "\"";
+		char* commandLine = const_cast<char*>(commandLineStr.c_str());
+
+		if (!CreateProcessA(
+				NULL, commandLine, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi
+			)) {
+
+				BAILOUT("I can't open the AXE editor!");
+			return -1;
+		}
+
+		WaitForSingleObject(pi.hProcess, INFINITE);
+
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+#else
+		ret = std::system((args[0] + " axeEditorWithProject \"" + projectFileToOpenAfterDeath + "\"").c_str());
+#endif
+	}
 
 	return ret;
 }

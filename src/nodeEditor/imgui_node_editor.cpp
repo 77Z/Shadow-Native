@@ -19,6 +19,8 @@
 # include <sstream>
 # include <streambuf>
 # include <type_traits>
+#include "imgui/imgui_api_patches.hpp"
+
 
 // https://stackoverflow.com/a/8597498
 # define DECLARE_HAS_NESTED(Name, Member)                                          \

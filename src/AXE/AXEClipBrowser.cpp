@@ -143,7 +143,11 @@ void ClipBrowser::addFileToLibrary(const std::string& filepath) {
 		return;
 	}
 
-	std::filesystem::copy_file(filepath, globalLibraryPath + "/" + filepath.substr(filepath.find_last_of("/") + 1));
+	try {
+		std::filesystem::copy_file(filepath, globalLibraryPath + "/" + filepath.substr(filepath.find_last_of("/") + 1));
+	} catch (const std::exception& e) {
+		// TODO: Throw user facing error here
+	}
 
 	refreshFiles();
 };

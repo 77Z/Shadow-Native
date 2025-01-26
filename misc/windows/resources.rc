@@ -1,0 +1,2 @@
+// Compile manually with `windres -i resources.rc -o resources.o`
+1 ICON "shadow.ico"

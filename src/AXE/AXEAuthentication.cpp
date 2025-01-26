@@ -17,7 +17,7 @@ namespace Shadow::AXE {
 static std::string inpUsername = "";
 static std::string inpPassword = "";
 
-int startAXEAuthenticationWindow(int argc, char** argv) {
+int startAXEAuthenticationWindow() {
 	#if defined(IMGUI_IMPL_OPENGL_ES2)
 	// GL ES 2.0 + GLSL 100
 	const char* glsl_version = "#version 100";

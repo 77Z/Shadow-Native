@@ -19,17 +19,23 @@
 #include <vector>
 #include "generated/autoconf.h"
 #include <Editor/SlimEditor.hpp>
+#include "GoDownInFlames.hpp"
+
+#if BX_PLATFORM_WINDOWS
+#	include <Windows.h>
+#	include <shellapi.h>
+#endif
 
 // Forward Decls
 namespace Shadow::AXE {
-int startAXEAuthenticationWindow(int argc, char** argv);
+int startAXEAuthenticationWindow();
 }
 namespace Shadow {
 int startCrashpad(int argc, char** argv);
 }
 
 namespace Shadow {
-int Main(int argc, char** argv) {
+int Main(const std::vector<std::string>& args) {
 	int ret = 0;
 
 	PPK_ASSERT(Editor::getCurrentProjectName().empty());
@@ -45,39 +51,41 @@ int Main(int argc, char** argv) {
 
 	EC_PRINT("All", "Welcome to Shadow Engine");
 
-	if (argc > 1) {
-		if (strcmp(argv[1], "axe") == 0) {
-			ret = Shadow::AXE::startAXEProjectBrowser(argc, argv);
-		} else if (strcmp(argv[1], "axeEditor") == 0) {
+	if (args.size() > 1) {
+		if (args[1] == "axe") {
+			ret = Shadow::AXE::startAXEProjectBrowser(args);
+		} else if (args[1] == "axeEditor") {
 			ret = Shadow::AXE::startAXEEditor("/home/vince/.config/Shadow/AXEProjects/testsong.axe");
-		} else if (strcmp(argv[1], "axeEditorWithProject") == 0) {
-			ret = Shadow::AXE::startAXEEditor(std::string(argv[2]));
-		} else if (strcmp(argv[1], "auth") == 0) {
-			ret = Shadow::AXE::startAXEAuthenticationWindow(argc, argv);
-		} else if (strcmp(argv[1], "editorwis") == 0) {
+		} else if (args[1] == "axeEditorWithProject") {
+			ret = Shadow::AXE::startAXEEditor(args[2]);
+		} else if (args[1] == "auth") {
+			ret = Shadow::AXE::startAXEAuthenticationWindow();
+		} else if (args[1] == "editorwis") {
 			ret = Shadow::startEditor({ "WIS", "/home/vince/.config/Shadow/Projects/WIS" });
-		} else if (strcmp(argv[1], "dev") == 0) {
+		} else if (args[1] == "dev") {
 			ret = devEntry();
-		} else if (strcmp(argv[1], "sceneDecode") == 0) {
-			json sceneInput = JSON::readBsonFile(argv[2]);
-			std::ofstream outfile(argv[3]);
+		} else if (args[1] == "sceneDecode") {
+			json sceneInput = JSON::readBsonFile(args[2]);
+			std::ofstream outfile(args[3]);
 			outfile << sceneInput.dump(2);
 			outfile.close();
-		} else if (strcmp(argv[1], "sceneEncode") == 0) {
-			WARN("Encoding %s to %s", argv[2], argv[3]);
-			std::ifstream infile(argv[2]);
+		} else if (args[1] == "sceneEncode") {
+			WARN("Encoding %s to %s", args[2], args[3]);
+			std::ifstream infile(args[2]);
 			std::vector<uint8_t> bson = json::to_bson(json::parse(infile));
-			std::ofstream outfile(argv[3]);
+			std::ofstream outfile(args[3]);
 			for (size_t i = 0; i < bson.size(); i++) {
 				outfile << bson[i];
 			}
 			outfile.close();
-		} else if (strcmp(argv[1], "ModelViewer") == 0) {
-			ModelViewer mdlview((std::string(argv[2])));
-		} else if (strcmp(argv[1], "SlimEditor") == 0) {
-			Editor::startSlimEditor(std::string(argv[2]));
-		} else if (strcmp(argv[1], "Crashpad") == 0) {
-			ret = startCrashpad(argc, argv);
+		} else if (args[1] == "ModelViewer") {
+			ModelViewer mdlview(args[2]);
+		} else if (args[1] == "SlimEditor") {
+			Editor::startSlimEditor(args[2]);
+		} else if (args[1] == "Crashpad") {
+			ERROUT("Crashpad unsupported in this version!");
+			ret = 1;
+			// ret = startCrashpad(argc, argv);
 		}
 	} else {
 		// return Shadow::StartRuntime();
@@ -97,5 +105,31 @@ int Main(int argc, char** argv) {
 }
 }
 
-// This is seperate so we can support Windows' wacky main function if we want to
-int main(int argc, char** argv) { return Shadow::Main(argc, argv); }
+#if BX_PLATFORM_WINDOWS
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+	// Is there a better way to hide this?
+	ShowWindow(GetConsoleWindow(), SW_HIDE);
+
+	LPWSTR cmdLine = GetCommandLineW();
+	int argc;
+	LPWSTR* argv = CommandLineToArgvW(cmdLine, &argc);
+	std::vector<std::string> args;
+
+	for (int i = 0; i < argc; i++) {
+		std::wstring ws(argv[i]);
+		args.emplace_back(std::string(ws.begin(), ws.end()));
+	}
+
+	return Shadow::Main(args);
+}
+#else
+int main(int argc, char** argv) {
+	std::vector<std::string> args;
+
+	for (int i = 0; i < argc; i++) {
+		args.emplace_back(std::string(argv[i]));
+	}
+
+	return Shadow::Main(args);
+}
+#endif
