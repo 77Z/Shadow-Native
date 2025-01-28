@@ -28,6 +28,7 @@
 // Forward Decls
 namespace Shadow::AXE {
 int startAXEAuthenticationWindow();
+int showAXESplash();
 }
 namespace Shadow {
 int startCrashpad(int argc, char** argv);
@@ -44,12 +45,23 @@ int Main(const std::vector<std::string>& args) {
 
 	InitBXFilesystem();
 
+	EC_PRINT("All", "Welcome to Shadow Engine");
+
+	if (args[1] == "axeEditorWithProject") {
+		ret = Shadow::AXE::startAXEEditor(args[2]);
+	} else {
+		ret = AXE::showAXESplash();
+
+		ret = AXE::startAXEProjectBrowser(args);
+	}
+
+	return ret;
+
 #if CONFIG_SHADOW_PRODUCTION_BUILD
 	return Shadow::StartProductionRuntime();
 #else
 
-	EC_PRINT("All", "Welcome to Shadow Engine");
-
+#if 0
 	if (args.size() > 1) {
 		if (args[1] == "axe") {
 			ret = Shadow::AXE::startAXEProjectBrowser(args);
@@ -96,6 +108,7 @@ int Main(const std::vector<std::string>& args) {
 
 		// ret = devEntry();
 	}
+#endif
 #endif
 
 	ShutdownBXFilesytem();
