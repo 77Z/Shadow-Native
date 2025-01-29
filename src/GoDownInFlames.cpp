@@ -1,6 +1,8 @@
 #include "GoDownInFlames.hpp"
 #include <cstdlib>
+#include <filesystem>
 #include <string>
+#include "Debug/Logger.hpp"
 #include "bx/bx.h"
 #include "generated/autoconf.h"
 
@@ -24,12 +26,23 @@ void internalGoDownInFlames(const std::string& message, const std::string& file,
 
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
 
-	//TODO: Replace this with the above output string.
-	std::system(("notify-send -u critical -a \"Shadow Engine\" \"Shadow Engine bailed out!\" \"" + message + "\n\nAdditional information:\nCXX: " + file + "\nL: " + std::to_string(line) + "\"").c_str());
+	if (!std::filesystem::exists("/usr/bin/zenity")) {
+		// Zenity doesn't exist on this system, it's hard to show errors :/
+		ERROUT("SHADOW ENGINE BAILOUT");
+		ERROUT("%s", output.c_str());
+		abort();
+	}
+
+	std::system(("/usr/bin/zenity --error --text \"" + output + "\"").c_str());
 
 #elif BX_PLATFORM_WINDOWS
 
 	MessageBoxA(nullptr, output.c_str(), "Shadow Engine", MB_ICONERROR | MB_OK);
+
+#else
+
+	ERROUT("SHADOW ENGINE BAILOUT");
+	ERROUT("%s", output.c_str());
 
 #endif
 

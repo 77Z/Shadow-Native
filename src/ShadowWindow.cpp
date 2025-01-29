@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 #include "stb_image.h"
+#include "GoDownInFlames.hpp"
 
 #if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
 #define GLFW_EXPOSE_NATIVE_X11
@@ -75,7 +76,8 @@ float ShadowWindow::getContentScale() {
 void ShadowWindow::initWindow() {
 	glfwSetErrorCallback(glfw_errorCallback);
 
-	if (!glfwInit()) ERROUT("GLFW FAILED TO INIT, EXPECT FAILURE FROM HERE");
+	if (!glfwInit())
+		BAILOUT("GLFW Failed to Initialize, more info in stdout");
 	if (!openGlAPI) {
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 	}
