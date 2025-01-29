@@ -50,7 +50,9 @@ int Main(const std::vector<std::string>& args) {
 	if (args[1] == "axeEditorWithProject") {
 		ret = Shadow::AXE::startAXEEditor(args[2]);
 	} else {
-		ret = AXE::showAXESplash();
+		if (args[1] != "nosplash") {
+			ret = AXE::showAXESplash();
+		}
 
 		ret = AXE::startAXEProjectBrowser(args);
 	}

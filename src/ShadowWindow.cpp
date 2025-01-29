@@ -96,12 +96,15 @@ void ShadowWindow::initWindow() {
 	{ // Set Window Icon
 		int width, height, channels;
 		unsigned char* pixels = stbi_load("./Resources/logoScaled.png", &width, &height, &channels, 4);
-		GLFWimage glfwWindowIcon;
-		glfwWindowIcon.width = width;
-		glfwWindowIcon.height = height;
-		glfwWindowIcon.pixels = pixels;
-		stbi_image_free(pixels);
-		glfwSetWindowIcon(window, 1, &glfwWindowIcon);
+		if (!pixels) ERROUT("Failed to load window icon");
+		else {
+			GLFWimage glfwWindowIcon;
+			glfwWindowIcon.width = width;
+			glfwWindowIcon.height = height;
+			glfwWindowIcon.pixels = pixels;
+			stbi_image_free(pixels);
+			glfwSetWindowIcon(window, 1, &glfwWindowIcon);
+		}
 	}
 
 

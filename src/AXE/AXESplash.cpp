@@ -1,7 +1,10 @@
+#include "Debug/Logger.hpp"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include <chrono>
+#include <cstdint>
 #include <cstdlib>
 #include <string>
 #include <thread>
@@ -51,7 +54,7 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
 }
 
 int showAXESplash() {
-	#if defined(IMGUI_IMPL_OPENGL_ES2)
+#if defined(IMGUI_IMPL_OPENGL_ES2)
 	// GL ES 2.0 + GLSL 100
 	const char* glsl_version = "#version 100";
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
@@ -74,17 +77,16 @@ int showAXESplash() {
 #endif
 
 	ShadowWindow window(594, 793, "AXE Audio Workstation", false, true);
+	glfwSetWindowSizeLimits(window.window, 594, 793, 594, 793); // GLFW_RESIZABLE doesn't work on undecorated windows
+
 	if (window.window == nullptr) return 1;
 	glfwMakeContextCurrent(window.window);
 	glfwSwapInterval(1); // Enable vsync
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-
+	ImGuiIO& io = ImGui::GetIO();
+	io.IniFilename = nullptr;
 	ImGui::SetupTheme();
 
 	ImGui_ImplGlfw_InitForOpenGL(window.window, true);
@@ -96,14 +98,15 @@ int showAXESplash() {
 	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
 	ImGui::GetStyle().ScaleAllSizes(sf);
 
-
 	int splashWidth = 0;
 	int splashHeight = 0;
 	GLuint splashTex = 0;
 	bool ret = LoadTextureFromFile("./Resources/splash.png", &splashTex, &splashWidth, &splashHeight);
 	IM_ASSERT(ret);
 
-	/* while (!window.shouldClose()) */ {
+	// No while loop because only one frame needs to be rendered at this point.
+
+/* 	while (!window.shouldClose())  */{
 		using namespace ImGui;
 
 		window.pollEvents();
@@ -112,35 +115,8 @@ int showAXESplash() {
 		ImGui_ImplGlfw_NewFrame();
 		NewFrame();
 
-		// DRAW
+		GetForegroundDrawList()->AddImage((void*)(intptr_t)splashTex, ImVec2(0, 0), ImVec2(splashWidth, splashHeight));
 
-		ImGuiViewport* viewport = GetMainViewport();
-		SetNextWindowPos(viewport->Pos);
-		SetNextWindowSize(viewport->Size);
-		SetNextWindowViewport(viewport->ID);
-		PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-		PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1.0f, 1.0f));
-		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
-			| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
-			| ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus
-			| ImGuiWindowFlags_MenuBar;
-
-		PushStyleColor(ImGuiCol_MenuBarBg, IM_COL32(0, 0, 0, 255));
-
-		Begin("RootWindow", nullptr, window_flags);
-
-		PopStyleColor();
-
-		PopStyleVar(3);
-
-		SetCursorPos(ImVec2(0, 0));
-
-		Image((void*)(intptr_t)splashTex, ImVec2(splashWidth, splashHeight));
-
-		End();
-
-		// Rendering
 		Render();
 		int display_w, display_h;
 		glfwGetFramebufferSize(window.window, &display_w, &display_h);
@@ -158,7 +134,8 @@ int showAXESplash() {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
-	window.shutdown();
+	// Bypass ShadowWindow shutdown, preventing GLFW init errors
+	glfwDestroyWindow(window.window);
 
 	return 0;
 }
