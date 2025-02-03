@@ -33,6 +33,7 @@ Timeline::Timeline(Song* songInfo, EditorState* editorState, ma_engine* audioEng
 	, window(window)
 		{
 			EC_NEWCAT(EC_THIS);
+			EC_PRINT(EC_THIS, "Scale factor from editorstate %.2f", editorState->sf);
 		};
 Timeline::~Timeline() { }
 #if 0

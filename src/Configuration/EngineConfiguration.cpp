@@ -31,4 +31,14 @@ namespace Shadow::EngineConfiguration {
 		return 0;
 	}
 
+	static std::string gblUserName = "?? Unknown User ??";
+
+	void setUserName(const std::string& username) {
+		gblUserName = username;
+	}
+
+	const std::string getUserName() {
+		return gblUserName;
+	}
+
 }

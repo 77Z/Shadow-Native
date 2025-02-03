@@ -1,4 +1,5 @@
 #include "ShadowWindow.hpp"
+#include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
 #include "ShadowWindowUserPointerCarePackage.hpp"
 #include "bx/platform.h"
@@ -109,6 +110,12 @@ void ShadowWindow::initWindow() {
 		}
 	}
 
+	float windowx, windowy, screenx, screeny = 0;
+	glfwGetWindowContentScale(window, &windowx, &windowy);
+	glfwGetMonitorContentScale(glfwGetPrimaryMonitor(), &screenx, &screeny);
+
+	EC_PRINT("All", "Window content scale: X%.2f Y%.2f", windowx, windowy);
+	EC_PRINT("All", "Monitor content scale (associated with window): X%.2f Y%.2f", screenx, screeny);
 
 #if BX_PLATFORM_WINDOWS
 

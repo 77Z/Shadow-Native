@@ -5,6 +5,7 @@
 #include "imgui.h"
 #include "json_impl.hpp"
 #include <cstdint>
+#include <exception>
 #include <fstream>
 #include <utility>
 #include "GoDownInFlames.hpp"
@@ -15,12 +16,14 @@ namespace Shadow::AXE {
 
 bool serializeSong(const Song* song, const std::string& filepath) {
 	json output;
+	output["songFileVersion"] = song->songFileVersion;
 	output["name"] = song->name;
 	output["artist"] = song->artist;
 	output["album"] = song->album;
 	output["decodeOnLoad"] = song->decodeOnLoad;
 	output["bpm"] = song->bpm;
 	output["key"] = song->key;
+	output["timelineUnits"] = song->timelineUnits;
 	output["timeSignature"] = song->timeSignature;
 	output["masterVolume"] = song->masterVolume;
 
@@ -155,123 +158,131 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 		BAILOUT("Failed to read song file, talk to Vince and check stdout");
 		return false;
 	}
-	json decodedSong = json::from_bson(infile);
-	infile.close();
+	try {
+		json decodedSong = json::from_bson(infile);
+		infile.close();
 
-	song->name = decodedSong["name"];
-	song->artist = decodedSong["artist"];
-	song->album = decodedSong["album"];
-	song->decodeOnLoad = decodedSong["decodeOnLoad"];
-	song->bpm = decodedSong["bpm"];
-	song->key = decodedSong["key"];
-	song->timeSignature[0] = decodedSong["timeSignature"][0];
-	song->timeSignature[1] = decodedSong["timeSignature"][1];
-	song->masterVolume = decodedSong["masterVolume"];
+		song->songFileVersion = decodedSong["songFileVersion"];
+		song->name = decodedSong["name"];
+		song->artist = decodedSong["artist"];
+		song->album = decodedSong["album"];
+		song->decodeOnLoad = decodedSong["decodeOnLoad"];
+		song->bpm = decodedSong["bpm"];
+		song->key = decodedSong["key"];
+		song->timelineUnits = decodedSong["timelineUnits"];
+		song->timeSignature[0] = decodedSong["timeSignature"][0];
+		song->timeSignature[1] = decodedSong["timeSignature"][1];
+		song->masterVolume = decodedSong["masterVolume"];
 
-	for (auto& track : decodedSong["tracks"]) {
-		Track tempTrack;
-		tempTrack.name = track["name"];
+		for (auto& track : decodedSong["tracks"]) {
+			Track tempTrack;
+			tempTrack.name = track["name"];
 
-		for (auto& clip : track["clips"]) {
-			std::shared_ptr<Clip> tempClip = std::make_shared<Clip>();
-			tempClip->name = clip["name"];
-			tempClip->baseAudioSource = clip["baseAudioSource"];
+			for (auto& clip : track["clips"]) {
+				std::shared_ptr<Clip> tempClip = std::make_shared<Clip>();
+				tempClip->name = clip["name"];
+				tempClip->baseAudioSource = clip["baseAudioSource"];
 
-			tempClip->position = clip["position"];
-			tempClip->length = clip["length"];
+				tempClip->position = clip["position"];
+				tempClip->length = clip["length"];
 
-			tempClip->balence = clip["balence"];
-			tempClip->volume = clip["volume"];
+				tempClip->balence = clip["balence"];
+				tempClip->volume = clip["volume"];
 
-			tempClip->muted = clip["muted"];
-			EC_PRINT(EC_THIS, "Decoded clip: %s at position %.3f", tempClip->name.c_str(), (float)tempClip->position);
-			tempTrack.clips.push_back(tempClip);
-		}
+				tempClip->muted = clip["muted"];
+				EC_PRINT(EC_THIS, "Decoded clip: %s at position %.3f", tempClip->name.c_str(), (float)tempClip->position);
+				tempTrack.clips.push_back(tempClip);
+			}
 
-		for (auto& automation : track["automations"]) {
-			Automation tempAuto;
+			for (auto& automation : track["automations"]) {
+				Automation tempAuto;
 
-			tempAuto.startRail = automation["startRail"];
-			tempAuto.endRail = automation["endRail"];
+				tempAuto.startRail = automation["startRail"];
+				tempAuto.endRail = automation["endRail"];
 
-			for (auto& point : automation["points"]) {
-				tempAuto.points.push_back(
-					std::pair<uint64_t, float>(point[0], point[1])
+				for (auto& point : automation["points"]) {
+					tempAuto.points.push_back(
+						std::pair<uint64_t, float>(point[0], point[1])
+					);
+				}
+
+				tempAuto.color = ImColor(
+					(float)automation["color"][0],
+					(float)automation["color"][1],
+					(float)automation["color"][2],
+					(float)automation["color"][3]
 				);
+
+				tempAuto.visible = automation["visible"];
+
+				tempTrack.automations.push_back(tempAuto);
 			}
 
-			tempAuto.color = ImColor(
-				(float)automation["color"][0],
-				(float)automation["color"][1],
-				(float)automation["color"][2],
-				(float)automation["color"][3]
-			);
+			tempTrack.balence = track["balence"];
+			tempTrack.volume = track["volume"];
 
-			tempAuto.visible = automation["visible"];
+			tempTrack.muted = track["muted"];
 
-			tempTrack.automations.push_back(tempAuto);
+			EC_PRINT(EC_THIS, "Decoding track: %s", tempTrack.name.c_str());
+
+			song->tracks.push_back(tempTrack);
 		}
 
-		tempTrack.balence = track["balence"];
-		tempTrack.volume = track["volume"];
+		// Node Graphs
+		for (auto& ng: decodedSong["nodeGraphs"]) {
+			NodeGraph tempNg;
 
-		tempTrack.muted = track["muted"];
+			tempNg.name = ng["name"];
+			tempNg.lastKnownGraphId = ng["lastKnownGraphId"];
 
-		EC_PRINT(EC_THIS, "Decoding track: %s", tempTrack.name.c_str());
+			for (auto& node : ng["nodes"]) {
+				Node tempNode;
+				tempNode.name = node["name"];
+				tempNode.size = ImVec2(node["size"][0], node["size"][1]);
+				tempNode.id = (int)node["id"];
 
-		song->tracks.push_back(tempTrack);
-	}
+				tempNode.color = ImColor(
+					(float)node["color"][0],
+					(float)node["color"][1],
+					(float)node["color"][2],
+					(float)node["color"][3]);
 
-	// Node Graphs
-	for (auto& ng: decodedSong["nodeGraphs"]) {
-		NodeGraph tempNg;
+				for (auto& input : node["inputs"]) {
+					Pin tempInput;
+					tempInput.name = input["name"];
+					tempInput.kind = input["kind"];
+					tempInput.id = (int)input["id"];
 
-		tempNg.name = ng["name"];
-		tempNg.lastKnownGraphId = ng["lastKnownGraphId"];
+					tempNode.inputs.push_back(tempInput);
+				}
 
-		for (auto& node : ng["nodes"]) {
-			Node tempNode;
-			tempNode.name = node["name"];
-			tempNode.size = ImVec2(node["size"][0], node["size"][1]);
-			tempNode.id = (int)node["id"];
+				for (auto& output : node["outputs"]) {
+					Pin tempOutput;
+					tempOutput.name = output["name"];
+					tempOutput.kind = output["kind"];
+					tempOutput.id = (int)output["id"];
 
-			tempNode.color = ImColor(
-				(float)node["color"][0],
-				(float)node["color"][1],
-				(float)node["color"][2],
-				(float)node["color"][3]);
-
-			for (auto& input : node["inputs"]) {
-				Pin tempInput;
-				tempInput.name = input["name"];
-				tempInput.kind = input["kind"];
-				tempInput.id = (int)input["id"];
-
-				tempNode.inputs.push_back(tempInput);
+					tempNode.outputs.push_back(tempOutput);
+				}
+				
+				tempNg.nodes.push_back(tempNode);
 			}
 
-			for (auto& output : node["outputs"]) {
-				Pin tempOutput;
-				tempOutput.name = output["name"];
-				tempOutput.kind = output["kind"];
-				tempOutput.id = (int)output["id"];
+			for (auto& link : ng["links"]) {
+				Link tempLink;
+				tempLink.id = (int)link["id"];
+				tempLink.inputId = (int)link["inputId"];
+				tempLink.outputId = (int)link["outputId"];
 
-				tempNode.outputs.push_back(tempOutput);
+				tempNg.links.push_back(tempLink);
 			}
-			
-			tempNg.nodes.push_back(tempNode);
+
+			song->nodeGraphs.push_back(tempNg);
 		}
-
-		for (auto& link : ng["links"]) {
-			Link tempLink;
-			tempLink.id = (int)link["id"];
-			tempLink.inputId = (int)link["inputId"];
-			tempLink.outputId = (int)link["outputId"];
-
-			tempNg.links.push_back(tempLink);
-		}
-
-		song->nodeGraphs.push_back(tempNg);
+	} catch (const std::exception& e) {
+		BAILOUT("Failed to read song file after stdin stage.\n"
+			"Talk to vince to send your song file and he can manually decode it.\n"
+			"Exception thrown: " + std::string(e.what()));
 	}
 
 	return true;

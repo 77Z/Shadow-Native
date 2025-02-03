@@ -21,6 +21,11 @@
 #include "imgui/theme.hpp"
 #include "GoDownInFlames.hpp"
 
+// Forward declarations
+namespace Shadow::AXE::Account {
+void onUpdateStatusBar(bool isInEditor, ShadowWindow* window);
+}
+
 namespace Shadow::AXE {
 
 Song songToWrite;
@@ -41,7 +46,10 @@ static std::vector<std::string> reloadProjects() {
 }
 
 int startAXEProjectBrowser(const std::vector<std::string>& args) {
-	#if defined(IMGUI_IMPL_OPENGL_ES2)
+
+	songToWrite.artist = EngineConfiguration::getUserName();
+
+#if defined(IMGUI_IMPL_OPENGL_ES2)
 	// GL ES 2.0 + GLSL 100
 	const char* glsl_version = "#version 100";
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
@@ -147,8 +155,12 @@ int startAXEProjectBrowser(const std::vector<std::string>& args) {
 		ImGui::PopStyleVar(3);
 
 		ImGui::PushFont(headingFont);
-		ImGui::Text(" Shadow Engine AXE Audio");
+		ImGui::Text(" AXE Audio Workstation");
 		ImGui::PopFont();
+
+		ImGui::SameLine();
+		ImGui::SetCursorPos(ImVec2(ImGui::GetWindowSize().x - 50, 30));
+		Account::onUpdateStatusBar(false, &window);
 
 		if (ImGui::TreeNode("New Song")) {
 			ImGui::PushFont(headingFont);
@@ -156,7 +168,9 @@ int startAXEProjectBrowser(const std::vector<std::string>& args) {
 			ImGui::Separator();
 			ImGui::PopFont();
 
-			ImGui::Text("Enter some basic information, this can be changed later");
+			ImGui::TextWrapped("Enter some basic information, this can be changed later. If you're "
+							   "just experimenting, consider a scheme like Track 1, on the album "
+							   "Experiments. It doesn't have to be formal at all");
 
 			ImGui::InputText("Title", &songToWrite.name);
 			ImGui::InputText("Artist(s)", &songToWrite.artist);
@@ -177,7 +191,7 @@ int startAXEProjectBrowser(const std::vector<std::string>& args) {
 
 		ImGui::Indent();
 		for (auto& project : projects) {
-			if (ImGui::Selectable((std::string(ICON_CI_SYMBOL_METHOD) + " " + project).c_str())) {
+			if (ImGui::Selectable((std::string(ICON_CI_SYMBOL_METHOD) + " " + project.substr(0, project.size() - 4)).c_str())) {
 				projectFileToOpenAfterDeath = EngineConfiguration::getConfigDir() + "/AXEProjects/" + project;
 				openEditorAfterDeath = true;
 				window.close();

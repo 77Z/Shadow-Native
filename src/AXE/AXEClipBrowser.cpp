@@ -18,19 +18,20 @@ ClipBrowser::ClipBrowser() {
 
 	globalLibraryPath = EngineConfiguration::getConfigDir() + "/AXEProjects/GlobalLibrary";
 
-	ma_engine_config engineConfig = ma_engine_config_init();
-	ma_result result = ma_engine_init(&engineConfig, audioEngine);
+	//TODO: This fails but has no reason to :P
+	// ma_engine_config engineConfig = ma_engine_config_init();
+	// ma_result result = ma_engine_init(&engineConfig, audioEngine);
 
-	if (result != MA_SUCCESS) {
-		EC_ERROUT(EC_THIS, "Failed to init ClipBrowser's audioEngine");
-		EC_ERROUT(EC_THIS, "Faulty result enum (%i)", result);
-	}
+	// if (result != MA_SUCCESS) {
+	// 	EC_ERROUT(EC_THIS, "Failed to init ClipBrowser's audioEngine");
+	// 	EC_ERROUT(EC_THIS, "Faulty result enum (%i)", result);
+	// }
 
 	refreshFiles();
 }
 
 ClipBrowser::~ClipBrowser() {
-	ma_engine_uninit(audioEngine);
+	// ma_engine_uninit(audioEngine);
 }
 
 void ClipBrowser::onUpdate(bool& p_open) {

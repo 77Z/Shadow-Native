@@ -89,7 +89,6 @@
 			"request": "launch",
 			"program": "${workspaceFolder}/bin/sdw/shadow-engine/Shadow",
 			"args": [
-				"axe"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/bin/sdw/shadow-engine",

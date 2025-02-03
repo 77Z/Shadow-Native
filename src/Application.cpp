@@ -27,7 +27,7 @@
 
 // Forward Decls
 namespace Shadow::AXE {
-int startAXEAuthenticationWindow();
+bool startAXEAuthentication();
 int showAXESplash();
 }
 namespace Shadow {
@@ -46,6 +46,10 @@ int Main(const std::vector<std::string>& args) {
 	InitBXFilesystem();
 
 	EC_PRINT("All", "Welcome to Shadow Engine");
+
+	bool loggedIn = AXE::startAXEAuthentication();
+
+	if (!loggedIn) return ret;
 
 	if (args[1] == "axeEditorWithProject") {
 		ret = Shadow::AXE::startAXEEditor(args[2]);

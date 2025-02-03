@@ -1328,7 +1328,7 @@
 			SrcExcludes: [],
 			LinkerFlags: [
 				"-lstdc++", "-lm", "-lGL", "-lX11", "-ldl", "-lpthread", "-lrt",
-				"-lvulkan", "-fvisibility=hidden",
+				"-lvulkan", "-fvisibility=hidden", "-lcurl",
 			],
 			
 			// InlineBuildLibs is a list of libraries that will be included in

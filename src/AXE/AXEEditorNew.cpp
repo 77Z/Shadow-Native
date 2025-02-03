@@ -43,6 +43,9 @@ void updateCurveTest();
 void initCurveTest();
 void cacheWaveforms();
 }
+namespace Shadow::AXE::Account {
+void onUpdateStatusBar(bool isInEditor, ShadowWindow* window);
+}
 namespace bx {
 void debugBreak();
 }
@@ -301,6 +304,14 @@ int startAXEEditor(std::string projectFile) {
 					MenuItem("AXE Global Settings", "CTRL + ,", &editorState.showGlobalSettings);
 					ImGui::EndMenu();
 				}
+				if (BeginMenu("View")) {
+					SeparatorText("Timeline Units");
+					RadioButton("Beats", (int*)&songInfo.timelineUnits, TimelineUnit_BPM);
+					RadioButton("Time", (int*)&songInfo.timelineUnits, TimelineUnit_TimeScale);
+					RadioButton("PCM Frames", (int*)&songInfo.timelineUnits, TimelineUnit_PCMFrames);
+					SetItemTooltip("Useful for Vince debugging");
+					ImGui::EndMenu();
+				}
 				if (BeginMenu("Debug Tools")) {
 					MenuItem("Shadow Engine Debug Console", nullptr, &editorState.showShadowEngineConsole);
 					MenuItem("UI Console", nullptr, &editorState.showImGuiConsole);
@@ -403,6 +414,11 @@ int startAXEEditor(std::string projectFile) {
 
 			SameLine();
 			JobSystem::onUpdateStatusBar();
+
+			SameLine();
+
+			SetCursorPos(ImVec2(GetWindowSize().x - 50, 25));
+			Account::onUpdateStatusBar(true, &window);
 
 			SetCursorPosY(55.0f * editorState.sf);
 			DockSpace(GetID("AXEDockspace"));

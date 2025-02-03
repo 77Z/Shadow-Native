@@ -50,6 +50,10 @@ namespace EngineConfiguration {
 	// Returns 0 on success, 1 on failure
 	int initializeEngineConfig();
 
+	void setUserName(const std::string& username);
+
+	const std::string getUserName();
+
 }
 }
 

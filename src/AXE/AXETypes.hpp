@@ -131,6 +131,14 @@ enum Keys_ {
 	Keys_Count
 };
 
+enum TimelineUnit_ {
+	TimelineUnit_BPM,
+	TimelineUnit_TimeScale,
+	TimelineUnit_PCMFrames,
+
+	TimelineUnit_Count
+};
+
 struct Bookmark {
 	uint64_t position;
 	std::string name;
@@ -184,6 +192,8 @@ struct Track {
 };
 
 struct Song {
+	int songFileVersion = 1;
+
 	std::string name = "";
 	std::string artist = "";
 	std::string album = "";
@@ -195,6 +205,7 @@ struct Song {
 	int key = 0;
 	int timeSignature[2] = { 4, 4 };
 	float masterVolume = 1.0f; // 0-1 with anything over 1 amplifying
+	TimelineUnit_ timelineUnits = TimelineUnit_BPM;
 
 	std::vector<Track> tracks;
 	std::vector<NodeGraph> nodeGraphs;
