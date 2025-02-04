@@ -102,7 +102,7 @@ int startAXEProjectBrowser(const std::vector<std::string>& args) {
 	fontCfg.OversampleV = 4;
 	fontCfg.PixelSnapH = false;
 
-	ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", fontSize, &fontCfg, ranges.Data);
+	ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/Inter-Medium.ttf", fontSize, &fontCfg, ranges.Data);
 	// ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/arial.ttf", fontSize, &fontCfg, ranges.Data);
 
 	static const ImWchar iconRanges[] = { ICON_MIN_CI, ICON_MAX_CI, 0 };
@@ -118,10 +118,9 @@ int startAXEProjectBrowser(const std::vector<std::string>& args) {
 
 	io.Fonts->AddFontFromFileTTF("./Resources/codicon.ttf", 20.0f * sf, &iconFontCfg, iconRanges);
 
-	ImFont* headingFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 40.0f * sf);
+	ImFont* headingFont = io.Fonts->AddFontFromFileTTF("./Resources/Inter-Black.ttf", 40.0f * sf);
 
 	ImGui::GetStyle().ScaleAllSizes(sf);
-
 
 	std::vector<std::string> projects = reloadProjects();
 
@@ -155,11 +154,11 @@ int startAXEProjectBrowser(const std::vector<std::string>& args) {
 		ImGui::PopStyleVar(3);
 
 		ImGui::PushFont(headingFont);
-		ImGui::Text(" AXE Audio Workstation");
+		ImGui::Text("    AXE Audio Workstation");
 		ImGui::PopFont();
 
 		ImGui::SameLine();
-		ImGui::SetCursorPos(ImVec2(ImGui::GetWindowSize().x - 50, 30));
+		ImGui::SetCursorPos(ImVec2(ImGui::GetWindowSize().x - 50, 35));
 		Account::onUpdateStatusBar(false, &window);
 
 		if (ImGui::TreeNode("New Song")) {

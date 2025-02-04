@@ -213,7 +213,7 @@ int startAXEEditor(std::string projectFile) {
 		fontCfg.OversampleV = 4;
 		fontCfg.PixelSnapH = false;
 
-		ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", fontSize, &fontCfg, ranges.Data);
+		ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/Inter-Medium.ttf", fontSize, &fontCfg, ranges.Data);
 		// ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/arial.ttf", fontSize, &fontCfg, ranges.Data);
 
 		static const ImWchar iconRanges[] = { ICON_MIN_CI, ICON_MAX_CI, 0 };
@@ -228,6 +228,8 @@ int startAXEEditor(std::string projectFile) {
 		iconFontCfg.DstFont = primaryFont;
 
 		io.Fonts->AddFontFromFileTTF("./Resources/codicon.ttf", 20.0f * sf, &iconFontCfg, iconRanges);
+
+		editorState.headerFont = io.Fonts->AddFontFromFileTTF("./Resources/Inter-Black.ttf", 40.0f * sf);
 
 		ImGui::GetStyle().ScaleAllSizes(sf);
 	}
@@ -307,7 +309,7 @@ int startAXEEditor(std::string projectFile) {
 				if (BeginMenu("View")) {
 					SeparatorText("Timeline Units");
 					RadioButton("Beats", (int*)&songInfo.timelineUnits, TimelineUnit_BPM);
-					RadioButton("Time", (int*)&songInfo.timelineUnits, TimelineUnit_TimeScale);
+					RadioButton("Seconds", (int*)&songInfo.timelineUnits, TimelineUnit_TimeScale);
 					RadioButton("PCM Frames", (int*)&songInfo.timelineUnits, TimelineUnit_PCMFrames);
 					SetItemTooltip("Useful for Vince debugging");
 					ImGui::EndMenu();
@@ -455,6 +457,10 @@ int startAXEEditor(std::string projectFile) {
 		{
 			using namespace ImGui;
 			Begin("ShadowAudio");
+
+			PushFont(editorState.headerFont);
+			TextUnformatted("ShadowAudio");
+			PopFont();
 
 			SeparatorText("Basic debugging info");
 

@@ -95,6 +95,7 @@ int showAXESplash() {
 	// IMGUI_ENABLE_FREETYPE in imconfig to use Freetype for higher quality font rendering
 	float sf = window.getContentScale();
 	// float sf = 1.5;
+	// TODO: Why does the image only splash screen need font rendering?
 	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
 	ImGui::GetStyle().ScaleAllSizes(sf);
 

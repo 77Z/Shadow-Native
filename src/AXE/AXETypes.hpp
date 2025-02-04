@@ -222,6 +222,8 @@ struct EditorState {
 
 	bool automationDebugMode = false;
 
+	ImFont* headerFont;
+
 	// Window states
 	bool showShadowEngineConsole = true;
 	bool showImGuiConsole = false;

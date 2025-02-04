@@ -1,3 +1,4 @@
+#include "ShadowWindow.hpp"
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "Configuration/EngineConfiguration.hpp"
 #include "Debug/Logger.hpp"
@@ -385,6 +386,7 @@ void Timeline::onUpdate() {
 				if (editorState->zoom > 70) {
 					SameLine();
 					if (SmallButton(ICON_CI_CLOSE)) track.clips.erase(track.clips.begin() + clipIt + 1);
+					if (IsItemHovered()) window->setSECursor(ShadowEngineCursors_CropClipRight);
 				}
 				// if (SmallButton(ICON_CI_CHROME_RESTORE)) {
 					// clip->shouldDrawWaveform =! clip->shouldDrawWaveform;

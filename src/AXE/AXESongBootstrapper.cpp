@@ -7,6 +7,7 @@
 
 namespace Shadow::AXE {
 
+// TODO: make this better.
 void bootstrapSong(Song* song, ma_engine* audioEngine) {
 	EC_NEWCAT(EC_THIS);
 	EC_PRINT(EC_THIS, "Bootstrapping song: %s with ShadowAudio", song->name.c_str());
@@ -47,5 +48,4 @@ void unloadSong(Song* song, ma_engine* audioEngine) {
 		}
 	}
 }
-
 }

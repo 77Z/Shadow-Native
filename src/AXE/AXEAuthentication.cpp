@@ -295,8 +295,8 @@ bool startAXEAuthentication() {
 	// IMGUI_ENABLE_FREETYPE in imconfig to use Freetype for higher quality font rendering
 	float sf = window.getContentScale();
 	// float sf = 1.5;
-	io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 16.0f * sf);
-	ImFont* headingFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", 40.0f * sf);
+	io.Fonts->AddFontFromFileTTF("./Resources/Inter-Medium.ttf", 16.0f * sf);
+	ImFont* headingFont = io.Fonts->AddFontFromFileTTF("./Resources/Inter-Black.ttf", 40.0f * sf);
 	ImGui::GetStyle().ScaleAllSizes(sf);
 
 	while (!window.shouldClose()) {
