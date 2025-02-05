@@ -7,6 +7,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include <memory>
+#include <vector>
 
 namespace Shadow::AXE {
 
@@ -32,8 +33,10 @@ private:
 	bool playing = false;
 
 	// std::shared_ptr<Clip> clipBeingDragged = nullptr;
-	Clip* selectedClip = nullptr;
-	Clip* clipBeingDragged = nullptr;
+	// Clip* selectedClip = nullptr;
+	// Clip* clipBeingDragged = nullptr;
+	std::vector<Clip*> selectedClips;
+	std::vector<Clip*> clipsBeingDragged;
 	float clipStoredMouseOffsetX = 0.0f;
 	int tableHoveredRow = -1;
 	Track* currentlySelectedTrack = nullptr;

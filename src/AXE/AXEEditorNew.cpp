@@ -312,6 +312,9 @@ int startAXEEditor(std::string projectFile) {
 					RadioButton("Seconds", (int*)&songInfo.timelineUnits, TimelineUnit_TimeScale);
 					RadioButton("PCM Frames", (int*)&songInfo.timelineUnits, TimelineUnit_PCMFrames);
 					SetItemTooltip("Useful for Vince debugging");
+					SeparatorText("Editor Theme");
+					if (MenuItem("Default Theme")) SetupTheme();
+					if (MenuItem("Sad Theme")) SetupSadTheme();
 					ImGui::EndMenu();
 				}
 				if (BeginMenu("Debug Tools")) {
@@ -375,7 +378,10 @@ int startAXEEditor(std::string projectFile) {
 			}
 
 			SameLine();
-			SliderFloat("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
+			if (SliderFloat("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f)) {
+				ma_engine_set_volume(&engine, songInfo.masterVolume);
+				EC_PRINT("All", "Changed master volume to %.3f", songInfo.masterVolume);
+			}
 
 			SameLine();
 			SliderFloat("Zoom", &editorState.zoom, 10.0f, 400.0f, "%.0f%%");
@@ -425,13 +431,6 @@ int startAXEEditor(std::string projectFile) {
 			SetCursorPosY(55.0f * editorState.sf);
 			DockSpace(GetID("AXEDockspace"));
 			End();
-		}
-
-		//TODO: change this to callback sliders
-		if (songInfo.masterVolume != editorState.lastKnownMasterVol) {
-			ma_engine_set_volume(&engine, songInfo.masterVolume);
-			EC_PRINT("All", "Changed master volume to %.3f", songInfo.masterVolume);
-			editorState.lastKnownMasterVol = songInfo.masterVolume;
 		}
 
 		if (ImGui::BeginPopupModal("Dump and Ship")) {

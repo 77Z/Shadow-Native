@@ -311,6 +311,8 @@ void Timeline::onUpdate() {
 			drawList->AddRect(postVisDrawRect.Min, postVisDrawRect.Max, IM_COL32(255, 0, 0, 255), 6, 0, 3);
 		}
 
+		GetForegroundDrawList()->AddText(canvasPos, IM_COL32(0, 255, 0, 255), std::string("stored mouse offset x: " + std::to_string(clipStoredMouseOffsetX)).c_str());
+
 		int trackIt = 0;
 		for (auto& track : songInfo->tracks) {
 			PushID(trackIt);
@@ -342,6 +344,92 @@ void Timeline::onUpdate() {
 			// top left of the cell
 			ImVec2 screenPosOrigin = GetCursorScreenPos();
 
+			int clipIt = 0;
+			float left = GetCursorPosX();
+
+			for (auto& clip : track.clips) {
+				PushID(clipIt);
+
+				ImGuiID id = GetID(clipIt);
+
+				float clipPosition = left + (float)clip->position * (editorState->zoom / 100.0f);
+				float clipWidth = (float)clip->length * (editorState->zoom / 100.0f);
+
+				ImRect bounds = ImRect(canvasPos + ImVec2(clipPosition, GetCursorPosY()), canvasPos + ImVec2(clipPosition + clipWidth, GetCursorPosY() + 143.0f));
+
+				// Button behavior doesn't work here :P
+				// checking manual hovers is the way some ImGui native
+				// components do it, so I don't see the problem with doing it.
+				bool clipHovered = ItemHoverable(ImRect(
+					// hoverable hitbox needs special bounds specifically to
+					// exclude the left and right crop grabbers because the
+					// imgui logic doesn't like overlapping ones. There is an
+					// allow overlap flag that might work here but it's not
+					// worth the simple bounds calculation honestly.
+					ImVec2(bounds.Min.x + 10, bounds.Min.y),
+					ImVec2(bounds.Max.x - 10, bounds.Max.y)
+				), id, 0);
+
+				drawList->AddRectFilled(bounds.Min, bounds.Max, IM_COL32(255, 0, 0, 255), 3.0f);
+
+				// This can't be IsMouseClicked because the hit detection would
+				// select the clip before the user gets a chance to drag it and
+				// potentially others
+				if (clipHovered && IsMouseReleased(ImGuiMouseButton_Left)) {
+					if (!GetIO().KeyCtrl) selectedClips.clear();
+					selectedClips.emplace_back(clip.get());
+				}
+
+				// Am I a clip that's selected?
+				for (auto& selectedClip : selectedClips) {
+					if (selectedClip == clip.get()) {
+						drawList->AddRect(bounds.Min, bounds.Max, IM_COL32(255, 255, 255, 255), 3.0f, 0, 5.0f);
+					}
+				}
+
+				{ // Clip cropping
+					ImRect leftCropGrabber = ImRect(bounds.Min, ImVec2(bounds.Min.x + 10, bounds.Max.y));
+					ImRect rightCropGrabber = ImRect(ImVec2(bounds.Max.x - 10, bounds.Min.y), bounds.Max);
+
+					bool leftCropHovered = ItemHoverable(leftCropGrabber, GetID(/* clipIt + 1 */34543), 0);
+					bool rightCropHovered = ItemHoverable(rightCropGrabber, GetID(clipIt + 2), 0);
+
+					if (leftCropHovered) window->setSECursor(ShadowEngineCursors_CropClipLeft);
+					if (rightCropHovered) window->setSECursor(ShadowEngineCursors_CropClipRight);
+
+					// GetForegroundDrawList()->AddRectFilled(leftCropGrabber.Min, leftCropGrabber.Max, IM_COL32(0, 0, 255, 255));
+					// GetForegroundDrawList()->AddRectFilled(rightCropGrabber.Min, rightCropGrabber.Max, IM_COL32(0, 0, 255, 255));
+				}
+
+				// Am I a clip that is currently being dragged?
+				bool currentClipBeingDragged = false;
+				for (auto& draggingClip : clipsBeingDragged)
+					if (draggingClip == clip.get()) currentClipBeingDragged = true;
+				
+				if (currentClipBeingDragged) {
+					clip->position = std::max(0.0f, clip->position + GetMousePos().x - GetWindowPos().x - clipStoredMouseOffsetX);
+					// TODO: implementation for dragging clips across tracks here?
+				} else {
+					if (clipHovered && IsMouseDown(ImGuiMouseButton_Left) /* !currentClipBeingDragged is implied in this block */) {
+						// flush all selected clips to being dragged state
+						// clipBeingDragged = clip.get();
+
+						for (auto& selectedClip : selectedClips) clipsBeingDragged.emplace_back(selectedClip);
+
+						clipStoredMouseOffsetX = GetMousePos().x - GetWindowPos().x;
+					}
+				}
+				if (IsMouseReleased(ImGuiMouseButton_Left)) clipsBeingDragged.clear();
+
+
+
+				PopID();
+				SameLine();
+				clipIt++;
+			}
+
+			// Old clip rendering function
+			#if 0
 			int clipIt = 0;
 			float left = GetCursorPosX();
 			for (auto& clip : track.clips) {
@@ -433,6 +521,7 @@ void Timeline::onUpdate() {
 				SameLine();
 				clipIt++;
 			}
+			#endif
 			InvisibleButton("##SameLineStopper", ImVec2(1,1));
 
 			PopStyleColor();

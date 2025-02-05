@@ -218,8 +218,6 @@ struct EditorState {
 	
 	float zoom = 100.0f;
 
-	float lastKnownMasterVol = -1.0f;
-
 	bool automationDebugMode = false;
 
 	ImFont* headerFont;

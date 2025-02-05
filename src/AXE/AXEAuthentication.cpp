@@ -21,11 +21,11 @@
 #include "generated/autoconf.h"
 #include "Configuration/EngineConfiguration.hpp"
 
-// Development URL
+#if CONFIG_USE_PROD_AUTH_SERVER
+#define AUTH_SERVER_URL "https://nexus.77z.dev"
+#else
 #define AUTH_SERVER_URL "http://localhost:8787"
-
-// Production URL
-// #define AUTH_SERVER_URL "https://nexus.77z.dev"
+#endif
 
 namespace Shadow::AXE {
 
@@ -54,6 +54,13 @@ void onUpdateStatusBar(bool isInEditor, ShadowWindow* window) {
 	if (BeginPopup("AXEAccountPopup")) {
 		TextUnformatted(EngineConfiguration::getUserName().c_str());
 		Separator();
+		TextUnformatted("Authenticated with:");
+#if CONFIG_USE_PROD_AUTH_SERVER
+		TextUnformatted("Production 77Z server");
+#else
+		TextUnformatted("Development Server");
+#endif
+		SetItemTooltip(AUTH_SERVER_URL);
 
 		if (Button(ICON_CI_LOG_OUT " Log out and Exit")) {
 			if (isInEditor)
@@ -61,17 +68,13 @@ void onUpdateStatusBar(bool isInEditor, ShadowWindow* window) {
 			else
 				confirmedLogOut(window);
 		}
-		EndPopup();
-	}
 
-	if (BeginPopupModal("Log out confirmation")) {
-		TextWrapped(
-			"WARNING: logging out will immediately log out and close AXE audio WITHOUT SAVING your "
-			"work. Make sure you save it with CTRL + S or the menu bar before logging out");
+		if (BeginPopupModal("Log out confirmation")) {
+			TextWrapped("Save your work and log out through the Project Browser");
 
-		if (Button("LOG OUT")) confirmedLogOut(window);
-		SameLine();
-		if (Button("CANCEL")) CloseCurrentPopup();
+			if (Button("OKAY")) CloseCurrentPopup();
+			EndPopup();
+		}
 		EndPopup();
 	}
 }

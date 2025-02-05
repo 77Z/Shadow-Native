@@ -56,6 +56,11 @@
 		// Full production run, everything packed into chunker files, built as
 		// release, all editor components are excluded
 		["SHADOW_PRODUCTION_BUILD", false],
+
+		// If the AXE authentication unit should use the production or
+		// development server. The production server hits nexus.77z.dev and
+		// dev hits localhost:8787. Prefer production for releases obviously
+		["USE_PROD_AUTH_SERVER", false]
 	],
 
 	Shaders: {
