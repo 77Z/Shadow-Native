@@ -331,6 +331,7 @@ int startAXEEditor(std::string projectFile) {
 					}
 					MenuItem("Node Editor Debugger", nullptr, &editorState.showNodeEditorDebugger);
 					MenuItem("Automation Debug Mode", nullptr, &editorState.automationDebugMode);
+					MenuItem("Timeline Cursor Position Debug Mode", nullptr, &editorState.timelinePositionDebugMode);
 					if (MenuItem("Re-cache waveforms")) cacheWaveforms();
 					Separator();
 					if (MenuItem("Break Here")) {
@@ -458,7 +459,7 @@ int startAXEEditor(std::string projectFile) {
 			Begin("ShadowAudio");
 
 			PushFont(editorState.headerFont);
-			TextUnformatted("ShadowAudio");
+			TextUnformatted("AXE Editor");
 			PopFont();
 
 			SeparatorText("Basic debugging info");

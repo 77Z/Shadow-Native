@@ -267,6 +267,8 @@ void Timeline::onUpdate() {
 	ImVec2 canvasSize = GetContentRegionAvail();
 	ImVec2 canvasMax = GetWindowContentRegionMax();
 
+	drawList->AddText(editorState->headerFont, 40.0f, canvasPos + ImVec2(50, canvasSize.y - 45), IM_COL32(255, 255, 255, 100), "Timeline");
+
 	// GetForegroundDrawList()->AddRect(canvasPos, canvasSize, IM_COL32(255, 255, 0, 255), 10.0f);
 	// GetForegroundDrawList()->AddRect(canvasPos, canvasMax, IM_COL32(255, 255, 255, 255), 10.0f);
 
@@ -311,7 +313,7 @@ void Timeline::onUpdate() {
 			drawList->AddRect(postVisDrawRect.Min, postVisDrawRect.Max, IM_COL32(255, 0, 0, 255), 6, 0, 3);
 		}
 
-		GetForegroundDrawList()->AddText(canvasPos, IM_COL32(0, 255, 0, 255), std::string("stored mouse offset x: " + std::to_string(clipStoredMouseOffsetX)).c_str());
+		// GetForegroundDrawList()->AddText(canvasPos, IM_COL32(0, 255, 0, 255), std::string("stored mouse offset x: " + std::to_string(clipStoredMouseOffsetX)).c_str());
 
 		int trackIt = 0;
 		for (auto& track : songInfo->tracks) {
@@ -339,10 +341,16 @@ void Timeline::onUpdate() {
 
 			TableSetColumnIndex(1);
 
+			// TODO: This isn't needed anymore right?
 			PushStyleColor(ImGuiCol_FrameBg, IM_COL32(0,0,0,0));
 
 			// top left of the cell
 			ImVec2 screenPosOrigin = GetCursorScreenPos();
+
+			if (editorState->timelinePositionDebugMode) {
+				SetTooltip("timline screen x: %.3f", GetMousePos().x - screenPosOrigin.x);
+				SetTooltip("pcm frame pos: %.3f", float(GetMousePos().x - screenPosOrigin.x / (editorState->zoom * 100)));
+			}
 
 			int clipIt = 0;
 			float left = GetCursorPosX();
@@ -369,8 +377,6 @@ void Timeline::onUpdate() {
 					ImVec2(bounds.Min.x + 10, bounds.Min.y),
 					ImVec2(bounds.Max.x - 10, bounds.Max.y)
 				), id, 0);
-
-				drawList->AddRectFilled(bounds.Min, bounds.Max, IM_COL32(255, 0, 0, 255), 3.0f);
 
 				// This can't be IsMouseClicked because the hit detection would
 				// select the clip before the user gets a chance to drag it and
@@ -401,25 +407,113 @@ void Timeline::onUpdate() {
 					// GetForegroundDrawList()->AddRectFilled(rightCropGrabber.Min, rightCropGrabber.Max, IM_COL32(0, 0, 255, 255));
 				}
 
+
+				// This is the mouse offset diff
+				// GetForegroundDrawList()->AddLine(bounds.Min, ImVec2(GetMousePos().x, bounds.Min.y), IM_COL32(0, 255, 0, 255), 3);
+				// GetForegroundDrawList()->AddText(bounds.Min + ImVec2(10, 15), IM_COL32(0, 255, 0, 255), std::string(std::to_string(
+				// 	GetMousePos().x - bounds.Min.x
+				// )).c_str());
+
+
+				// // This is terrible code bro.
+				// bool actionClipsBeingDragged_thisFrame = actionClipsBeingDragged;
+				// if (clipHovered && IsMouseDragging(ImGuiMouseButton_Left)) {
+				// 	actionClipsBeingDragged = true;
+				// }
+
+				// if (actionClipsBeingDragged_thisFrame != actionClipsBeingDragged && actionClipsBeingDragged) {
+				// 	EC_PRINT(EC_THIS, "USER STARTED DRAG ACTION");
+				// 	startClipDragging();
+				// }
+
+
+
+				// if (actionClipsBeingDragged && IsMouseReleased(ImGuiMouseButton_Left)) {
+				// 	actionClipsBeingDragged = false;
+				// 	EC_PRINT(EC_THIS, "User is NOT DRAGGING CLIPS ANYMORE");
+				// }
+
+				drawList->AddRectFilled(bounds.Min, bounds.Max, ImColor(255, 0, 0, actionClipsBeingDragged ? 100 : 255), 3.0f);
+
+				drawList->AddText(bounds.Min, IM_COL32(255, 255, 255, 255), std::string(std::to_string(bounds.Min.x - GetWindowPos().x)).c_str());
+
+				// -----------------------------------------------------------//
+				// FIXME: I HATE THIS DRAGGING CODE SO SO SO MUCH AHHHHHHH
+				// -----------------------------------------------------------//
+
 				// Am I a clip that is currently being dragged?
 				bool currentClipBeingDragged = false;
 				for (auto& draggingClip : clipsBeingDragged)
-					if (draggingClip == clip.get()) currentClipBeingDragged = true;
+					if (draggingClip.first == clip.get()) {
+						currentClipBeingDragged = true;
+
+						EC_PRINT(EC_THIS, "Initial position! %lu", draggingClip.second);
+						clip->position = std::max(0.0f, draggingClip.second + GetMousePos().x - GetWindowPos().x - clipStoredMouseOffsetX);
+					}
+				
+				if (!currentClipBeingDragged) {
+					if (clipHovered && IsMouseDragging(ImGuiMouseButton_Left) /* !currentClipBeingDragged is implied in this block */) {
+						// flush all selected clips to being dragged state
+						// clipBeingDragged = clip.get();
+
+						for (auto& selectedClip : selectedClips) clipsBeingDragged.emplace_back(std::pair<Clip*, uint64_t>(selectedClip, selectedClip->position));
+
+						clipStoredMouseOffsetX = GetMousePos().x - GetWindowPos().x;
+						// clipStoredMouseOffsetX = GetMousePos().x - clip->position; // AI GEN that works but stores current clip pos in global var
+					}
+				}
+				if (IsMouseReleased(ImGuiMouseButton_Left)) {
+					EC_PRINT(EC_THIS, "RELEASED!!");
+					clipsBeingDragged.clear();
+				}
+
+				#if 0
+				// Bruh
+
+				bool currentClipBeingDragged = false;
+				float* clipStoredMouseOffsetX = nullptr;
+				for (auto& draggingClip : clipsBeingDragged)
+					if (draggingClip.first == clip.get()) {
+						currentClipBeingDragged = true;
+						clipStoredMouseOffsetX = &draggingClip.second;
+						break;
+					}
+
 				
 				if (currentClipBeingDragged) {
-					clip->position = std::max(0.0f, clip->position + GetMousePos().x - GetWindowPos().x - clipStoredMouseOffsetX);
-					// TODO: implementation for dragging clips across tracks here?
+					clip->position = GetMousePos().x - *clipStoredMouseOffsetX;
 				} else {
 					if (clipHovered && IsMouseDown(ImGuiMouseButton_Left) /* !currentClipBeingDragged is implied in this block */) {
 						// flush all selected clips to being dragged state
 						// clipBeingDragged = clip.get();
 
-						for (auto& selectedClip : selectedClips) clipsBeingDragged.emplace_back(selectedClip);
+						for (auto& selectedClip : selectedClips) clipsBeingDragged.emplace_back(std::pair<Clip*, float>(selectedClip, 0.0f));
 
-						clipStoredMouseOffsetX = GetMousePos().x - GetWindowPos().x;
+						// clipStoredMouseOffsetX = GetMousePos().x - GetWindowPos().x;
+						for (auto& draggingClip : clipsBeingDragged) {
+							if (draggingClip.first == clip.get()) {
+								draggingClip.second = GetMousePos().x - clip->position;
+								break;
+							}
+						}
 					}
 				}
-				if (IsMouseReleased(ImGuiMouseButton_Left)) clipsBeingDragged.clear();
+				if (IsMouseReleased(ImGuiMouseButton_Left)) {
+					EC_PRINT(EC_THIS, "RELEASED!!");
+					clipsBeingDragged.clear();
+				}
+
+				//old notes
+				if (clipHovered && IsMouseDown(ImGuiMouseButton_Left) && !clipBeingDragged) {
+					clipBeingDragged = clip.get();
+					clipStoredMouseOffsetX = GetMousePos().x - clip->position;
+				} else if (IsMouseReleased(ImGuiMouseButton_Left)) clipBeingDragged = nullptr;
+
+				if (clipBeingDragged == clip.get()) {
+					// Actively dragging
+					clip->position = GetMousePos().x - clipStoredMouseOffsetX;
+				}
+				#endif
 
 
 
@@ -917,4 +1011,13 @@ void Timeline::togglePlayback() {
 	else
 		stopPlayback();
 }
+
+void Timeline::startClipDragging() {
+	mouseXonDragStart = ImGui::GetMousePos().x;
+
+	// for (auto& selectedClip : selectedClips) {
+	// 	selectedClip.
+	// }
+}
+
 }

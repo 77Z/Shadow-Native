@@ -6,7 +6,9 @@
 #include "ShadowWindow.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include <cstdint>
 #include <memory>
+#include <utility>
 #include <vector>
 
 namespace Shadow::AXE {
@@ -36,8 +38,25 @@ private:
 	// Clip* selectedClip = nullptr;
 	// Clip* clipBeingDragged = nullptr;
 	std::vector<Clip*> selectedClips;
-	std::vector<Clip*> clipsBeingDragged;
+	// std::vector<
+	// 	std::pair<Clip*,   // Clip reference
+	// 	float             //  clipStoredMouseOffsetX
+	// >> clipsBeingDragged;
+
+	// std::vector<Clip*> clipsBeingDragged;
+
+	std::vector<
+		std::pair<Clip*,   // Clip reference
+		uint64_t          //  initial clip position at start of drag op
+	>> clipsBeingDragged;
+
+	bool actionClipsBeingDragged = false;
+	bool globalStateIsNowDragging = false;
+	float mouseXonDragStart = 0.0f;
+
+
 	float clipStoredMouseOffsetX = 0.0f;
+
 	int tableHoveredRow = -1;
 	Track* currentlySelectedTrack = nullptr;
 	Automation* automationStartRailBeingDragged = nullptr;
@@ -48,6 +67,9 @@ private:
 	ImRect selectionRect;
 
 	void updateTrackAutomationsPopup();
+
+	void startClipDragging();
+	// void stopClipDragging();
 };
 
 }

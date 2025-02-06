@@ -60,7 +60,7 @@
 		// If the AXE authentication unit should use the production or
 		// development server. The production server hits nexus.77z.dev and
 		// dev hits localhost:8787. Prefer production for releases obviously
-		["USE_PROD_AUTH_SERVER", false]
+		["USE_PROD_AUTH_SERVER", true]
 	],
 
 	Shaders: {

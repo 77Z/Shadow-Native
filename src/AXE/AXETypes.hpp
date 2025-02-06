@@ -220,6 +220,8 @@ struct EditorState {
 
 	bool automationDebugMode = false;
 
+	bool timelinePositionDebugMode = false;
+
 	ImFont* headerFont;
 
 	// Window states

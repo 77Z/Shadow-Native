@@ -1,3 +1,14 @@
+# Reading notes for Benjamin Denise Sutton
+
+- This is not the complete source for Shadow Engine as a whole, this is one
+  section
+- The code for AXE is in `src/AXE` in its entirety. The entry point for the
+  editor is in `src/AXE/AXEEditorNew.cpp`
+- The codebase for Horde is in `scripts/Horde`, and the entry point is in `main.ts`
+
+- Talk to me if you're interested in compiling it, as you have to pull
+dependencies, install tools, and setup the environment properly
+
 # Shadow-Native
 
 Shadow Engine
@@ -30,7 +41,7 @@ Things you will need to compile Shadow Engine on Windows:
 - Developer Mode **must** be enabled in Windows Settings.
 - Visual Studio 2022 with the *Desktop Development with C++* package installed.
 - GCC and Clang compilers (yes both)
-  - [Download GCC here](https://github.com/niXman/mingw-builds-binaries/releases)
+  - [Download GCC here][mingwlink]
   - Clang will be installed with WinGet packages
 - Packages under the *WinGet Packages to install* section must be installed with
   the `winget install` command in PowerShell
@@ -111,3 +122,6 @@ instead deserialize a scene file and go through that.
 - meshoptimizer - Arseny Kapoulkine
 - stduuid - Marius Băncilă
 - cubic_bezier.cc - The Chromium Project
+
+
+[mingwlink]: https://github.com/niXman/mingw-builds-binaries/releases

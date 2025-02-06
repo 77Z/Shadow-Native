@@ -63,7 +63,7 @@
 				// "dev"
 				// "editorwis"
 				// "SlimEditor", "/home/vince/.config/Shadow/Projects/WIS/Content/Scenes/mesh.scene"
-				"axeEditorWithProject", "/home/vince/.config/Shadow/AXEProjects/fjosjdfoisdjfosidj.axe"
+				"axeEditorWithProject", "/home/vince/.config/Shadow/AXEProjects/MY song.axe"
 			],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}/bin/sdw/shadow-engine",
