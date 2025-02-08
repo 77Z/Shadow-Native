@@ -7,13 +7,13 @@
     "start": "electron ."
   },
   "repository": "https://github.com/77Z/Shadow-Native",
-  "keywords": [
-  ],
+  "keywords": [],
   "author": "Vince Richter",
   "devDependencies": {
     "electron": "^33.2.0"
   },
   "dependencies": {
-    "@vscode/codicons": "^0.0.36"
+    "@vscode/codicons": "^0.0.36",
+    "electron-dl-manager": "^3.2.1"
   }
 }

@@ -122,10 +122,19 @@ void loginWithCreds() {
 	curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist1);
 	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "ShadowEngine/" SHADOW_VERSION_STRING);
 	curl_easy_setopt(hnd, CURLOPT_MAXREDIRS, 50L);
+#if BX_PLATFORM_LINUX | BX_PLATFORM_BSD
 	curl_easy_setopt(hnd, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
+#endif
 	curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
 	curl_easy_setopt(hnd, CURLOPT_FTP_SKIP_PASV_IP, 1L);
 	curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
+
+	// TODO: This can probably apply to more than just windows
+#if BX_PLATFORM_WINDOWS
+	curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYSTATUS, 1);
+	curl_easy_setopt(hnd, CURLOPT_CAINFO, "./Resources/cert-bundle.crt");
+	curl_easy_setopt(hnd, CURLOPT_CAPATH, "./Resources/cert-bundle.crt");
+#endif
 
 	curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, curlWriteCallback);
 	curl_easy_setopt(hnd, CURLOPT_WRITEDATA, &responseData);
@@ -211,10 +220,19 @@ bool alreadyLoggedIn() {
 	curl_easy_setopt(hnd, CURLOPT_HTTPHEADER, slist1);
 	curl_easy_setopt(hnd, CURLOPT_USERAGENT, "ShadowEngine/" SHADOW_VERSION_STRING);
 	curl_easy_setopt(hnd, CURLOPT_MAXREDIRS, 50L);
+#if BX_PLATFORM_LINUX | BX_PLATFORM_BSD
 	curl_easy_setopt(hnd, CURLOPT_HTTP_VERSION, (long)CURL_HTTP_VERSION_2TLS);
+#endif
 	curl_easy_setopt(hnd, CURLOPT_CUSTOMREQUEST, "POST");
 	curl_easy_setopt(hnd, CURLOPT_FTP_SKIP_PASV_IP, 1L);
 	curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
+
+	// TODO: This can probably apply to more than just windows
+#if BX_PLATFORM_WINDOWS
+	curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYSTATUS, 1);
+	curl_easy_setopt(hnd, CURLOPT_CAINFO, "./Resources/cert-bundle.crt");
+	curl_easy_setopt(hnd, CURLOPT_CAPATH, "./Resources/cert-bundle.crt");
+#endif
 
 	curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, curlWriteCallback);
 	curl_easy_setopt(hnd, CURLOPT_WRITEDATA, &responseData);
@@ -335,10 +353,8 @@ bool startAXEAuthentication() {
 
 		PopStyleVar(3);
 
-		TextUnformatted("Shadow Engine AXE Authenticator");
-
 		PushFont(headingFont);
-		TextUnformatted("77Z Account");
+		TextCenter("77Z Account");
 		PopFont();
 
 		TextUnformatted("Username");
