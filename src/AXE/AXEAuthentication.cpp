@@ -132,7 +132,7 @@ void loginWithCreds() {
 
 	ret = curl_easy_perform(hnd);
 	if (ret != CURLE_OK) {
-		failureMessage = "Failed to connect to the authentication server";
+		failureMessage = "Failed to connect to the authentication server: " + std::string(curl_easy_strerror(ret));
 		goto cleanup;
 	}
 
