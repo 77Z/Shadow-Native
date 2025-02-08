@@ -1,0 +1,19 @@
+{
+  "name": "vt-installer",
+  "version": "1.0.0",
+  "description": "77Z App Installer",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/77Z/Shadow-Native",
+  "keywords": [
+  ],
+  "author": "Vince Richter",
+  "devDependencies": {
+    "electron": "^33.2.0"
+  },
+  "dependencies": {
+    "@vscode/codicons": "^0.0.36"
+  }
+}

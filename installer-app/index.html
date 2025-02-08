@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8" />
+		<!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+		<!-- <meta
+			http-equiv="Content-Security-Policy"
+			content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
+		/> -->
+		<link href="./styles.css" rel="stylesheet" />
+		<title>77Z App Installer</title>
+	</head>
+	<body>
+		<div class="bar">
+			77Z App Installer
+			<div class="fill"></div>
+			<button class="codicon accBtn">&#xeb99;</button>
+		</div>
+
+		<div class="login-content">
+			<img src="./logo.svg" draggable="false" />
+
+			<label for="username">Username</label>
+			<input type="text" id="username" />
+			<label for="password">Password</label>
+			<input type="password" id="password" />
+			<div class="btnbox">
+				<button>Sign in</button>
+			</div>
+		</div>
+
+		<div class="content">
+			<div class="application">
+				<h1>AXE Audio Workstation</h1>
+				<p id="ver"></p>
+				<p id="daterel"></p>
+			</div>
+		</div>
+
+		<script src="./renderer.js" defer></script>
+	</body>
+</html>
