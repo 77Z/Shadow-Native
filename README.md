@@ -53,6 +53,7 @@ LLVM.LLVM
 Ninja-build.Ninja
 Microsoft.VCRedist.2015+.x64
 KhronosGroup.VulkanSDK
+cURL.cURL
 ```
 
 All of these dependencies do take up a lot of space on your system, but as is

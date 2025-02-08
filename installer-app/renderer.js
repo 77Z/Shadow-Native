@@ -1,4 +1,5 @@
-const AUTH_SERVER_URL = "http://localhost:8787";
+//const AUTH_SERVER_URL = "http://localhost:8787";
+const AUTH_SERVER_URL = "http://192.168.1.98:8787";
 
 fetch(AUTH_SERVER_URL + "/api/v1/versionInfo").then(async r => {
 	const data = await r.json();

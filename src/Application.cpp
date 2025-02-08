@@ -123,10 +123,13 @@ int Main(const std::vector<std::string>& args) {
 }
 }
 
-#if BX_PLATFORM_WINDOWS
+// #if BX_PLATFORM_WINDOWS
+#if 0
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 	// Is there a better way to hide this?
 	ShowWindow(GetConsoleWindow(), SW_HIDE);
+
+	PRINT("Windows runtime");
 
 	LPWSTR cmdLine = GetCommandLineW();
 	int argc;
@@ -142,6 +145,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 }
 #else
 int main(int argc, char** argv) {
+	PRINT("Main function");
 	std::vector<std::string> args;
 
 	for (int i = 0; i < argc; i++) {

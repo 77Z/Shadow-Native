@@ -60,6 +60,11 @@
 		// Full production run, everything packed into chunker files, built as
 		// release, all editor components are excluded
 		["SHADOW_PRODUCTION_BUILD", false],
+
+		// If the AXE authentication unit should use the production or
+		// development server. The production server hits nexus.77z.dev and
+		// dev hits localhost:8787. Prefer production for releases obviously
+		["USE_PROD_AUTH_SERVER", true]
 	],
 
 	Shaders: {
@@ -951,12 +956,14 @@
 				"lib/xxHash",
 				"lib/imgui",
 				"lib/imgui/backends",
-				"misc/snappy-hack",
+				"misc/snappy-hack-windows",
 				"lib/bgfx/examples/common",
 				"lib/stb",
 				"lib/sdf",
 
-				"../../../../../VulkanSDK/1.3.296.0/Include/"
+				// This is a terrible way to access the root in NTFS
+				"../../../../../VulkanSDK/1.3.296.0/Include/",
+				"../../../../../Users/Vince/AppData/Local/Microsoft/WinGet/Packages/cURL.cURL_Microsoft.Winget.Source_8wekyb3d8bbwe/curl-8.12.0_1-win64-mingw/include/"
 
 				//"/usr/include/mono-2.0"
 				// "../vcpkg/packages/ms-gsl_x64-linux/include"
@@ -996,7 +1003,9 @@
 				"-lstdc++", "-lm", "-lpthread", "-lopengl32",
 				"-LC:/VulkanSDK/1.3.296.0/Lib", "-lvulkan-1", "-lgdi32",
 				"-lDwmapi", /*"-Wl,-subsystem,windows",*/
-				"../../../misc/windows/resources.o" ],
+				"../../../misc/windows/resources.o",
+				"-LC:/Users/Vince/AppData/Local/Microsoft/WinGet/Packages/cURL.cURL_Microsoft.Winget.Source_8wekyb3d8bbwe/curl-8.12.0_1-win64-mingw/lib/",
+				"-lcurl" ],
 			
 			// InlineBuildLibs is a list of libraries that will be included in
 			// the build of the current target, but they must be built within
