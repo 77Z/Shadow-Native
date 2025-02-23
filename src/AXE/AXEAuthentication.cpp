@@ -129,12 +129,9 @@ void loginWithCreds() {
 	curl_easy_setopt(hnd, CURLOPT_FTP_SKIP_PASV_IP, 1L);
 	curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
 
-	// TODO: This can probably apply to more than just windows
-#if BX_PLATFORM_WINDOWS
 	curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYSTATUS, 1);
 	curl_easy_setopt(hnd, CURLOPT_CAINFO, "./Resources/cert-bundle.crt");
 	curl_easy_setopt(hnd, CURLOPT_CAPATH, "./Resources/cert-bundle.crt");
-#endif
 
 	curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, curlWriteCallback);
 	curl_easy_setopt(hnd, CURLOPT_WRITEDATA, &responseData);
@@ -227,12 +224,9 @@ bool alreadyLoggedIn() {
 	curl_easy_setopt(hnd, CURLOPT_FTP_SKIP_PASV_IP, 1L);
 	curl_easy_setopt(hnd, CURLOPT_TCP_KEEPALIVE, 1L);
 
-	// TODO: This can probably apply to more than just windows
-#if BX_PLATFORM_WINDOWS
 	curl_easy_setopt(hnd, CURLOPT_SSL_VERIFYSTATUS, 1);
 	curl_easy_setopt(hnd, CURLOPT_CAINFO, "./Resources/cert-bundle.crt");
 	curl_easy_setopt(hnd, CURLOPT_CAPATH, "./Resources/cert-bundle.crt");
-#endif
 
 	curl_easy_setopt(hnd, CURLOPT_WRITEFUNCTION, curlWriteCallback);
 	curl_easy_setopt(hnd, CURLOPT_WRITEDATA, &responseData);
@@ -274,7 +268,7 @@ bool startAXEAuthentication() {
 	// }
 
 	curl_global_init(CURL_GLOBAL_ALL);
-	#if defined(IMGUI_IMPL_OPENGL_ES2)
+#if defined(IMGUI_IMPL_OPENGL_ES2)
 	// GL ES 2.0 + GLSL 100
 	const char* glsl_version = "#version 100";
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
@@ -339,7 +333,7 @@ bool startAXEAuthentication() {
 		SetNextWindowViewport(viewport->ID);
 		PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
 		PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-		PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(10.0f, 1.0f));
+		PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(45.0f, 20.0f));
 		ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
 			| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
 			| ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus
