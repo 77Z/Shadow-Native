@@ -34,12 +34,12 @@
 				<img src="../res/runtimeres/logo.png" draggable="false">
 				<div class="info">
 					<h1>AXE Audio Workstation</h1>
-					<p id="ver"></p>
-					<p id="daterel"></p>
+					<span id="ver"></span>
+					<span id="daterel"></span>
 				</div>
 				<div class="fill"></div>
 				<div class="actions">
-					<button class="installBtn">Install</button>
+					<button class="installBtn" id="axeInstaller">Install</button>
 				</div>
 			</div>
 			<div class="application">
@@ -52,6 +52,15 @@
 					<button class="installBtn unavailable">Unavailable on your account</button>
 				</div>
 			</div>
+		</div>
+
+		<div class="installerBottom" id="installerBottom">
+			<div class="installerProgressBar">
+				<div class="progress"></div>
+			</div>
+			<span id="downloadUpdate">
+				No active download
+			</span>
 		</div>
 
 		<script src="./renderer.js" defer></script>

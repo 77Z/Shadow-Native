@@ -1,26 +1,29 @@
-// Modules to control application life and create native browser window
 const { app, BrowserWindow } = require('electron')
 const path = require('node:path')
+const electronDl = require("electron-dl");
+
+electronDl();
 
 function createWindow () {
-  // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js')
+      
     },
-    // frame: false,
     titleBarStyle: "hidden",
     titleBarOverlay: true,
     darkTheme: true,
     minWidth: 400,
-    minHeight: 400
+    minHeight: 400,
+    alwaysOnTop: true,
+    backgroundMaterial: 'tabbed',
+    maximizable: false
   })
 
 
   mainWindow.setTitleBarOverlay({
-    color: "#111111",
+    color: "#11111100",
     symbolColor: "#ffffff",
     height: 50
   });

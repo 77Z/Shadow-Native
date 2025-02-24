@@ -56,7 +56,7 @@
 			"name": "(gdb) Launch",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/bin/sdw/shadow-engine/Shadow",
+			"program": "${workspaceFolder}/bin/sdw-win/shadow-engine/Shadow.exe",
 			"args": [
 				// "axeEditor"
 				// "axe"
@@ -66,7 +66,7 @@
 				"axeEditorWithProject", "/home/vince/.config/Shadow/AXEProjects/MY song.axe"
 			],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/bin/sdw/shadow-engine",
+			"cwd": "${workspaceFolder}/bin/sdw-win/shadow-engine",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",
