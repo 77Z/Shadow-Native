@@ -56,17 +56,17 @@
 			"name": "(gdb) Launch",
 			"type": "cppdbg",
 			"request": "launch",
-			"program": "${workspaceFolder}/bin/sdw-win/shadow-engine/Shadow.exe",
+			"program": "${workspaceFolder}/bin/sdw/shadow-engine/Shadow",
 			"args": [
 				// "axeEditor"
 				// "axe"
 				// "dev"
 				// "editorwis"
 				// "SlimEditor", "/home/vince/.config/Shadow/Projects/WIS/Content/Scenes/mesh.scene"
-				"axeEditorWithProject", "/home/vince/.config/Shadow/AXEProjects/MY song.axe"
+				"axeEditorWithProject", "/home/vince/.config/Shadow/AXEProjects/What.axe"
 			],
 			"stopAtEntry": false,
-			"cwd": "${workspaceFolder}/bin/sdw-win/shadow-engine",
+			"cwd": "${workspaceFolder}/bin/sdw/shadow-engine",
 			"environment": [],
 			"externalConsole": false,
 			"MIMode": "gdb",

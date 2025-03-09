@@ -53,6 +53,21 @@ int Main(const std::vector<std::string>& args) {
 
 	if (args[1] == "axeEditorWithProject") {
 		ret = Shadow::AXE::startAXEEditor(args[2]);
+	} else if (args[1] == "DataDecode") {
+		WARN("Decoding %s to %s", args[2].c_str(), args[3].c_str());
+		json sceneInput = JSON::readBsonFile(args[2]);
+		std::ofstream outfile(args[3]);
+		outfile << sceneInput.dump(2);
+		outfile.close();
+	} else if (args[1] == "DataEncode") {
+		WARN("Encoding %s to %s", args[2].c_str(), args[3].c_str());
+		std::ifstream infile(args[2]);
+		std::vector<uint8_t> bson = json::to_bson(json::parse(infile));
+		std::ofstream outfile(args[3]);
+		for (size_t i = 0; i < bson.size(); i++) {
+			outfile << bson[i];
+		}
+		outfile.close();
 	} else {
 		if (args[1] != "nosplash") {
 			ret = AXE::showAXESplash();

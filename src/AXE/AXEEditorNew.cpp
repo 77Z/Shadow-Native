@@ -150,9 +150,10 @@ int startAXEEditor(std::string projectFile) {
 
 	Keyboard keyboard(&window);
 
+	// These things should be init'd after the song loads. Bad things happen otherwise :(
 	Timeline timeline(&songInfo, &editorState, &engine, &window);
 	ClipBrowser clipBrowser;
-	AXENodeEditor nodeEditor(&songInfo);
+	AXENodeEditor nodeEditor(&songInfo, &editorState);
 	AXEEqualizer equalizer;
 	PianoRoll pianoRoll;
 
@@ -332,6 +333,7 @@ int startAXEEditor(std::string projectFile) {
 					MenuItem("Node Editor Debugger", nullptr, &editorState.showNodeEditorDebugger);
 					MenuItem("Automation Debug Mode", nullptr, &editorState.automationDebugMode);
 					MenuItem("Timeline Cursor Position Debug Mode", nullptr, &editorState.timelinePositionDebugMode);
+					MenuItem("Bookmark Debugger", nullptr, &editorState.showBookmarksDebugger);
 					if (MenuItem("Re-cache waveforms")) cacheWaveforms();
 					Separator();
 					if (MenuItem("Break Here")) {
@@ -410,6 +412,10 @@ int startAXEEditor(std::string projectFile) {
 				// IMPL
 			}
 			SetItemTooltip("Multi slice clip cut");
+
+			SameLine();
+			if (Button(ICON_CI_BOOKMARK)) timeline.newBookmark();
+			SetItemTooltip(ICON_CI_BOOKMARK " New bookmark (Ctrl + B)");
 
 			SameLine();
 			ToggleButton(ICON_CI_MAGNET, &editorState.snappingEnabled);
@@ -565,6 +571,7 @@ int startAXEEditor(std::string projectFile) {
 		clipBrowser.onUpdate(editorState.showClipBrowser);
 		equalizer.onUpdate(editorState.showEqualizer);
 		pianoRoll.onUpdate(editorState.showPianoRoll);
+		timeline.updateBookmarkDebugMenu(editorState.showBookmarksDebugger);
 		onUpdateGlobalSettingsWindow(editorState.showGlobalSettings);
 		ImGui::RenderNotifications();
 

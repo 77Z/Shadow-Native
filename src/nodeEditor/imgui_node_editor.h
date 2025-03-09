@@ -11,6 +11,7 @@
 //------------------------------------------------------------------------------
 # ifndef __IMGUI_NODE_EDITOR_H__
 # define __IMGUI_NODE_EDITOR_H__
+#include <string>
 # pragma once
 
 
@@ -282,6 +283,7 @@ struct Style
 
 
 //------------------------------------------------------------------------------
+// Stupid forward decl wasting my weekend.
 struct EditorContext;
 
 
@@ -432,7 +434,13 @@ IMGUI_NODE_EDITOR_API ImVec2 CanvasToScreen(const ImVec2& pos);
 IMGUI_NODE_EDITOR_API int GetNodeCount();                                // Returns number of submitted nodes since Begin() call
 IMGUI_NODE_EDITOR_API int GetOrderedNodeIds(NodeId* nodes, int size);    // Fills an array with node id's in order they're drawn; up to 'size` elements are set. Returns actual size of filled id's.
 
+/// Returns what would normally be saved to NodeEditor.json so that it can be
+/// saved manually somewhere else (in this case, it's the AXE song file).
+IMGUI_NODE_EDITOR_API std::string VTGetManualSaveState();
 
+/// Push json data (probably acquired from VTGetManualSaveState) as if it were
+/// loading from NodeEditor.json
+IMGUI_NODE_EDITOR_API void VTManualStateLoad(const std::string& jsonData);
 
 
 

@@ -9,6 +9,7 @@
 // CREDITS
 //   Written by Michal Cichon
 //------------------------------------------------------------------------------
+#include "Debug/Logger.hpp"
 # include "imgui_node_editor_internal.h"
 # include <cstdio> // snprintf
 # include <string>
@@ -2208,6 +2209,49 @@ void ed::EditorContext::SaveSettings()
 		m_Settings.ClearDirty();
 
 	m_Config.EndSave();
+}
+
+std::string ed::EditorContext::VTManualSave() {
+	m_Config.BeginSave();
+
+	for (auto& node : m_Nodes)
+	{
+		auto settings = m_Settings.FindNode(node->m_ID);
+		settings->m_Location = node->m_Bounds.Min;
+		settings->m_Size     = node->m_Bounds.GetSize();
+		if (IsGroup(node))
+			settings->m_GroupSize = node->m_GroupBounds.GetSize();
+
+		if (!node->m_RestoreState && settings->m_IsDirty && m_Config.SaveNodeSettings)
+		{
+			if (m_Config.SaveNode(node->m_ID, settings->Serialize().dump(), settings->m_DirtyReason))
+				settings->ClearDirty();
+		}
+	}
+
+	m_Settings.m_Selection.resize(0);
+	for (auto& object : m_SelectedObjects)
+		m_Settings.m_Selection.push_back(object->ID());
+
+	m_Settings.m_ViewScroll  = m_NavigateAction.m_Scroll;
+	m_Settings.m_ViewZoom    = m_NavigateAction.m_Zoom;
+	m_Settings.m_VisibleRect = m_NavigateAction.m_VisibleRect;
+
+	std::string ret = m_Settings.Serialize();
+	m_Settings.ClearDirty();
+	m_Config.EndSave();
+	return ret;
+}
+
+void ed::EditorContext::VTManualLoad(const std::string& jsonData) {
+	ed::Settings::Parse(jsonData, m_Settings);
+
+	if (ImRect_IsEmpty(m_Settings.m_VisibleRect)) {
+		m_NavigateAction.m_Scroll = m_Settings.m_ViewScroll;
+		m_NavigateAction.m_Zoom   = m_Settings.m_ViewZoom;
+	} else {
+		m_NavigateAction.NavigateTo(m_Settings.m_VisibleRect, NavigateAction::ZoomMode::Exact, 0.0f);
+	}
 }
 
 void ed::EditorContext::MakeDirty(SaveReasonFlags reason)

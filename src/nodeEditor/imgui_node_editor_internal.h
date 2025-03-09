@@ -1473,6 +1473,9 @@ struct EditorContext
 
 	ImDrawList* GetDrawList() { return m_DrawList; }
 
+	std::string VTManualSave();
+	void VTManualLoad(const std::string& jsonData);
+
 private:
 	void LoadSettings();
 	void SaveSettings();

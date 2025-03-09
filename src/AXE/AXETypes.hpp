@@ -1,6 +1,7 @@
 #ifndef SHADOW_NATIVE_AXE_AXE_TYPES_HPP
 #define SHADOW_NATIVE_AXE_AXE_TYPES_HPP
 
+#include "../nodeEditor/imgui_node_editor_internal.h"
 #include "../nodeEditor/imgui_node_editor.h"
 #include <cstddef>
 #include <cstdint>
@@ -98,12 +99,10 @@ struct NGComment {
 
 struct NodeGraph {
 	std::string name;
-	//TODO: update to a u64
-	int lastKnownGraphId = 1000;
-	// ed::EditorContext* ctx;
-	// std::shared_ptr<ed::EditorContext> ctx;
-	// std::shared_ptr<void> ctx;
 
+	ed::Config config;
+	ed::EditorContext* editorContext;
+	
 	std::vector<Node> nodes;
 	ImVector<Link> links;
 	std::vector<NGComment> comments;
@@ -142,6 +141,7 @@ enum TimelineUnit_ {
 struct Bookmark {
 	uint64_t position;
 	std::string name;
+	ImColor color;
 };
 
 struct Automation {
@@ -179,7 +179,6 @@ struct Track {
 	std::string name;
 	std::vector<std::shared_ptr<Clip>> clips;
 	std::vector<Automation> automations;
-	std::vector<Bookmark> bookmarks;
 
 	float balence = 0.0f;	// -1 L : +1 R
 	float volume = 100.0f;	// 0 - 100
@@ -207,8 +206,11 @@ struct Song {
 	float masterVolume = 1.0f; // 0-1 with anything over 1 amplifying
 	TimelineUnit_ timelineUnits = TimelineUnit_BPM;
 
+	uint64_t lastKnownGraphId = 10000;
+
 	std::vector<Track> tracks;
 	std::vector<NodeGraph> nodeGraphs;
+	std::vector<Bookmark> bookmarks;
 };
 
 struct EditorState {
@@ -238,6 +240,7 @@ struct EditorState {
 	bool showEqualizer = true;
 	bool showGlobalSettings = false;
 	bool showPianoRoll = true;
+	bool showBookmarksDebugger = true;
 };
 
 }

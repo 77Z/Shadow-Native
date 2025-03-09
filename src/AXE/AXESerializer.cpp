@@ -26,6 +26,7 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 	output["timelineUnits"] = song->timelineUnits;
 	output["timeSignature"] = song->timeSignature;
 	output["masterVolume"] = song->masterVolume;
+	output["lastKnownGraphId"] = song->lastKnownGraphId;
 
 	output["tracks"] = json::array();
 	for (auto& track : song->tracks) {
@@ -90,7 +91,10 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 		json ngObj;
 
 		ngObj["name"] = ng.name;
-		ngObj["lastKnownGraphId"] = ng.lastKnownGraphId;
+		ed::SetCurrentEditor(ng.editorContext);
+		ngObj["editorContextData"] = json::parse(ed::VTGetManualSaveState());
+		ed::SetCurrentEditor(nullptr);
+		// ngObj["lastKnownGraphId"] = ng.lastKnownGraphId;
 
 		ngObj["nodes"] = json::array();
 		for (auto& node : ng.nodes) {
@@ -140,6 +144,21 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 		output["nodeGraphs"].push_back(ngObj);
 	}
 
+	// Bookmarks
+	output["bookmarks"] = json::array();
+	for (auto& b : song->bookmarks) {
+		json bmObj;
+
+		bmObj["name"] = b.name;
+		bmObj["color"].push_back(b.color.Value.x);
+		bmObj["color"].push_back(b.color.Value.y);
+		bmObj["color"].push_back(b.color.Value.z);
+		bmObj["color"].push_back(b.color.Value.w);
+		bmObj["position"] = b.position;
+
+		output["bookmarks"].push_back(bmObj);
+	}
+
 	// JSON::dumpJsonToFile(output, filepath + ".raw", true);
 
 	JSON::dumpJsonToBson(output, filepath);
@@ -173,6 +192,7 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 		song->timeSignature[0] = decodedSong["timeSignature"][0];
 		song->timeSignature[1] = decodedSong["timeSignature"][1];
 		song->masterVolume = decodedSong["masterVolume"];
+		song->lastKnownGraphId = decodedSong["lastKnownGraphId"];
 
 		for (auto& track : decodedSong["tracks"]) {
 			Track tempTrack;
@@ -233,7 +253,26 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 			NodeGraph tempNg;
 
 			tempNg.name = ng["name"];
-			tempNg.lastKnownGraphId = ng["lastKnownGraphId"];
+			tempNg.config.SettingsFile = nullptr;
+			tempNg.config.NavigateButtonIndex = 2;
+			tempNg.editorContext = ed::CreateEditor(&tempNg.config);
+
+			ed::SetCurrentEditor(tempNg.editorContext);
+			ed::VTManualStateLoad(json(ng["editorContextData"]).dump());
+
+			auto& colors = ed::GetStyle().Colors;
+			colors[ed::StyleColor_Bg]                = ImColor(0, 0, 0, 255);
+			colors[ed::StyleColor_HovNodeBorder]     = ImColor(255, 69, 0, 255);
+			colors[ed::StyleColor_SelNodeBorder]     = ImColor(255, 0, 0, 255);
+			colors[ed::StyleColor_PinRect]           = ImColor(255, 0, 0, 255);
+		
+			colors[ed::StyleColor_LinkSelRect]       = ImColor(255, 0, 0, 50);
+			colors[ed::StyleColor_LinkSelRectBorder] = ImColor(255, 0, 0, 255);
+			colors[ed::StyleColor_NodeSelRect]       = ImColor(255, 0, 0, 50);
+			colors[ed::StyleColor_NodeSelRectBorder] = ImColor(255, 0, 0, 255);
+		
+			ed::SetCurrentEditor(nullptr);
+			// tempNg.lastKnownGraphId = ng["lastKnownGraphId"];
 
 			for (auto& node : ng["nodes"]) {
 				Node tempNode;
@@ -277,7 +316,21 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 				tempNg.links.push_back(tempLink);
 			}
 
-			song->nodeGraphs.push_back(tempNg);
+			song->nodeGraphs.emplace_back(std::move(tempNg));
+		}
+
+		for (auto& bm: decodedSong["bookmarks"]) {
+			Bookmark tempBm;
+
+			tempBm.name = bm["name"];
+			tempBm.color = ImColor(
+				(float)bm["color"][0],
+				(float)bm["color"][1],
+				(float)bm["color"][2],
+				(float)bm["color"][3]);
+			tempBm.position = bm["position"];
+
+			song->bookmarks.emplace_back(std::move(tempBm));
 		}
 	} catch (const std::exception& e) {
 		BAILOUT("Failed to read song file after stdin stage.\n"

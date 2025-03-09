@@ -256,10 +256,17 @@ void Timeline::onUpdate() {
 	}
 	PopStyleVar(2);
 
+	ImGuiIO io = GetIO();
+
 	if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) &&
 		IsKeyPressed(GetKeyIndex(ImGuiKey_Space)) &&
-		!GetIO().WantTextInput)
+		!io.WantTextInput)
 		togglePlayback();
+
+	if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) &&
+		IsKeyPressed(ImGuiKey_B) &&
+		io.KeyCtrl && !io.WantTextInput)
+		newBookmark();
 
 	// ImDrawList uses screen coords NOT window coords
 	ImDrawList* drawList = GetWindowDrawList();
@@ -931,6 +938,8 @@ void Timeline::onUpdate() {
 		}
 		EndDragDropTarget();
 	}
+
+	onUpdateBookmarks(drawList);
 
 	End();
 }

@@ -11,6 +11,7 @@
 //------------------------------------------------------------------------------
 # include "imgui_node_editor_internal.h"
 # include <algorithm>
+#include <string>
 
 
 //------------------------------------------------------------------------------
@@ -764,4 +765,12 @@ int ax::NodeEditor::GetNodeCount()
 int ax::NodeEditor::GetOrderedNodeIds(NodeId* nodes, int size)
 {
 	return s_Editor->GetNodeIds(nodes, size);
+}
+
+std::string ax::NodeEditor::VTGetManualSaveState() {
+	return s_Editor->VTManualSave();
+}
+
+void ax::NodeEditor::VTManualStateLoad(const std::string& jsonData) {
+	s_Editor->VTManualLoad(jsonData);
 }

@@ -1,7 +1,6 @@
 #ifndef SHADOW_NATIVE_AXE_AXE_NODE_EDITOR_HPP
 #define SHADOW_NATIVE_AXE_AXE_NODE_EDITOR_HPP
 
-#include "../nodeEditor/imgui_node_editor.h"
 #include "AXETypes.hpp"
 
 namespace Shadow::AXE {
@@ -10,7 +9,7 @@ namespace ed = ax::NodeEditor;
 
 class AXENodeEditor {
 public:
-	AXENodeEditor(Song* song);
+	AXENodeEditor(Song* song, EditorState* editorState);
 	~AXENodeEditor();
 
 	void onUpdate(bool& p_open);
@@ -22,9 +21,8 @@ public:
 
 private:
 	Song* song;
+	EditorState* editorState;
 	NodeGraph* openedNodeGraph = nullptr;
-	ed::EditorContext* editorCtx;
-	// int nextLinkId = 1000;
 
 	bool mainMenuOpen = true;
 
@@ -37,8 +35,7 @@ private:
 	int selectedNodeCount = 0;
 	int selectedLinkCount = 0;
 
-	// int getNextId() { return nextLinkId++; }
-	int getNextId() { return openedNodeGraph->lastKnownGraphId++; }
+	int getNextId() { return song->lastKnownGraphId++; }
 	// int getNextLinkId() { return ed::LinkId(getNextId()); }
 
 	void markGraphDirty(NodeGraph* graph);
@@ -57,7 +54,7 @@ private:
 	void SpawnDelayNode();
 	void SpawnComment();
 
-	void createNodeGraph(const std::string& name);
+	NodeGraph* createNodeGraph(const std::string& name);
 
 	std::string helpText;
 };

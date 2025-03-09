@@ -25,6 +25,9 @@ public:
 	void togglePlayback();
 	bool isPlaying() { return playing; }
 
+	void newBookmark();
+	void updateBookmarkDebugMenu(bool& p_open);
+
 private:
 	Song* songInfo;
 	EditorState* editorState;
@@ -63,13 +66,16 @@ private:
 	Automation* automationEndRailBeingDragged = nullptr;
 	ImGuiID autoPointBeingDragged = 0;
 	ImGuiSelectionBasicStorage clipSelection;
-
+	int bookmarkInc = 0;
+	
 	ImRect selectionRect;
 
 	void updateTrackAutomationsPopup();
 
 	void startClipDragging();
 	// void stopClipDragging();
+
+	void onUpdateBookmarks(ImDrawList* drawDest);
 };
 
 }

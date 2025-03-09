@@ -1,3 +1,4 @@
+#include "Debug/EditorConsole.hpp"
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "AXENodeEditor.hpp"
 #include "AXETypes.hpp"
@@ -8,8 +9,11 @@
 #include "imgui/imgui_utils.hpp"
 #include <memory>
 #include <string>
+#include <vector>
+#include <ctime>
 #include "../imgui/imgui_knobs.hpp"
 #include "ppk_assert_impl.hpp"
+#include "../nodeEditor/imgui_node_editor.h"
 
 // Forward declarations
 namespace Shadow::AXE {
@@ -27,27 +31,30 @@ static ImRect ImRect_Expanded(const ImRect& rect, float x, float y) {
 	return result;
 }
 
-AXENodeEditor::AXENodeEditor(Song* song): song(song) {
-	// Save settings inside axe file in future
-	ed::Config config;
-	config.SettingsFile = nullptr;
-	config.NavigateButtonIndex = 2;
-	editorCtx = ed::CreateEditor(&config);
+AXENodeEditor::AXENodeEditor(Song* song, EditorState* editorState): song(song), editorState(editorState) {
+	// Song should be loaded at this point, so it's safe to check for an
+	// existing master graph and make one if it's not already there.
 
-	ed::SetCurrentEditor(editorCtx);
+	for (auto& graph : song->nodeGraphs)
+		if (graph.name == "internal_master_node_graph")
+			return;
 
-	auto& colors = ed::GetStyle().Colors;
-	colors[ed::StyleColor_Bg]                = ImColor(0, 0, 0, 255);
-	colors[ed::StyleColor_HovNodeBorder]     = ImColor(255, 69, 0, 255);
-	colors[ed::StyleColor_SelNodeBorder]     = ImColor(255, 0, 0, 255);
-	colors[ed::StyleColor_PinRect]           = ImColor(255, 0, 0, 255);
+	// No master node graph because function didn't return!
+	NodeGraph* masterGraph = createNodeGraph("internal_master_node_graph");
 
-	colors[ed::StyleColor_LinkSelRect]       = ImColor(255, 0, 0, 50);
-	colors[ed::StyleColor_LinkSelRectBorder] = ImColor(255, 0, 0, 255);
-	colors[ed::StyleColor_NodeSelRect]       = ImColor(255, 0, 0, 50);
-	colors[ed::StyleColor_NodeSelRectBorder] = ImColor(255, 0, 0, 255);
+	Node newNode;
+	newNode.name = "Master Audio Output";
+	// Don't use getNextIdHere
+	newNode.id = getNextId();
+	newNode.color = ImColor(0, 100, 0, 255);
 
-	ed::SetCurrentEditor(nullptr);
+	Pin input;
+	input.id = getNextId();
+	input.name = "Audio In";
+
+	newNode.inputs.push_back(input);
+	
+	masterGraph->nodes.push_back(newNode);
 }
 
 AXENodeEditor::~AXENodeEditor() { }
@@ -59,19 +66,27 @@ void AXENodeEditor::updateDebugMenu(bool& p_open) {
 
 	Begin("Node Editor Diagnostics", &p_open);
 
+	TextUnformatted("Node graphs in this song file:");
+
+	for (auto& g : song->nodeGraphs) {
+		TextUnformatted(g.name.c_str());
+	}
+
+	SeparatorText("Opened Graph");
+
 	if (!openedNodeGraph) {
 		TextUnformatted("No Node Graph opened yet!");
 		End();
 		return;
 	}
 
-	ed::SetCurrentEditor(editorCtx);
+	ed::SetCurrentEditor(openedNodeGraph->editorContext);
 
 	TextUnformatted("Currently opened node graph: ");
 	PushStyleColor(ImGuiCol_Text, IM_COL32(255, 255, 0, 255));
 	Text("%s", openedNodeGraph->name.c_str());
 	PopStyleColor();
-	Text("Last known id: %i", openedNodeGraph->lastKnownGraphId);
+	Text("Last known id: %lu", song->lastKnownGraphId);
 	
 	if (SmallButton("Show Graph Flow"))
 		for (auto& link: openedNodeGraph->links)
@@ -107,7 +122,7 @@ void AXENodeEditor::updateDebugMenu(bool& p_open) {
 	for (int i = 0; i < selectedLinkCount; ++i) Text("Link (%p)", selectedLinks[i].AsPointer());
 
 
-	ed::SetCurrentEditor(nullptr);	
+	ed::SetCurrentEditor(nullptr);
 
 	End();
 }
@@ -144,33 +159,36 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	if (!p_open) return;
 
 	Begin("Node Editor", &p_open, ImGuiWindowFlags_MenuBar);
-	ed::SetCurrentEditor(editorCtx);
-
-	ImGuiIO io = GetIO();
-	if (IsWindowHovered()
-		&& io.KeyCtrl
-		&& IsKeyPressed(ImGuiKey_B)
-		// && IsKeyPressed(GetKeyIndex(ImGuiKey_B))
-		&& openedNodeGraph) {
-		compileNodeGraph(openedNodeGraph);
-		for (auto& link: openedNodeGraph->links)
-			ed::Flow(link.id);
-	}
-
-	if (IsWindowHovered() && openedNodeGraph && !io.WantTextInput) {
-		if (IsKeyPressed(ImGuiKey_I)) SpawnInputNode();
-		if (IsKeyPressed(ImGuiKey_O)) SpawnOutputNode();
-		if (IsKeyPressed(ImGuiKey_C)) SpawnComment();
-	}
-
-	// update selection
 	if (openedNodeGraph) {
-		selectedNodes.resize(ed::GetSelectedObjectCount());
-		selectedLinks.resize(ed::GetSelectedObjectCount());
-		selectedNodeCount = ed::GetSelectedNodes(selectedNodes.data(), static_cast<int>(selectedNodes.size()));
-		selectedLinkCount = ed::GetSelectedLinks(selectedLinks.data(), static_cast<int>(selectedLinks.size()));
-		// selectedNodes.resize(nodeCount);
-		// selectedLinks.resize(linkCount);
+		ed::SetCurrentEditor(openedNodeGraph->editorContext);
+
+		ImGuiIO io = GetIO();
+		if (IsWindowHovered()
+			&& io.KeyCtrl
+			&& IsKeyPressed(ImGuiKey_B)
+			// && IsKeyPressed(GetKeyIndex(ImGuiKey_B))
+			&& openedNodeGraph) {
+			compileNodeGraph(openedNodeGraph);
+			for (auto& link: openedNodeGraph->links)
+				ed::Flow(link.id);
+		}
+
+		if (IsWindowHovered() && openedNodeGraph && !io.WantTextInput) {
+			if (IsKeyPressed(ImGuiKey_I)) SpawnInputNode();
+			if (IsKeyPressed(ImGuiKey_O)) SpawnOutputNode();
+			if (IsKeyPressed(ImGuiKey_C)) SpawnComment();
+		}
+
+		// update selection
+		if (openedNodeGraph) {
+			selectedNodes.resize(ed::GetSelectedObjectCount());
+			selectedLinks.resize(ed::GetSelectedObjectCount());
+			selectedNodeCount = ed::GetSelectedNodes(selectedNodes.data(), static_cast<int>(selectedNodes.size()));
+			selectedLinkCount = ed::GetSelectedLinks(selectedLinks.data(), static_cast<int>(selectedLinks.size()));
+			// selectedNodes.resize(nodeCount);
+			// selectedLinks.resize(linkCount);
+		}
+
 	}
 
 	if (BeginMenuBar()) {
@@ -192,6 +210,12 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		}
 		if (BeginMenu("View")) {
 			if (MenuItem("Recenter", "F")) ed::NavigateToContent();
+			ImGui::EndMenu();
+		}
+		if (BeginMenu("Debug")) {
+			if (MenuItem("Dump Editor Context to Console")) {
+				EC_PRINT("All", "%s", ed::VTGetManualSaveState().c_str());
+			}
 			ImGui::EndMenu();
 		}
 		EndDisabled();
@@ -237,14 +261,21 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		}
 
 		if (Selectable(ICON_CI_GRAPH " Open Master Graph")) {
-			//
+			for (auto& g : song->nodeGraphs) {
+				if (g.name == "internal_master_node_graph") {
+					openedNodeGraph = &g;
+					reloadNodeEditorContents();
+					break;
+				}
+			}
 		}
 
 		SeparatorText("Node Graphs");
 
 		int it = 0;
 		for (auto& ng : song->nodeGraphs) {
-			if (Selectable((ng.name + "##" + std::to_string(it)).c_str())) {
+			if (ng.name == "internal_master_node_graph") continue;
+			if (Selectable((ng.name + " " + (ng.editorContext == nullptr ? "null" : "not") + "##" + std::to_string(it)).c_str())) {
 				openedNodeGraph = &ng;
 				reloadNodeEditorContents();
 			}
@@ -266,6 +297,10 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		End();
 		return;
 	}
+
+	// Hacky solution, thanks claude
+	ed::SetCurrentEditor(nullptr);
+	ed::SetCurrentEditor(openedNodeGraph->editorContext);
 
 	ed::Begin("AXENodeEditor", ImVec2(0.0f, 0.0f));
 
@@ -510,6 +545,14 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	ed::End();
 	ed::SetCurrentEditor(nullptr);
 
+	if (openedNodeGraph->name == "internal_master_node_graph")
+		GetWindowDrawList()->AddText(
+			editorState->headerFont,
+			50.0f,
+			GetCursorScreenPos() + ImVec2(GetContentRegionAvail().x - 350, GetContentRegionAvail().y - 50),
+			IM_COL32(255, 255, 255, 100),
+			"MASTER GRAPH");
+
 	if (!helpText.empty()) {
 		float wrapX = GetFontSize() * 35.0f;
 		ImVec2 textSize = CalcTextSize(helpText.c_str(), nullptr, false, wrapX);
@@ -533,7 +576,8 @@ void AXENodeEditor::reloadNodeEditorContents() {
 }
 
 void AXENodeEditor::shutdown() {
-	ed::DestroyEditor(editorCtx);
+	for (auto& g : song->nodeGraphs)
+		ed::DestroyEditor(g.editorContext);
 }
 
 void AXENodeEditor::markGraphDirty(NodeGraph* graph) {
@@ -541,28 +585,39 @@ void AXENodeEditor::markGraphDirty(NodeGraph* graph) {
 	graph->lastModified = std::time(nullptr);
 }
 
-void AXENodeEditor::createNodeGraph(const std::string& name) {
+NodeGraph* AXENodeEditor::createNodeGraph(const std::string& name) {
 	openedNodeGraph = nullptr;
+
 	NodeGraph ng;
-	// ng.ctx = std::make_shared<ed::EditorContext>(ed::CreateEditor(&defaultConfig));
+
+	ng.config.SettingsFile = nullptr;
+	ng.config.NavigateButtonIndex = 2;
+	ng.editorContext = ed::CreateEditor(&ng.config);
+
+	ed::SetCurrentEditor(ng.editorContext);
+
+	auto& colors = ed::GetStyle().Colors;
+	colors[ed::StyleColor_Bg]                = ImColor(0, 0, 0, 255);
+	colors[ed::StyleColor_HovNodeBorder]     = ImColor(255, 69, 0, 255);
+	colors[ed::StyleColor_SelNodeBorder]     = ImColor(255, 0, 0, 255);
+	colors[ed::StyleColor_PinRect]           = ImColor(255, 0, 0, 255);
+
+	colors[ed::StyleColor_LinkSelRect]       = ImColor(255, 0, 0, 50);
+	colors[ed::StyleColor_LinkSelRectBorder] = ImColor(255, 0, 0, 255);
+	colors[ed::StyleColor_NodeSelRect]       = ImColor(255, 0, 0, 50);
+	colors[ed::StyleColor_NodeSelRectBorder] = ImColor(255, 0, 0, 255);
+
+	ed::SetCurrentEditor(nullptr);
+
 	ng.name = name;
 	std::time_t t = std::time(nullptr);
 	ng.lastModified = t;
 	ng.lastCompiled = t;
 
-#if 0
-	ed::SetCurrentEditor(editorCtx);
+	song->nodeGraphs.push_back(std::move(ng));
+	NodeGraph* graphPostCreation = &song->nodeGraphs.back();
 
-	auto& colors = ed::GetStyle().Colors;
-	colors[ed::StyleColor_Bg] = ImColor(0, 0, 0, 255);
-	colors[ed::StyleColor_HovNodeBorder] = ImColor(255, 69, 0, 255);
-	colors[ed::StyleColor_SelNodeBorder] = ImColor(255, 0, 0, 255);
-	colors[ed::StyleColor_PinRect] = ImColor(255, 0, 0, 255);
-
-	ed::SetCurrentEditor(nullptr);
-#endif
-
-	song->nodeGraphs.push_back(ng);
+	return graphPostCreation;
 }
 
 // template<typename T>

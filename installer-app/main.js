@@ -1,8 +1,13 @@
 const { app, BrowserWindow } = require('electron')
 const path = require('node:path')
-const electronDl = require("electron-dl");
+// const electronDl = require("electron-dl");
 
-electronDl();
+// electronDl();
+
+if (process.platform !== "win32") {
+  console.log("77Z Installer only runs on windows");
+  process.exit(1);
+}
 
 function createWindow () {
   const mainWindow = new BrowserWindow({

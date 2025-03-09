@@ -1,6 +1,5 @@
 #include "Debug/Logger.hpp"
 #include "IconsCodicons.h"
-#include "ImGuiNotify.hpp"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
