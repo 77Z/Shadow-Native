@@ -18,6 +18,8 @@ public:
 
 	void shutdown();
 
+	// void getMasterNodeGraph();
+
 
 private:
 	Song* song;

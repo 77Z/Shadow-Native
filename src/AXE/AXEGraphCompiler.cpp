@@ -16,7 +16,8 @@ static void failCompile(const char* msg) {
 	});
 }
 
-// Recursively searches through all links to find the node that is connected
+#if 0
+// Searches through all links to find the node that is connected
 // to the input pin id provided.
 // return type is a Node*, but can be nullptr if no node is connected to your
 // provided input pin.
@@ -37,6 +38,31 @@ static Node* findPrevNode(NodeGraph* graph, ed::NodeId knownId) {
 		}
 	}
 	return nullptr;
+}
+#endif
+
+static Node* findPrevNode(NodeGraph* graph, ed::NodeId knownId) {
+	// Create a hash map to map input pin IDs to their corresponding nodes
+	std::unordered_map<uint64_t, Node*> pinToNodeMap;
+
+	// Preprocess the nodes and their output pins
+	for (auto& node : graph->nodes) {
+		for (auto& outpin : node.outputs) {
+			pinToNodeMap[outpin.id.Get()] = &node;
+		}
+	}
+
+	// Search for the node connected to the given input pin ID
+	for (auto& link : graph->links) {
+		if (link.outputId.Get() == knownId.Get()) {
+			auto it = pinToNodeMap.find(link.inputId.Get());
+			if (it != pinToNodeMap.end()) {
+				return it->second; // Return the connected node
+			}
+		}
+	}
+
+	return nullptr; // No connected node found
 }
 
 bool compileNodeGraph(NodeGraph* graph) {

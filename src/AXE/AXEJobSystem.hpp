@@ -26,6 +26,12 @@ void submitJob(const std::string& name, std::function<bool()> jobMethod);
 // Draws a small clickable widget to indicate the user of active jobs
 void onUpdateStatusBar();
 
+/// Artificially submit a faulty job with a specified message. You'd usually
+/// want to do this when you handle an error yourself (hopefully without
+/// crashing), but you want to indicate to the user via the toolbar that
+/// AXE is degraded due to a handled error.
+void degradeEditorWithMessage(const std::string& name, const std::string& message);
+
 }
 
 #endif /* SHADOW_NATIVE_AXE_AXE_JOB_SYSTEM_HPP */

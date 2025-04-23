@@ -151,9 +151,9 @@ int startAXEEditor(std::string projectFile) {
 	Keyboard keyboard(&window);
 
 	// These things should be init'd after the song loads. Bad things happen otherwise :(
-	Timeline timeline(&songInfo, &editorState, &engine, &window);
-	ClipBrowser clipBrowser;
 	AXENodeEditor nodeEditor(&songInfo, &editorState);
+	Timeline timeline(&songInfo, &editorState, &engine, &window, &nodeEditor);
+	ClipBrowser clipBrowser;
 	AXEEqualizer equalizer;
 	PianoRoll pianoRoll;
 

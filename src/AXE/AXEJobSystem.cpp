@@ -157,4 +157,11 @@ void onUpdateStatusBar() {
 	PopStyleVar();
 }
 
+void degradeEditorWithMessage(const std::string& name, const std::string& message) {
+	submitJob(name, [message]() -> bool {
+		throw std::runtime_error(message);
+		return false;
+	});
+}
+
 }

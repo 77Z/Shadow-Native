@@ -1,5 +1,7 @@
-#include "ShadowWindow.hpp"
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include "AXEJobSystem.hpp"
+#include "AXENodeEditor.hpp"
+#include "ShadowWindow.hpp"
 #include "Configuration/EngineConfiguration.hpp"
 #include "Debug/Logger.hpp"
 #include <algorithm>
@@ -27,11 +29,12 @@ namespace Shadow::AXE {
 
 // static float oset = 0.0f;
 
-Timeline::Timeline(Song* songInfo, EditorState* editorState, ma_engine* audioEngine, ShadowWindow* window)
+Timeline::Timeline(Song* songInfo, EditorState* editorState, ma_engine* audioEngine, ShadowWindow* window, AXENodeEditor* nodeEditor)
 	: songInfo(songInfo)
 	, editorState(editorState)
 	, audioEngine(audioEngine)
 	, window(window)
+	, nodeEditor(nodeEditor)
 		{
 			EC_NEWCAT(EC_THIS);
 			EC_PRINT(EC_THIS, "Scale factor from editorstate %.2f", editorState->sf);
@@ -333,7 +336,7 @@ void Timeline::onUpdate() {
 			SameLine();
 			if (SmallButton(ICON_CI_CLOSE)) songInfo->tracks.erase(songInfo->tracks.begin() + trackIt);
 			SliderFloat("VOL", &track.volume, 0.0f, 100.0f, "%.0f");
-			SliderFloat("BAL", &track.balence, -1.0f, 1.0f, "%.2f");
+			SliderFloat("BAL", &track.balance, -1.0f, 1.0f, "%.2f");
 			ToggleButton("M", &track.muted);
 			SetItemTooltip("Mute Track");
 			// ToggleButton("S", )
@@ -345,6 +348,11 @@ void Timeline::onUpdate() {
 			}
 			SetItemTooltip("Track Automations");
 			updateTrackAutomationsPopup();
+
+			SameLine();
+			if (Button("Use Nodes")) {
+				JobSystem::degradeEditorWithMessage("Test throw", "What in the heck is going on");
+			}
 
 			TableSetColumnIndex(1);
 
@@ -944,6 +952,13 @@ void Timeline::onUpdate() {
 	End();
 }
 
+static NodeGraph* getMasterNodeGraph(Song* song) {
+	for (auto& g : song->nodeGraphs) {
+		if (g.name == "internal_master_node_graph") return &g;
+	}
+	return nullptr;
+}
+
 void Timeline::updateTrackAutomationsPopup() {
 	using namespace ImGui;
 
@@ -973,6 +988,39 @@ void Timeline::updateTrackAutomationsPopup() {
 				Automation newAuto;
 				newAuto.points.push_back(std::pair<uint64_t, float>(20, 10.0f));
 				currentlySelectedTrack->automations.push_back(newAuto);
+				auto master = getMasterNodeGraph(songInfo);
+				if (master == nullptr) {
+					JobSystem::degradeEditorWithMessage(
+						"Automation creation failure",
+						"Can't find the master node graph, this shouldn't happpen?");
+				} else {
+					// What am I even doing here?
+					Node n;
+					n.name = "Generated auto track data : " + currentlySelectedTrack->name;
+					n.color = ImColor(255, 0, 0, 100);
+					n.type = NodeType_Regular;
+					n.id = songInfo->lastKnownGraphId++;
+
+					Pin output;
+					output.id = songInfo->lastKnownGraphId++;
+					output.name = "Audio Out";
+
+					n.outputs.emplace_back(std::move(output));
+
+					master->nodes.emplace_back(std::move(n));
+
+					Link l;
+					l.id = songInfo->lastKnownGraphId++;
+					l.inputId = output.id.Get();
+
+					for (auto& iteratedNode : master->nodes) {
+						if (iteratedNode.type == NodeType_Output) {
+							l.outputId = iteratedNode.inputs.at(0).id.Get(); // technically hacky, whatever.
+							master->links.push_back(l);
+							break;
+						}
+					}
+				}
 			}
 		}
 

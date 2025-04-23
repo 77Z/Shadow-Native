@@ -43,7 +43,7 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 			clipObj["position"] = clip->position;
 			clipObj["length"] = clip->length;
 
-			clipObj["balence"] = clip->balence;
+			clipObj["balance"] = clip->balance;
 			clipObj["volume"] = clip->volume;
 
 			clipObj["muted"] = clip->muted;
@@ -77,7 +77,7 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 			trackObj["automations"].push_back(autoObj);
 		}
 
-		trackObj["balence"] = track.balence;
+		trackObj["balance"] = track.balance;
 		trackObj["volume"] = track.volume;
 
 		trackObj["muted"] = track.muted;
@@ -206,7 +206,7 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 				tempClip->position = clip["position"];
 				tempClip->length = clip["length"];
 
-				tempClip->balence = clip["balence"];
+				tempClip->balance = clip["balance"];
 				tempClip->volume = clip["volume"];
 
 				tempClip->muted = clip["muted"];
@@ -238,7 +238,7 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 				tempTrack.automations.push_back(tempAuto);
 			}
 
-			tempTrack.balence = track["balence"];
+			tempTrack.balance = track["balance"];
 			tempTrack.volume = track["volume"];
 
 			tempTrack.muted = track["muted"];

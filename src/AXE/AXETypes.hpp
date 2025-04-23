@@ -1,7 +1,6 @@
 #ifndef SHADOW_NATIVE_AXE_AXE_TYPES_HPP
 #define SHADOW_NATIVE_AXE_AXE_TYPES_HPP
 
-#include "../nodeEditor/imgui_node_editor_internal.h"
 #include "../nodeEditor/imgui_node_editor.h"
 #include <cstddef>
 #include <cstdint>
@@ -162,7 +161,7 @@ struct Clip {
 	// uint64_t length = 0;
 	unsigned long long length = 0;
 
-	float balence = 0.0f;	// -1 L : +1 R
+	float balance = 0.0f;	// -1 L : +1 R
 	float volume = 100.0f;	// 0 - 100
 
 	bool muted = false;
@@ -180,7 +179,7 @@ struct Track {
 	std::vector<std::shared_ptr<Clip>> clips;
 	std::vector<Automation> automations;
 
-	float balence = 0.0f;	// -1 L : +1 R
+	float balance = 0.0f;	// -1 L : +1 R
 	float volume = 100.0f;	// 0 - 100
 
 	bool muted = false;

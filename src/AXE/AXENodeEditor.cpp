@@ -47,6 +47,7 @@ AXENodeEditor::AXENodeEditor(Song* song, EditorState* editorState): song(song), 
 	// Don't use getNextIdHere
 	newNode.id = getNextId();
 	newNode.color = ImColor(0, 100, 0, 255);
+	newNode.type = NodeType_Output;
 
 	Pin input;
 	input.id = getNextId();
@@ -222,11 +223,14 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		if (openedNodeGraph) {
 			TextUnformatted("|");
 			PushItemWidth(300.0f);
-			PushStyleColor(ImGuiCol_FrameBg, GetStyle().Colors[ImGuiCol_MenuBarBg]);
-			InputText("##nodegraphname", &openedNodeGraph->name);
-			PopStyleColor();
-
-			Text("| %.0f%%", ed::GetCurrentScale() * 100);
+			if (openedNodeGraph->name == "internal_master_node_graph") {
+				TextUnformatted(ICON_CI_GRAPH " Master Graph");
+				SetItemTooltip("You can't rename the master node graph");
+			} else {
+				PushStyleColor(ImGuiCol_FrameBg, GetStyle().Colors[ImGuiCol_MenuBarBg]);
+				InputText("##nodegraphname", &openedNodeGraph->name);
+				PopStyleColor();
+			}
 
 			TextUnformatted("|");
 			if (openedNodeGraph->lastModified > openedNodeGraph->lastCompiled) {
@@ -246,6 +250,8 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 				PopTextWrapPos();
 				EndTooltip();
 			}
+
+			Text("| %.0f%%", ed::GetCurrentScale() * 100);
 		}
 
 		SetCursorPosX(GetWindowWidth() - CalcTextSize("Modifiers").x - 15.0f);
@@ -275,7 +281,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		int it = 0;
 		for (auto& ng : song->nodeGraphs) {
 			if (ng.name == "internal_master_node_graph") continue;
-			if (Selectable((ng.name + " " + (ng.editorContext == nullptr ? "null" : "not") + "##" + std::to_string(it)).c_str())) {
+			if (Selectable((ng.name + "##" + std::to_string(it)).c_str())) {
 				openedNodeGraph = &ng;
 				reloadNodeEditorContents();
 			}
