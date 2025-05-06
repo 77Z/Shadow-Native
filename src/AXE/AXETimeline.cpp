@@ -272,10 +272,11 @@ void Timeline::onUpdate() {
 		newBookmark();
 
 	// ImDrawList uses screen coords NOT window coords
-	ImDrawList* drawList = GetWindowDrawList();
-	ImVec2 canvasPos = GetCursorScreenPos();
-	ImVec2 canvasSize = GetContentRegionAvail();
-	ImVec2 canvasMax = GetWindowContentRegionMax();
+	ImGuiWindow* timelineParentWindow = GetCurrentWindow();
+	ImDrawList* drawList              = GetWindowDrawList();
+	ImVec2 canvasPos                  = GetCursorScreenPos();
+	ImVec2 canvasSize                 = GetContentRegionAvail();
+	ImVec2 canvasMax                  = GetWindowContentRegionMax();
 
 	drawList->AddText(editorState->headerFont, 40.0f, canvasPos + ImVec2(50, canvasSize.y - 45), IM_COL32(255, 255, 255, 100), "Timeline");
 
@@ -331,6 +332,24 @@ void Timeline::onUpdate() {
 			TableNextRow();
 			TableSetColumnIndex(0);
 
+			const ImVec2 cursorAtTopLeftOfTrackInfo = GetCursorScreenPos();
+			
+			if (ColorButton(
+				"##TrackColor",
+				track.color,
+				ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_NoTooltip,
+				ImVec2(350, 20)))
+			{
+				OpenPopup("TrackColorPop");
+			}
+			
+			if (BeginPopup("TrackColorPop")) {
+				ColorPicker3("Track Color", (float*)&track.color);
+				EndPopup();
+			}
+			
+			SetItemTooltip("Track Color (click to edit)");
+
 			PushItemWidth(200.0f * sf);
 			InputText("##TrackName", &track.name);
 			SameLine();
@@ -354,6 +373,10 @@ void Timeline::onUpdate() {
 				JobSystem::degradeEditorWithMessage("Test throw", "What in the heck is going on");
 			}
 
+			const ImVec2 cursorAtBottomOfTrackInfo = GetCursorScreenPos();
+
+			const float trackHeight = cursorAtBottomOfTrackInfo.y - cursorAtTopLeftOfTrackInfo.y;
+
 			TableSetColumnIndex(1);
 
 			// TODO: This isn't needed anymore right?
@@ -361,6 +384,17 @@ void Timeline::onUpdate() {
 
 			// top left of the cell
 			ImVec2 screenPosOrigin = GetCursorScreenPos();
+
+			auto tableDrawList = GetCurrentTable()->InnerWindow->DrawList;
+
+			PushClipRect(timelineParentWindow->ClipRect.Min, timelineParentWindow->ClipRect.Max, false);
+			tableDrawList->AddText(screenPosOrigin, IM_COL32(255, 255, 255, 255), track.name.c_str());
+			tableDrawList->AddRectFilled(
+				screenPosOrigin,
+				ImVec2(screenPosOrigin.x + GetWindowWidth(), screenPosOrigin.y + trackHeight),
+				ImColor(track.color.Value.x, track.color.Value.y, track.color.Value.z, 0.1f)
+			);
+			PopClipRect();
 
 			if (editorState->timelinePositionDebugMode) {
 				SetTooltip("timline screen x: %.3f", GetMousePos().x - screenPosOrigin.x);
@@ -837,13 +871,13 @@ void Timeline::onUpdate() {
 		// Draw Scale / Ruler
 		ImColor textColor = GetStyle().Colors[ImGuiCol_Text];
 
-		float majorUnit =		100.0f * (editorState->zoom / 100.0f);
-		float minorUnit =		10.0f * (editorState->zoom / 100.0f);
-		float labelAlignment =	0.6f;
-		float sign =			1.0f;
-		float minorSize =		10.0f;
-		float majorSize =		30.0f;
-		float labelDistance =	8.0f;
+		float majorUnit       = 100.0f * (editorState->zoom / 100.0f);
+		float minorUnit       = 10.0f * (editorState->zoom / 100.0f);
+		float labelAlignment  = 0.6f;
+		float sign            = 1.0f;
+		float minorSize       = 10.0f;
+		float majorSize       = 30.0f;
+		float labelDistance   = 8.0f;
 
 		ImVec2 from = ImVec2(canvasPos.x + (245*sf) - GetScrollX(), canvasPos.y);
 		ImVec2 to = ImVec2(canvasPos.x + canvasMax.x, canvasPos.y);
@@ -869,18 +903,18 @@ void Timeline::onUpdate() {
 				if (d == 0.0f)
 					continue;
 
-				if (editorState->zoom < 50.0f) continue;
+				// if (editorState->zoom < 50.0f) continue;
 
-				char label[16];
-				snprintf(label, 15, "%g", d * sign);
-				ImVec2 labelSize = ImGui::CalcTextSize(label);
+				// char label[16];
+				// snprintf(label, 15, "%g", d * sign);
+				// ImVec2 labelSize = ImGui::CalcTextSize(label);
 
-				ImVec2 labelPosition = p + ImVec2(fabsf(normal.x), fabsf(normal.y)) * labelDistance;
-				float labelAlignedSize = ImDot(labelSize, direction);
-				labelPosition += direction * (-labelAlignedSize + labelAlignment * labelAlignedSize * 2.0f);
-				labelPosition = ImFloor(labelPosition + ImVec2(0.5f, 0.5f));
+				// ImVec2 labelPosition = p + ImVec2(fabsf(normal.x), fabsf(normal.y)) * labelDistance;
+				// float labelAlignedSize = ImDot(labelSize, direction);
+				// labelPosition += direction * (-labelAlignedSize + labelAlignment * labelAlignedSize * 2.0f);
+				// labelPosition = ImFloor(labelPosition + ImVec2(0.5f, 0.5f));
 
-				tableDrawList->AddText(labelPosition, textColor, label);
+				// tableDrawList->AddText(labelPosition, textColor, label);
 			}
 
 		PopClipRect();

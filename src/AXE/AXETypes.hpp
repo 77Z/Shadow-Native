@@ -183,7 +183,8 @@ struct Track {
 	float volume = 100.0f;	// 0 - 100
 
 	bool muted = false;
-	// should solo be here??
+
+	ImColor color;
 
 	// Volatile data
 	ma_sound_group* soundGroup;
@@ -224,6 +225,8 @@ struct EditorState {
 	bool timelinePositionDebugMode = false;
 
 	ImFont* headerFont;
+
+	Track* soloedTrack;
 
 	// Window states
 	bool showShadowEngineConsole = true;

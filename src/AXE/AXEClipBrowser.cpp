@@ -17,6 +17,7 @@ ClipBrowser::ClipBrowser() {
 	EC_NEWCAT(EC_THIS);
 
 	globalLibraryPath = EngineConfiguration::getConfigDir() + "/AXEProjects/GlobalLibrary";
+	// globalLibraryPath = "AXEProjects"/"GlobalLibrary";
 
 	//TODO: This fails but has no reason to :P
 	// ma_engine_config engineConfig = ma_engine_config_init();

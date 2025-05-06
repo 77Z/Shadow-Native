@@ -1,6 +1,7 @@
 #ifndef SHADOW_NATIVE_AXE_AXE_CLIP_BROWSER
 #define SHADOW_NATIVE_AXE_AXE_CLIP_BROWSER
 
+#include <filesystem>
 #include <string>
 #include <vector>
 #include "miniaudio.h"
@@ -37,6 +38,7 @@ private:
 	std::string globalLibraryPath;
 	std::vector<ClipBrowserItemInfo> clips;
 	ma_engine* audioEngine;
+	// std::filesystem::path globalLibraryPath;
 
 	void refreshFiles();
 };

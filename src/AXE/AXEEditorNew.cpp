@@ -255,6 +255,7 @@ int startAXEEditor(std::string projectFile) {
 	window.maximize();
 
 	while (!window.shouldClose()) {
+		ImGui_ImplGlfw_WaitForEvent();
 		window.pollEvents();
 
 		ImGui_ImplOpenGL3_NewFrame();

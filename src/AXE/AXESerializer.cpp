@@ -82,6 +82,11 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 
 		trackObj["muted"] = track.muted;
 
+		trackObj["color"].push_back(track.color.Value.x);
+		trackObj["color"].push_back(track.color.Value.y);
+		trackObj["color"].push_back(track.color.Value.z);
+		trackObj["color"].push_back(track.color.Value.w);
+
 		output["tracks"].push_back(trackObj);
 	}
 	
@@ -242,6 +247,13 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 			tempTrack.volume = track["volume"];
 
 			tempTrack.muted = track["muted"];
+
+			tempTrack.color = ImColor(
+				(float)track["color"][0],
+				(float)track["color"][1],
+				(float)track["color"][2],
+				(float)track["color"][3] // Technically unused
+			);
 
 			EC_PRINT(EC_THIS, "Decoding track: %s", tempTrack.name.c_str());
 
