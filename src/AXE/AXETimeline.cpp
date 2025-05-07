@@ -388,7 +388,6 @@ void Timeline::onUpdate() {
 			auto tableDrawList = GetCurrentTable()->InnerWindow->DrawList;
 
 			PushClipRect(timelineParentWindow->ClipRect.Min, timelineParentWindow->ClipRect.Max, false);
-			tableDrawList->AddText(screenPosOrigin, IM_COL32(255, 255, 255, 255), track.name.c_str());
 			tableDrawList->AddRectFilled(
 				screenPosOrigin,
 				ImVec2(screenPosOrigin.x + GetWindowWidth(), screenPosOrigin.y + trackHeight),
@@ -402,17 +401,22 @@ void Timeline::onUpdate() {
 			}
 
 			int clipIt = 0;
-			float left = GetCursorPosX();
+			// float left = GetCursorPosX();
 
 			for (auto& clip : track.clips) {
 				PushID(clipIt);
 
 				ImGuiID id = GetID(clipIt);
 
-				float clipPosition = left + (float)clip->position * (editorState->zoom / 100.0f);
+				float clipPosition = (float)clip->position * (editorState->zoom / 100.0f);
 				float clipWidth = (float)clip->length * (editorState->zoom / 100.0f);
 
-				ImRect bounds = ImRect(canvasPos + ImVec2(clipPosition, GetCursorPosY()), canvasPos + ImVec2(clipPosition + clipWidth, GetCursorPosY() + 143.0f));
+				// DEBUG BS
+				if (editorState->timelinePositionDebugMode && fmodf((float)ImGui::GetTime(), 0.40f) < 0.20f) { tableDrawList->AddRectFilled(screenPosOrigin, screenPosOrigin + ImVec2(20,20), IM_COL32(0, 255, 0, 255)); }
+
+				ImRect bounds = ImRect(
+					screenPosOrigin + ImVec2(clipPosition, 7),
+					screenPosOrigin + ImVec2(clipPosition + clipWidth, trackHeight - 7));
 
 				// Button behavior doesn't work here :P
 				// checking manual hovers is the way some ImGui native
@@ -438,7 +442,7 @@ void Timeline::onUpdate() {
 				// Am I a clip that's selected?
 				for (auto& selectedClip : selectedClips) {
 					if (selectedClip == clip.get()) {
-						drawList->AddRect(bounds.Min, bounds.Max, IM_COL32(255, 255, 255, 255), 3.0f, 0, 5.0f);
+						tableDrawList->AddRect(bounds.Min, bounds.Max, IM_COL32(255, 255, 255, 255), 3.0f, 0, 5.0f);
 					}
 				}
 
@@ -482,9 +486,20 @@ void Timeline::onUpdate() {
 				// 	EC_PRINT(EC_THIS, "User is NOT DRAGGING CLIPS ANYMORE");
 				// }
 
-				drawList->AddRectFilled(bounds.Min, bounds.Max, ImColor(255, 0, 0, actionClipsBeingDragged ? 100 : 255), 3.0f);
+				tableDrawList->AddRectFilled(bounds.Min, bounds.Max, ImColor(track.color.Value.x, track.color.Value.y, track.color.Value.z, actionClipsBeingDragged ? 0.1f : 0.8f), 3.0f);
+				tableDrawList->AddText(bounds.Min, IM_COL32(255, 255, 255, 255), clip->name.c_str());
+				if (clipHovered) {
+					auto volText = "0dB";
+					auto textSize = CalcTextSize("0dB");
+					auto bottomLeftVolTextPos = ImVec2(bounds.Min.x, bounds.Max.y - textSize.y);
+					tableDrawList->AddRectFilled(bottomLeftVolTextPos, bottomLeftVolTextPos + textSize, IM_COL32(0, 0, 0, 200));
+					tableDrawList->AddText(bottomLeftVolTextPos, IM_COL32(255, 255, 255, 255), "0dB");
+				}
 
-				drawList->AddText(bounds.Min, IM_COL32(255, 255, 255, 255), std::string(std::to_string(bounds.Min.x - GetWindowPos().x)).c_str());
+				if (editorState->timelinePositionDebugMode) {
+					tableDrawList->AddRectFilled(bounds.Min, ImVec2(bounds.Max.x - 100, bounds.Max.y), IM_COL32(0, 0, 0, 140));
+					tableDrawList->AddText(bounds.Min, IM_COL32(255, 255, 255, 255), std::string("I am \"" + clip->name + "\"\nat data pos: " + std::to_string(clip->position) + "\nmy").c_str());
+				}
 
 				// -----------------------------------------------------------//
 				// FIXME: I HATE THIS DRAGGING CODE SO SO SO MUCH AHHHHHHH
@@ -665,6 +680,7 @@ void Timeline::onUpdate() {
 				clipIt++;
 			}
 			#endif
+			SetCursorPosX(10000.0f);
 			InvisibleButton("##SameLineStopper", ImVec2(1,1));
 
 			PopStyleColor();
