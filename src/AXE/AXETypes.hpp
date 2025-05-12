@@ -218,6 +218,8 @@ struct EditorState {
 
 	bool snappingEnabled = true;
 	
+	// 100.0f is default zoom level. Usually implementors using zoom prefer to
+	// divide zoom by 100.0f so that default zoom is 1.0f
 	float zoom = 100.0f;
 
 	bool automationDebugMode = false;

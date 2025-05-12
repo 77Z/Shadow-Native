@@ -242,6 +242,12 @@ static float smoothstep(float edge0, float edge1, float x) {
 	return x * x * (3 - 2 * x);
 }
 
+static void drawBlinkingSquareAtCursor() {
+	using namespace ImGui;
+	auto currentCursor = GetCursorScreenPos();
+	if (fmodf((float)ImGui::GetTime(), 0.40f) < 0.20f) { GetForegroundDrawList()->AddRectFilled(currentCursor, currentCursor + ImVec2(20,20), IM_COL32(255, 255, 0, 255)); }
+}
+
 void Timeline::onUpdate() {
 	using namespace ImGui;
 
@@ -395,13 +401,18 @@ void Timeline::onUpdate() {
 			);
 			PopClipRect();
 
-			if (editorState->timelinePositionDebugMode) {
-				SetTooltip("timline screen x: %.3f", GetMousePos().x - screenPosOrigin.x);
-				SetTooltip("pcm frame pos: %.3f", float(GetMousePos().x - screenPosOrigin.x / (editorState->zoom * 100)));
-			}
+			// if (editorState->timelinePositionDebugMode) {
+			// 	SetTooltip("timline screen x: %.3f", GetMousePos().x - screenPosOrigin.x);
+			// 	SetTooltip("pcm frame pos: %.3f", float(GetMousePos().x - screenPosOrigin.x / (editorState->zoom * 100)));
+			// }
 
 			int clipIt = 0;
 			// float left = GetCursorPosX();
+
+			// At any point during the clip rendering it can intercept this and
+			// set it to false when a clip shout NOT be deselected. (i.e. on
+			// click and subsequent selection of a clip)
+			bool cancelDeselection = false;
 
 			for (auto& clip : track.clips) {
 				PushID(clipIt);
@@ -437,9 +448,10 @@ void Timeline::onUpdate() {
 				if (clipHovered && IsMouseReleased(ImGuiMouseButton_Left)) {
 					if (!GetIO().KeyCtrl) selectedClips.clear();
 					selectedClips.emplace_back(clip.get());
+					cancelDeselection = true;
 				}
 
-				// Am I a clip that's selected?
+				// Am I a clip that's selected? Highlight myself if so.
 				for (auto& selectedClip : selectedClips) {
 					if (selectedClip == clip.get()) {
 						tableDrawList->AddRect(bounds.Min, bounds.Max, IM_COL32(255, 255, 255, 255), 3.0f, 0, 5.0f);
@@ -486,14 +498,15 @@ void Timeline::onUpdate() {
 				// 	EC_PRINT(EC_THIS, "User is NOT DRAGGING CLIPS ANYMORE");
 				// }
 
+				// Clip drawing
 				tableDrawList->AddRectFilled(bounds.Min, bounds.Max, ImColor(track.color.Value.x, track.color.Value.y, track.color.Value.z, actionClipsBeingDragged ? 0.1f : 0.8f), 3.0f);
 				tableDrawList->AddText(bounds.Min, IM_COL32(255, 255, 255, 255), clip->name.c_str());
 				if (clipHovered) {
 					auto volText = "0dB";
-					auto textSize = CalcTextSize("0dB");
+					auto textSize = CalcTextSize(volText);
 					auto bottomLeftVolTextPos = ImVec2(bounds.Min.x, bounds.Max.y - textSize.y);
 					tableDrawList->AddRectFilled(bottomLeftVolTextPos, bottomLeftVolTextPos + textSize, IM_COL32(0, 0, 0, 200));
-					tableDrawList->AddText(bottomLeftVolTextPos, IM_COL32(255, 255, 255, 255), "0dB");
+					tableDrawList->AddText(bottomLeftVolTextPos, IM_COL32(255, 255, 255, 255), volText);
 				}
 
 				if (editorState->timelinePositionDebugMode) {
@@ -527,7 +540,7 @@ void Timeline::onUpdate() {
 					}
 				}
 				if (IsMouseReleased(ImGuiMouseButton_Left)) {
-					EC_PRINT(EC_THIS, "RELEASED!!");
+					// EC_PRINT(EC_THIS, "RELEASED!!");
 					clipsBeingDragged.clear();
 				}
 
@@ -585,6 +598,11 @@ void Timeline::onUpdate() {
 				SameLine();
 				clipIt++;
 			}
+
+			// If the user clicks and it isn't on a clip it should be deselected.
+			// FIXME: Doesn't really work with multi-select... or dragging...
+			// if (IsWindowHovered() && IsMouseClicked(ImGuiMouseButton_Left) && !cancelDeselection)
+			// 	selectedClips.clear();
 
 			// Old clip rendering function
 			#if 0
@@ -848,9 +866,12 @@ void Timeline::onUpdate() {
 		// GetForegroundDrawList()->AddText(ImVec2(900, 700), IM_COL32(255, 255, 255, 255), std::to_string(TableGetHoveredRow()).c_str());
 		tableHoveredRow = TableGetHoveredRow();
 
+		drawBlinkingSquareAtCursor();
+
 		if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseDown(ImGuiMouseButton_Middle)) {
 			if (GetIO().KeyCtrl) {
 				editorState->zoom -= scrollDelta.x;
+				SetScrollX(GetScrollX() - scrollDelta.x);
 				if (editorState->zoom < 10) editorState->zoom = 10;
 			} else {
 				SetScrollX(GetScrollX() + scrollDelta.x);
@@ -858,8 +879,22 @@ void Timeline::onUpdate() {
 			}
 		}
 
+		// Timeline scrubbing set on right click. (still needs to snap to clips)
 		if (IsWindowHovered(ImGuiHoveredFlags_ChildWindows) && IsMouseDown(ImGuiMouseButton_Right)) {
-			ma_engine_set_time_in_pcm_frames(audioEngine, uint64_t(std::max(0.0f, GetMousePos().x - GetWindowPos().x + GetScrollX() - 376.0f) * editorState->zoom));
+			// At the time that this calculation is being done, the X pos of the
+			// screen cursor is at 0px on the timeline.
+
+			// The procedure for setting the scrubber position correctly is:
+			// 1. subtract screen cursor x from mouse position x to get relative
+			// pixel offset on timeline.
+			float relativePixelOffset = GetMousePos().x - GetCursorScreenPos().x;
+
+			// 2. take the x offset and multiply by 100 to gwt thw amount of PCM
+			// frames. (1 pcm frame = 100px visually at 1x zoom).
+			// 3. divide that by (zoom factor / 100.0f) to 1x the scale.
+			float pcmFramesToBeSet = (relativePixelOffset * 100) / (editorState->zoom / 100.0f);
+
+			ma_engine_set_time_in_pcm_frames(audioEngine, uint64_t(std::max(0.0f, pcmFramesToBeSet)));
 		}
 
 		PushClipRect(
@@ -868,21 +903,23 @@ void Timeline::onUpdate() {
 			false
 		);
 
-		ImDrawList* tableDrawList = GetWindowDrawList();
+		// ImDrawList* tableDrawList = GetWindowDrawList();
+		ImDrawList* tableDrawList = GetCurrentTable()->InnerWindow->DrawList;
+
+		ImVec2 currentCursorPos = GetCursorScreenPos();
+
+		if (fmodf((float)ImGui::GetTime(), 0.40f) < 0.20f) { tableDrawList->AddRectFilled(currentCursorPos, currentCursorPos + ImVec2(20,20), IM_COL32(0, 255, 0, 255)); }
+		tableDrawList->AddText(currentCursorPos, IM_COL32(255, 255, 255, 255), std::to_string(sf).c_str());
 
 		// Draw Scrubber
-		float scrubberWindowPos = ((250 * sf) + playbackFrames - GetScrollX()); // TODO: this broke w/ zoom addon
-		tableDrawList->AddTriangleFilled(
-			ImVec2(canvasPos.x + scrubberWindowPos - 10.0f, canvasPos.y + 0.0f),
-			ImVec2(canvasPos.x + scrubberWindowPos + 10.0f, canvasPos.y + 0.0f),
-			ImVec2(canvasPos.x + scrubberWindowPos + 1.0f, canvasPos.y + 33.0f),
-			IM_COL32(255, 0, 0, 255)
-		);
+		// Testing a new way to draw the scrubber
+		auto newScrubberXPosition = currentCursorPos.x + (playbackFrames * (editorState->zoom / 100.0f));
 		tableDrawList->AddRectFilled(
-			ImVec2(canvasPos.x + scrubberWindowPos, canvasPos.y + 10.0f),
-			ImVec2(canvasPos.x + scrubberWindowPos + 2.0f, canvasMax.y + 100.0f),
-			IM_COL32(255, 0, 0, 255)
-		);
+			// MIN RECT (takes current x and uses top of drawable area for y)
+			ImVec2(newScrubberXPosition, canvasPos.y),
+			// MAX RECT
+			ImVec2(newScrubberXPosition + 2.0f, GetWindowPos().y + GetWindowHeight()),
+			IM_COL32(0, 255, 0, 255));
 
 		// Draw Scale / Ruler
 		ImColor textColor = GetStyle().Colors[ImGuiCol_Text];
@@ -895,7 +932,9 @@ void Timeline::onUpdate() {
 		float majorSize       = 30.0f;
 		float labelDistance   = 8.0f;
 
-		ImVec2 from = ImVec2(canvasPos.x + (245*sf) - GetScrollX(), canvasPos.y);
+		auto currentCursor = GetCursorScreenPos();
+		drawBlinkingSquareAtCursor();
+		ImVec2 from = ImVec2(currentCursor.x, canvasPos.y);
 		ImVec2 to = ImVec2(canvasPos.x + canvasMax.x, canvasPos.y);
 
 		ImVec2 direction = (to - from) * ImInvLength(to - from, 0.0f);

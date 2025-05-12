@@ -7,6 +7,7 @@
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+#include <GL/gl.h>
 #include <cmath>
 #include <string>
 #define GL_SILENCE_DEPRECATION
@@ -254,9 +255,47 @@ int startAXEEditor(std::string projectFile) {
 
 	window.maximize();
 
+	const float scroll_multiplier = 0.3f;
+	const float scroll_smoothing = 8.0f;
+	static ImVec2 scroll_energy = ImVec2(0.0f, 0.0f);
+
 	while (!window.shouldClose()) {
 		ImGui_ImplGlfw_WaitForEvent();
 		window.pollEvents();
+#if 0
+		ImVec2 scrollData = ImGui_VT_getLatestScrollData();
+		scrollData.x *= scroll_multiplier;
+		scrollData.y *= scroll_multiplier;
+		// Immediately stop if direction changes
+		if(scroll_energy.x * scrollData.x < 0.0f) {
+			scroll_energy.x = 0.0f;
+		}
+		if(scroll_energy.y * scrollData.y < 0.0f) {
+			scroll_energy.y = 0.0f;
+		}
+		scroll_energy.x += scrollData.x;
+		scroll_energy.y += scrollData.y;
+
+		// Part 2 smooth scroll
+
+		ImVec2 scroll_now = ImVec2(0.0f, 0.0f);
+		// if(std::abs(scroll_energy.x) > 0.01f) {
+			scroll_now.x = scroll_energy.x * io.DeltaTime * scroll_smoothing;
+			scroll_energy.x -= scroll_now.x;
+		// } else {
+			// Cutoff smoothing when it's basically stopped
+			// scroll_energy.x = 0.0f;
+		// }
+		if(std::abs(scroll_energy.y) > 0.1f) {
+			scroll_now.y = scroll_energy.y * io.DeltaTime * scroll_smoothing;
+			scroll_energy.y -= scroll_now.y;
+		} else {
+			// Cutoff smoothing when it's basically stopped
+			scroll_energy.y = 0.0f;
+		}
+		io.MouseWheel = scroll_now.y;
+		io.MouseWheelH = -scroll_now.x;
+#endif
 
 		ImGui_ImplOpenGL3_NewFrame();
 		ImGui_ImplGlfw_NewFrame();
@@ -469,11 +508,14 @@ int startAXEEditor(std::string projectFile) {
 			TextUnformatted("AXE Editor");
 			PopFont();
 
+			TextUnformatted(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+
 			SeparatorText("Basic debugging info");
 
 			ImGuiIO& io = GetIO();
 			Text("UI FPS: %.0f (average frametime: %.3f ms/frame)", io.Framerate, 1000.0f / io.Framerate);
 			Text("%d verts  :  %d indices  :  %d tris", io.MetricsRenderVertices, io.MetricsRenderIndices, io.MetricsRenderIndices / 3);
+			Text("UI scaling %.3f", window.getContentScale());
 
 			Separator();
 
