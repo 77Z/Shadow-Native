@@ -51,6 +51,12 @@ int Main(const std::vector<std::string>& args) {
 
 	if (!loggedIn) return ret;
 
+	if (args.size() == 1) {
+		// no additional args.
+		AXE::showAXESplash();
+		AXE::startAXEProjectBrowser(args);
+	}
+
 	if (args[1] == "axeEditorWithProject") {
 		ret = Shadow::AXE::startAXEEditor(args[2]);
 	} else if (args[1] == "DataDecode") {
@@ -68,11 +74,7 @@ int Main(const std::vector<std::string>& args) {
 			outfile << bson[i];
 		}
 		outfile.close();
-	} else {
-		if (args[1] != "nosplash") {
-			ret = AXE::showAXESplash();
-		}
-
+	} else if (args[1] == "nosplash") {
 		ret = AXE::startAXEProjectBrowser(args);
 	}
 

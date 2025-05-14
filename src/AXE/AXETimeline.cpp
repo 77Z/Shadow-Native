@@ -394,9 +394,10 @@ void Timeline::onUpdate() {
 			auto tableDrawList = GetCurrentTable()->InnerWindow->DrawList;
 
 			PushClipRect(timelineParentWindow->ClipRect.Min, timelineParentWindow->ClipRect.Max, false);
+			// Track background color tint
 			tableDrawList->AddRectFilled(
-				screenPosOrigin,
-				ImVec2(screenPosOrigin.x + GetWindowWidth(), screenPosOrigin.y + trackHeight),
+				ImVec2(screenPosOrigin.x + GetScrollX(), screenPosOrigin.y),
+				ImVec2(screenPosOrigin.x + GetWindowWidth() + GetScrollX(), screenPosOrigin.y + trackHeight),
 				ImColor(track.color.Value.x, track.color.Value.y, track.color.Value.z, 0.1f)
 			);
 			PopClipRect();
@@ -703,6 +704,7 @@ void Timeline::onUpdate() {
 
 			PopStyleColor();
 
+			// Track automations
 			int autoit = 1;
 			for (auto& automation : track.automations) {
 
@@ -710,8 +712,10 @@ void Timeline::onUpdate() {
 
 				PushID(autoit);
 
+				auto cursorAtAutomationStart = GetCursorScreenPos();
+
 				ImColor col = automation.color;
-				ImRect bounds = ImRect(screenPosOrigin.x, screenPosOrigin.y, GetWindowPos().x + GetWindowWidth(), screenPosOrigin.y + 143.0f);
+				ImRect bounds = ImRect(screenPosOrigin.x, screenPosOrigin.y, GetWindowPos().x + GetWindowWidth(), screenPosOrigin.y + trackHeight);
 
 				ImDrawList* fg = GetForegroundDrawList();
 
@@ -780,9 +784,12 @@ void Timeline::onUpdate() {
 					PushID(pointit);
 					uint64_t x = point.first;
 					float y = point.second;
+					auto pointVerticalRange = trackHeight - 10.0f;
+					auto pixelDrawingRange = (1.0f - y) * pointVerticalRange; // Casts 0.0f-1.0f range to 0-trackheight range;
 
-					SetCursorScreenPos(ImVec2(bounds.Min.x + x - 10, bounds.Min.y + y - 10));
+					SetCursorScreenPos(ImVec2(bounds.Min.x + x - 10, bounds.Min.y + pixelDrawingRange - 10));
 					InvisibleButton("PointGrabber", ImVec2(20,20));
+					// TODO: add logic to reject if a clip is being dragged
 					if (IsItemHovered() && IsMouseDown(0) && !autoPointBeingDragged) {
 						autoPointBeingDragged = GetItemID();
 					} else if (IsMouseReleased(0)) autoPointBeingDragged = 0;
@@ -790,18 +797,34 @@ void Timeline::onUpdate() {
 						// Actively dragging
 						ImVec2 mousePos = GetMousePos(), winPos = GetWindowPos();
 						point.first = mousePos.x - winPos.x - 376.0f;
-						point.second = std::max(0.0f, std::min(130.0f, mousePos.y - screenPosOrigin.y));
+
+						// The vertical position of the point needs to be converted to a 0.0f-1.0f range
+
+						// The point can't go all the way to the bottom of the track. This value is in pixels,
+						// not the percent that we need for storage.
+
+						if (mousePos.y > cursorAtAutomationStart.y && mousePos.y < (cursorAtAutomationStart.y + trackHeight - 10.0f)) {
+							float range = (mousePos.y - cursorAtAutomationStart.y) / (pointVerticalRange);
+							range = ImClamp(range, 0.0f, 1.0f); // not really needed, just for safety.
+							range = 1.0f - range;
+							if (range < 0.03f) range = 0.0f;
+							if (range > 0.97f) range = 1.0f;
+							point.second = range;
+						}
+
+						SetTooltip("%.1f%%", point.second * 100);
 					}
 
+					// Point drawing here
 					drawList->AddCircleFilled(
-						ImVec2(bounds.Min.x + x, bounds.Min.y + y),
+						ImVec2(bounds.Min.x + x, bounds.Min.y + pixelDrawingRange),
 						10.0f,
 						col,
 						4
 					);
 
 					drawList->AddCircleFilled(
-						ImVec2(bounds.Min.x + x, bounds.Min.y + y),
+						ImVec2(bounds.Min.x + x, bounds.Min.y + pixelDrawingRange),
 						3.0f,
 						IM_COL32(0, 0, 0, 255),
 						4
@@ -815,8 +838,8 @@ void Timeline::onUpdate() {
 					} else {
 						auto& nextPoint = automation.points.at(pointit);
 						// Screen point locations
-						const ImVec2 p1 = ImVec2(bounds.Min.x + point.first, bounds.Min.y + point.second);
-						const ImVec2 p2 = ImVec2(bounds.Min.x + nextPoint.first, bounds.Min.y + nextPoint.second);
+						const ImVec2 p1 = ImVec2(bounds.Min.x + point.first, bounds.Min.y + pixelDrawingRange);
+						const ImVec2 p2 = ImVec2(bounds.Min.x + nextPoint.first, bounds.Min.y + (1.0f - nextPoint.second) * (trackHeight - 10.0f));
 
 						size_t subStepCount = automation.smoothCurve ? 20 : 2;
 						float step = 1.f / float(subStepCount - 1);
@@ -926,11 +949,16 @@ void Timeline::onUpdate() {
 
 		float majorUnit       = 100.0f * (editorState->zoom / 100.0f);
 		float minorUnit       = 10.0f * (editorState->zoom / 100.0f);
+		float tinyUnit        = 1.0f * (editorState->zoom / 100.0f);
+
 		float labelAlignment  = 0.6f;
 		float sign            = 1.0f;
-		float minorSize       = 10.0f;
-		float majorSize       = 30.0f;
 		float labelDistance   = 8.0f;
+
+		// Vertical heights in timeline top bar
+		float tinySize        = 10.0f;
+		float minorSize       = 15.0f;
+		float majorSize       = 30.0f;
 
 		auto currentCursor = GetCursorScreenPos();
 		drawBlinkingSquareAtCursor();
@@ -944,6 +972,11 @@ void Timeline::onUpdate() {
 		tableDrawList->AddLine(from, to, textColor);
 
 		auto p = from;
+
+		if (editorState->zoom > 400.0f)
+			for (float d = 0.0f; d <= distance; d += tinyUnit, p += direction * tinyUnit)
+				tableDrawList->AddLine(p - normal * tinySize, p + normal * tinySize, textColor);
+
 		if (editorState->zoom > 70.0f)
 			for (float d = 0.0f; d <= distance; d += minorUnit, p += direction * minorUnit)
 				tableDrawList->AddLine(p - normal * minorSize, p + normal * minorSize, textColor);
@@ -1065,6 +1098,8 @@ void Timeline::updateTrackAutomationsPopup() {
 				SetItemTooltip("Toggle Automation Visibility");
 				SameLine();
 				ColorEdit4("##AutoColor", (float*)&automation.color);
+				SameLine();
+				ToggleButton(ICON_CI_BRACKET, &automation.smoothCurve);
 				SameLine();
 				if (Button(ICON_CI_CLOSE))
 					currentlySelectedTrack->automations.erase(currentlySelectedTrack->automations.begin() + autoIt - 1);

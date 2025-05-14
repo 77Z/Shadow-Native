@@ -146,6 +146,7 @@ struct Bookmark {
 struct Automation {
 	uint64_t startRail = 10;
 	uint64_t endRail = 200;
+	// u64 is the pcm frame index, float is a percent applied 0...1.0f
 	std::vector<std::pair<uint64_t, float>> points;
 	ImColor color = ImColor(IM_COL32(255, 0, 0, 255));
 	bool visible = true;

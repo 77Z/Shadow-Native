@@ -427,7 +427,7 @@ int startAXEEditor(std::string projectFile) {
 			}
 
 			SameLine();
-			SliderFloat("Zoom", &editorState.zoom, 10.0f, 400.0f, "%.0f%%");
+			SliderFloat("Zoom", &editorState.zoom, 10.0f, 600.0f, "%.0f%%");
 
 			SameLine();
 			if (Button(ICON_CI_ZOOM_IN)) editorState.zoom = 100.0f;
