@@ -246,6 +246,7 @@ struct EditorState {
 	bool showGlobalSettings = false;
 	bool showPianoRoll = true;
 	bool showBookmarksDebugger = true;
+	bool showIconDebugger = false;
 };
 
 }

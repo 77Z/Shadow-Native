@@ -22,7 +22,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
-#include "IconsCodicons.h"
+#include "ShadowIcons.hpp"
 
 
 
@@ -287,13 +287,13 @@ public:
 		case ImGuiToastType::None:
 			return nullptr;
 		case ImGuiToastType::Success:
-			return ICON_CI_CHECK;
+			return SHADOW_ICON_CHECK;
 		case ImGuiToastType::Warning:
-			return ICON_CI_WARNING;
+			return SHADOW_ICON_WARNING;
 		case ImGuiToastType::Error:
-			return ICON_CI_ERROR;
+			return SHADOW_ICON_ERROR;
 		case ImGuiToastType::Info:
-			return ICON_CI_INFO;
+			return SHADOW_ICON_INFO;
 		default:
 			return nullptr;
 		}
@@ -618,7 +618,7 @@ namespace ImGui
 					SetCursorPosX(GetCursorPosX() + (GetWindowSize().x - GetCursorPosX()) * scale);
 
 					// If the button is pressed, we want to remove the notification
-					if (Button(ICON_CI_CLOSE))
+					if (Button(SHADOW_ICON_CLOSE))
 					{
 						RemoveNotification(i);
 					}

@@ -24,7 +24,7 @@
 #include <csignal>
 #include <cstdint>
 #include "../../lib/bgfx/3rdparty/dear-imgui/widgets/gizmo.h"
-#include "../AXE/IconsCodicons.h"
+#include "../AXE/ShadowIcons.hpp"
 
 #define EDITOR_UI_VIEW_ID 2
 #define EDITOR_VIEWPORT_VIEW_ID 10
@@ -141,7 +141,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/caskaydia-cove-nerd-font-mono.ttf", fontSize, &fontCfg, ranges.Data);
 			// ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/arial.ttf", fontSize, &fontCfg, ranges.Data);
 
-			static const ImWchar iconRanges[] = { ICON_MIN_CI, ICON_MAX_CI, 0 };
+			static const ImWchar iconRanges[] = { SHADOW_ICON_MIN, SHADOW_ICON_MAX, 0 };
 
 			ImFontConfig iconFontCfg;
 			iconFontCfg.GlyphMinAdvanceX = iconFontSize;
@@ -152,7 +152,7 @@ int startEditor(Shadow::Editor::ProjectEntry project) {
 			iconFontCfg.GlyphOffset.y = 6;
 			iconFontCfg.DstFont = primaryFont;
 
-			io.Fonts->AddFontFromFileTTF("./Resources/codicon.ttf", 20.0f * sf, &iconFontCfg, iconRanges);
+			io.Fonts->AddFontFromFileTTF("./Resources/shadow.ttf", 20.0f * sf, &iconFontCfg, iconRanges);
 
 			ImGui::GetStyle().ScaleAllSizes(sf);
 		}

@@ -1,5 +1,5 @@
 #include "imgui.h"
-#include "IconsCodicons.h"
+#include "ShadowIcons.hpp"
 
 namespace Shadow::AXE {
 void updateHelpWindow(bool& p_open) {
@@ -62,12 +62,12 @@ void updateHelpWindow(bool& p_open) {
 	TextWrapped("The build of ShadowAudio included in this software currently supports the "
 				"following backends:");
 
-	TextUnformatted(ICON_CI_TERMINAL_POWERSHELL " Windows");
+	TextUnformatted(SHADOW_ICON_TERMINAL_POWERSHELL " Windows");
 	BulletText("WASAPI");
 	BulletText("DirectSound");
 	BulletText("WinMM");
 
-	TextUnformatted(ICON_CI_TERMINAL_LINUX " Linux");
+	TextUnformatted(SHADOW_ICON_TERMINAL_LINUX " Linux");
 	BulletText("ALSA");
 	BulletText("PulseAudio");
 	BulletText("JACK");

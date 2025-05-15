@@ -3,7 +3,7 @@
 #include "AXETypes.hpp"
 #include "Configuration/EngineConfiguration.hpp"
 #include "Debug/Logger.hpp"
-#include "IconsCodicons.h"
+#include "ShadowIcons.hpp"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
@@ -105,7 +105,7 @@ int startAXEProjectBrowser(const std::vector<std::string>& args) {
 	ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/Inter-Medium.ttf", fontSize, &fontCfg, ranges.Data);
 	// ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/arial.ttf", fontSize, &fontCfg, ranges.Data);
 
-	static const ImWchar iconRanges[] = { ICON_MIN_CI, ICON_MAX_CI, 0 };
+	static const ImWchar iconRanges[] = { SHADOW_ICON_MIN, SHADOW_ICON_MAX, 0 };
 
 	ImFontConfig iconFontCfg;
 	iconFontCfg.GlyphMinAdvanceX = iconFontSize;
@@ -116,7 +116,7 @@ int startAXEProjectBrowser(const std::vector<std::string>& args) {
 	iconFontCfg.GlyphOffset.y = 6;
 	iconFontCfg.DstFont = primaryFont;
 
-	io.Fonts->AddFontFromFileTTF("./Resources/codicon.ttf", 20.0f * sf, &iconFontCfg, iconRanges);
+	io.Fonts->AddFontFromFileTTF("./Resources/shadow.ttf", 20.0f * sf, &iconFontCfg, iconRanges);
 
 	ImFont* headingFont = io.Fonts->AddFontFromFileTTF("./Resources/Inter-Black.ttf", 40.0f * sf);
 
@@ -190,7 +190,7 @@ int startAXEProjectBrowser(const std::vector<std::string>& args) {
 
 		ImGui::Indent();
 		for (auto& project : projects) {
-			if (ImGui::Selectable((std::string(ICON_CI_SYMBOL_METHOD) + " " + project.substr(0, project.size() - 4)).c_str())) {
+			if (ImGui::Selectable((std::string(SHADOW_ICON_SYMBOL_METHOD) + " " + project.substr(0, project.size() - 4)).c_str())) {
 				projectFileToOpenAfterDeath = EngineConfiguration::getConfigDir() + "/AXEProjects/" + project;
 				openEditorAfterDeath = true;
 				window.close();

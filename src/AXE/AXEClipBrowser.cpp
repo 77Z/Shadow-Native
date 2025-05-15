@@ -7,7 +7,7 @@
 #include "imgui.h"
 #include "miniaudio.h"
 #include <filesystem>
-#include "IconsCodicons.h"
+#include "ShadowIcons.hpp"
 
 #define EC_THIS "Clip Browser"
 
@@ -55,7 +55,7 @@ void ClipBrowser::onUpdate(bool& p_open) {
 		if (clip.isDirectory) continue;
 
 		SetNextItemAllowOverlap();
-		Selectable((ICON_CI_MUSIC " " + clip.prettyName).c_str());
+		Selectable((SHADOW_ICON_MUSIC " " + clip.prettyName).c_str());
 		if (BeginItemTooltip()) {
 			Text("%s", clip.prettyType.c_str());
 			Separator();
@@ -74,7 +74,7 @@ void ClipBrowser::onUpdate(bool& p_open) {
 			EndDragDropSource();
 		}
 		SameLine();
-		if (SmallButton((ICON_CI_PLAY "##" + clip.relativePath).c_str())) {
+		if (SmallButton((SHADOW_ICON_PLAY "##" + clip.relativePath).c_str())) {
 			ma_engine_play_sound(audioEngine, clip.fullpath.c_str(), nullptr);
 		}
 		

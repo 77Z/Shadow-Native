@@ -1,7 +1,7 @@
 #include "AXEJobSystem.hpp"
 #include "Debug/EditorConsole.hpp"
 #include "Debug/Logger.hpp"
-#include "IconsCodicons.h"
+#include "ShadowIcons.hpp"
 #include "ImGuiNotify.hpp"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
@@ -79,11 +79,11 @@ void onUpdateStatusBar() {
 
 	if (jobIntegrityTainted) {
 		PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-		if (Button(ICON_CI_X " Job Failure!")) OpenPopup("JobsPopup");
+		if (Button(SHADOW_ICON_CLOSE " Job Failure!")) OpenPopup("JobsPopup");
 		PopStyleColor();
 	} else {
 		if (activeJobs.empty()) {
-			if (Button(ICON_CI_INFO " No active jobs")) OpenPopup("JobsPopup");
+			if (Button(SHADOW_ICON_INFO " No active jobs")) OpenPopup("JobsPopup");
 		} else {
 			Spinner("##spinny", 12.0f, 4, IM_COL32(255, 0, 0, 255));
 			SameLine();
@@ -120,10 +120,10 @@ void onUpdateStatusBar() {
 			for (auto& job : retiredJobs) {
 				if (job.success) {
 					PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
-					TextUnformatted(ICON_CI_CHECK); SameLine();
+					TextUnformatted(SHADOW_ICON_CHECK); SameLine();
 				} else {
 					PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-					TextUnformatted(ICON_CI_X); SameLine();
+					TextUnformatted(SHADOW_ICON_CLOSE); SameLine();
 				}
 
 				TextUnformatted(job.name.c_str());

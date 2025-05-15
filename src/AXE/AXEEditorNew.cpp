@@ -24,7 +24,7 @@
 #include "ImGuiNotify.hpp"
 #include "Keyboard.hpp"
 #include "miniaudio.h"
-#include "IconsCodicons.h"
+#include "ShadowIcons.hpp"
 #include "../implot/implot.h"
 #include "../imgui/imgui_knobs.hpp"
 #include "AXEEqualizer.hpp"
@@ -43,6 +43,7 @@ void unloadSong(Song* song, ma_engine* audioEngine);
 void updateCurveTest();
 void initCurveTest();
 void cacheWaveforms();
+void updateIconDebugWindow(bool* p_open);
 }
 namespace Shadow::AXE::Account {
 void onUpdateStatusBar(bool isInEditor, ShadowWindow* window);
@@ -218,7 +219,7 @@ int startAXEEditor(std::string projectFile) {
 		ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/Inter-Medium.ttf", fontSize, &fontCfg, ranges.Data);
 		// ImFont* primaryFont = io.Fonts->AddFontFromFileTTF("./Resources/arial.ttf", fontSize, &fontCfg, ranges.Data);
 
-		static const ImWchar iconRanges[] = { ICON_MIN_CI, ICON_MAX_CI, 0 };
+		static const ImWchar iconRanges[] = { SHADOW_ICON_MIN, SHADOW_ICON_MAX, 0 };
 
 		ImFontConfig iconFontCfg;
 		iconFontCfg.GlyphMinAdvanceX = iconFontSize;
@@ -229,7 +230,7 @@ int startAXEEditor(std::string projectFile) {
 		iconFontCfg.GlyphOffset.y = 6;
 		iconFontCfg.DstFont = primaryFont;
 
-		io.Fonts->AddFontFromFileTTF("./Resources/codicon.ttf", 20.0f * sf, &iconFontCfg, iconRanges);
+		io.Fonts->AddFontFromFileTTF("./Resources/shadow.ttf", 20.0f * sf, &iconFontCfg, iconRanges);
 
 		editorState.headerFont = io.Fonts->AddFontFromFileTTF("./Resources/Inter-Black.ttf", 40.0f * sf);
 
@@ -374,6 +375,7 @@ int startAXEEditor(std::string projectFile) {
 					MenuItem("Automation Debug Mode", nullptr, &editorState.automationDebugMode);
 					MenuItem("Timeline Cursor Position Debug Mode", nullptr, &editorState.timelinePositionDebugMode);
 					MenuItem("Bookmark Debugger", nullptr, &editorState.showBookmarksDebugger);
+					MenuItem("Icon Table", nullptr, &editorState.showIconDebugger);
 					if (MenuItem("Re-cache waveforms")) cacheWaveforms();
 					Separator();
 					if (MenuItem("Break Here")) {
@@ -430,11 +432,11 @@ int startAXEEditor(std::string projectFile) {
 			SliderFloat("Zoom", &editorState.zoom, 10.0f, 600.0f, "%.0f%%");
 
 			SameLine();
-			if (Button(ICON_CI_ZOOM_IN)) editorState.zoom = 100.0f;
-			SetItemTooltip(ICON_CI_ZOOM_IN " Reset zoom");
+			if (Button(SHADOW_ICON_ZOOM_IN)) editorState.zoom = 100.0f;
+			SetItemTooltip(SHADOW_ICON_ZOOM_IN " Reset zoom");
 
 			SameLine();
-			if (Button(ICON_CI_DIFF_ADDED)) {
+			if (Button(SHADOW_ICON_DIFF_ADDED)) {
 				Track newTrack;
 				newTrack.name = "Untitled Track";
 				songInfo.tracks.push_back(newTrack);
@@ -454,15 +456,15 @@ int startAXEEditor(std::string projectFile) {
 			SetItemTooltip("Multi slice clip cut");
 
 			SameLine();
-			if (Button(ICON_CI_BOOKMARK)) timeline.newBookmark();
-			SetItemTooltip(ICON_CI_BOOKMARK " New bookmark (Ctrl + B)");
+			if (Button(SHADOW_ICON_BOOKMARK)) timeline.newBookmark();
+			SetItemTooltip(SHADOW_ICON_BOOKMARK " New bookmark (Ctrl + B)");
 
 			SameLine();
-			ToggleButton(ICON_CI_MAGNET, &editorState.snappingEnabled);
-			SetItemTooltip(ICON_CI_MAGNET " Toggle clip snapping");
+			ToggleButton(SHADOW_ICON_MAGNET, &editorState.snappingEnabled);
+			SetItemTooltip(SHADOW_ICON_MAGNET " Toggle clip snapping");
 
 			SameLine();
-			if (Button(timeline.isPlaying() ? ICON_CI_DEBUG_PAUSE : ICON_CI_PLAY)) {
+			if (Button(timeline.isPlaying() ? SHADOW_ICON_DEBUG_PAUSE : SHADOW_ICON_PLAY)) {
 				timeline.togglePlayback();
 			}
 			SetItemTooltip("Play/Pause song from current position (SPACE)");
@@ -614,12 +616,13 @@ int startAXEEditor(std::string projectFile) {
 		clipBrowser.onUpdate(editorState.showClipBrowser);
 		equalizer.onUpdate(editorState.showEqualizer);
 		pianoRoll.onUpdate(editorState.showPianoRoll);
+		updateIconDebugWindow(&editorState.showIconDebugger);
 		timeline.updateBookmarkDebugMenu(editorState.showBookmarksDebugger);
 		onUpdateGlobalSettingsWindow(editorState.showGlobalSettings);
 		ImGui::RenderNotifications();
 
 		// Rendering
-		ImGui::Render();	
+		ImGui::Render();
 		int display_w, display_h;
 		glfwGetFramebufferSize(window.window, &display_w, &display_h);
 		glViewport(0, 0, display_w, display_h);

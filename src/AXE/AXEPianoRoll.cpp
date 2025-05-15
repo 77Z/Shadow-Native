@@ -1,6 +1,6 @@
 #include "AXEPianoRoll.hpp"
 #include "imgui.h"
-#include "IconsCodicons.h"
+#include "ShadowIcons.hpp"
 
 namespace Shadow::AXE {
 
@@ -25,7 +25,7 @@ void PianoRoll::onUpdate(bool& p_open) {
 		return;
 	}
 
-	TextUnformatted(ICON_CI_FILE " Working on: ");
+	TextUnformatted(SHADOW_ICON_FILE " Working on: ");
 
 	ImU32 Black = IM_COL32(0, 0, 0, 255);
 	ImU32 White = IM_COL32(255, 255, 255, 255);

@@ -14,7 +14,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include <string>
-#include "IconsCodicons.h"
+#include "ShadowIcons.hpp"
 #include "imgui/imgui_utils.hpp"
 #include "Debug/EditorConsole.hpp"
 #include "ppk_assert_impl.hpp"
@@ -88,7 +88,7 @@ void Timeline::onUpdate() {
 		PushItemWidth(200.0f * sf);
 		InputText("##trackname", &track.name);
 		SameLine();
-		if (SmallButton(ICON_CI_CLOSE)) songInfo->tracks.erase(songInfo->tracks.begin() + trackIt);
+		if (SmallButton(SHADOW_ICON_CLOSE)) songInfo->tracks.erase(songInfo->tracks.begin() + trackIt);
 		SliderFloat("VOL", &track.volume, 0.0f, 100.0f);
 		SliderFloat("BAL", &track.balence, -1.0f, 1.0f);
 
@@ -143,7 +143,7 @@ void Timeline::onUpdate() {
 			SetNextItemWidth(clipWidth - 40.0f);
 			InputText("##name", &clip.name);
 			SameLine();
-			if (Button(ICON_CI_CLOSE)) track.clips.erase(track.clips.begin() + clipIt - 1);
+			if (Button(SHADOW_ICON_CLOSE)) track.clips.erase(track.clips.begin() + clipIt - 1);
 
 			DragScalar("Length", ImGuiDataType_U64, &clip.length);
 			Text("pos (u64) %lu | length (u64) %lu\npos + len (end rail pos) %lu",
@@ -359,7 +359,7 @@ void Timeline::onUpdate() {
 			PushItemWidth(200.0f * sf);
 			InputText("##TrackName", &track.name);
 			SameLine();
-			if (SmallButton(ICON_CI_CLOSE)) songInfo->tracks.erase(songInfo->tracks.begin() + trackIt);
+			if (SmallButton(SHADOW_ICON_CLOSE)) songInfo->tracks.erase(songInfo->tracks.begin() + trackIt);
 			SliderFloat("VOL", &track.volume, 0.0f, 100.0f, "%.0f");
 			SliderFloat("BAL", &track.balance, -1.0f, 1.0f, "%.2f");
 			ToggleButton("M", &track.muted);
@@ -367,7 +367,7 @@ void Timeline::onUpdate() {
 			// ToggleButton("S", )
 
 			SameLine();
-			if (Button(ICON_CI_ROBOT)) {
+			if (Button(SHADOW_ICON_ROBOT)) {
 				currentlySelectedTrack = &track;
 				OpenPopup("Track Automations");
 			}
@@ -650,10 +650,10 @@ void Timeline::onUpdate() {
 				InputText("##ClipName", &clip->name);
 				if (editorState->zoom > 70) {
 					SameLine();
-					if (SmallButton(ICON_CI_CLOSE)) track.clips.erase(track.clips.begin() + clipIt + 1);
+					if (SmallButton(SHADOW_ICON_CLOSE)) track.clips.erase(track.clips.begin() + clipIt + 1);
 					if (IsItemHovered()) window->setSECursor(ShadowEngineCursors_CropClipRight);
 				}
-				// if (SmallButton(ICON_CI_CHROME_RESTORE)) {
+				// if (SmallButton(SHADOW_ICON_CHROME_RESTORE)) {
 					// clip->shouldDrawWaveform =! clip->shouldDrawWaveform;
 
 					//TODO: move this to more static code
@@ -879,7 +879,7 @@ void Timeline::onUpdate() {
 #if 0
 		TableNextRow();
 		TableSetColumnIndex(0);
-		if (Button(ICON_CI_PLUS " Add Track")) {
+		if (Button(SHADOW_ICON_PLUS " Add Track")) {
 			Track newTrack;
 			newTrack.name = "Untitled Track " + std::to_string(trackIt + 1);
 			songInfo->tracks.push_back(newTrack);
@@ -1094,14 +1094,14 @@ void Timeline::updateTrackAutomationsPopup() {
 			int autoIt = 1;
 			for (auto& automation : currentlySelectedTrack->automations) {
 				PushID(autoIt);
-				ToggleButton(ICON_CI_EYE, &automation.visible);
+				ToggleButton(SHADOW_ICON_EYE, &automation.visible);
 				SetItemTooltip("Toggle Automation Visibility");
 				SameLine();
 				ColorEdit4("##AutoColor", (float*)&automation.color);
 				SameLine();
-				ToggleButton(ICON_CI_BRACKET, &automation.smoothCurve);
+				ToggleButton(SHADOW_ICON_STRAIGHT_PATH, &automation.smoothCurve);
 				SameLine();
-				if (Button(ICON_CI_CLOSE))
+				if (Button(SHADOW_ICON_CLOSE))
 					currentlySelectedTrack->automations.erase(currentlySelectedTrack->automations.begin() + autoIt - 1);
 				SetItemTooltip("Delete Automation");
 				PopID();

@@ -1,5 +1,5 @@
 #include "Debug/Logger.hpp"
-#include "IconsCodicons.h"
+#include "ShadowIcons.hpp"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
@@ -41,7 +41,7 @@ void onUpdateStatusBar(bool isInEditor, ShadowWindow* window) {
 	PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
 	PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 100));
 
-	if (Button(ICON_CI_ACCOUNT)) {
+	if (Button(SHADOW_ICON_ACCOUNT)) {
 		OpenPopup("AXEAccountPopup");
 	}
 
@@ -51,6 +51,8 @@ void onUpdateStatusBar(bool isInEditor, ShadowWindow* window) {
 
 
 	if (BeginPopup("AXEAccountPopup")) {
+		TextUnformatted(SHADOW_ICON_77Z_LOGO);
+		SameLine();
 		TextUnformatted(EngineConfiguration::getUserName().c_str());
 		Separator();
 		TextUnformatted("Authenticated with:");
@@ -61,7 +63,7 @@ void onUpdateStatusBar(bool isInEditor, ShadowWindow* window) {
 #endif
 		SetItemTooltip(AUTH_SERVER_URL);
 
-		if (Button(ICON_CI_LOG_OUT " Log out and Exit")) {
+		if (Button(SHADOW_ICON_SIGN_OUT " Log out and Exit")) {
 			if (isInEditor)
 				OpenPopup("Log out confirmation");
 			else

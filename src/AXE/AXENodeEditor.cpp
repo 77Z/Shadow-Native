@@ -5,7 +5,7 @@
 #include "Debug/Logger.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
-#include "IconsCodicons.h"
+#include "ShadowIcons.hpp"
 #include "imgui/imgui_utils.hpp"
 #include <memory>
 #include <string>
@@ -193,7 +193,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	}
 
 	if (BeginMenuBar()) {
-		if (MenuItem(ICON_CI_MENU " Graphs")) mainMenuOpen = !mainMenuOpen;
+		if (MenuItem(SHADOW_ICON_MENU " Graphs")) mainMenuOpen = !mainMenuOpen;
 		BeginDisabled(!openedNodeGraph);
 		if (BeginMenu("+ Add")) {
 			nodeAddMenu();
@@ -224,7 +224,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 			TextUnformatted("|");
 			PushItemWidth(300.0f);
 			if (openedNodeGraph->name == "internal_master_node_graph") {
-				TextUnformatted(ICON_CI_GRAPH " Master Graph");
+				TextUnformatted(SHADOW_ICON_GRAPH " Master Graph");
 				SetItemTooltip("You can't rename the master node graph");
 			} else {
 				PushStyleColor(ImGuiCol_FrameBg, GetStyle().Colors[ImGuiCol_MenuBarBg]);
@@ -234,9 +234,9 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 
 			TextUnformatted("|");
 			if (openedNodeGraph->lastModified > openedNodeGraph->lastCompiled) {
-				TextUnformatted(ICON_CI_WARNING " Out of date");
+				TextUnformatted(SHADOW_ICON_WARNING " Out of date");
 			} else {
-				TextUnformatted(ICON_CI_CHECK " Up to date");
+				TextUnformatted(SHADOW_ICON_CHECK " Up to date");
 			}
 			if (BeginItemTooltip()) {
 				PushTextWrapPos(GetFontSize() * 35.0f);
@@ -262,11 +262,11 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 	if (mainMenuOpen) {
 		BeginChild("NodeEditorLeftMenu", ImVec2(200.0f, 0.0f), ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX);
 
-		if (Selectable(ICON_CI_ADD " New Node Graph")) {
+		if (Selectable(SHADOW_ICON_ADD " New Node Graph")) {
 			createNodeGraph("Untitled Node Graph");
 		}
 
-		if (Selectable(ICON_CI_GRAPH " Open Master Graph")) {
+		if (Selectable(SHADOW_ICON_GRAPH " Open Master Graph")) {
 			for (auto& g : song->nodeGraphs) {
 				if (g.name == "internal_master_node_graph") {
 					openedNodeGraph = &g;
@@ -447,7 +447,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 		if (ed::QueryNewLink(&inputPinid, &outputPinId)) { // Editor wants to create new link...
 			// Here is where we validate links
 			if (inputPinid.Get() == outputPinId.Get()) {
-				SetTooltip(ICON_CI_X "Pin can't connect to itself");
+				SetTooltip(SHADOW_ICON_CLOSE "Pin can't connect to itself");
 			}
 			if (inputPinid && outputPinId) { // LGTM!
 				// ed::RejectNewItem to say no
@@ -518,7 +518,7 @@ void AXENodeEditor::onUpdate(bool& p_open) {
 			for (int i = 0; i < selectedLinkCount; i++) ed::DeleteLink(selectedLinks[i]);
 		}
 
-		if (MenuItem(ICON_CI_GROUP_BY_REF_TYPE " Ship selection to new graph")) {
+		if (MenuItem(SHADOW_ICON_GROUP_BY_REF_TYPE " Ship selection to new graph")) {
 			// CRASHES
 			// Needs to be reimplemented with new createNodeGraph method
 #if 0

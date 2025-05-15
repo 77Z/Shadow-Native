@@ -1,7 +1,7 @@
 #include "AXEGlobalSettingsWindow.hpp"
 #include "Configuration/EngineConfiguration.hpp"
 #include "Debug/EditorConsole.hpp"
-#include "IconsCodicons.h"
+#include "ShadowIcons.hpp"
 #include "ImGuiNotify.hpp"
 #include "imgui.h"
 #include "imgui/imgui_utils.hpp"
@@ -113,8 +113,8 @@ void onUpdateGlobalSettingsWindow(bool& p_open) {
 
 
 	SetCursorPosY(winHeight - GetFrameHeightWithSpacing() - GetStyle().ItemSpacing.y);
-	SetCursorPosX(winWidth - CalcTextSize(ICON_CI_SAVE_ALL " SAVE SETTINGS").x - GetStyle().ItemSpacing.x * 2);
-	if (Button(ICON_CI_SAVE_ALL " SAVE SETTINGS")) {
+	SetCursorPosX(winWidth - CalcTextSize(SHADOW_ICON_SAVE_ALL " SAVE SETTINGS").x - GetStyle().ItemSpacing.x * 2);
+	if (Button(SHADOW_ICON_SAVE_ALL " SAVE SETTINGS")) {
 		saveSettings();
 		InsertNotification({ImGuiToastType::Success, 5000, "Global settings saved"});
 	}
