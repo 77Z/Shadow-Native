@@ -444,13 +444,13 @@ int startAXEEditor(std::string projectFile) {
 			SetItemTooltip("New Track");
 
 			SameLine();
-			if (Button("C")) {
+			if (Button(SHADOW_ICON_CLIP_CUT)) {
 				// IMPL
 			}
 			SetItemTooltip("Slice clip...");
 
 			SameLine();
-			if (Button("CC")) {
+			if (Button(SHADOW_ICON_MULTI_CLIP_CUT)) {
 				// IMPL
 			}
 			SetItemTooltip("Multi slice clip cut");

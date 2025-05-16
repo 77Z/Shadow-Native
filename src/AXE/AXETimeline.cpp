@@ -1099,7 +1099,7 @@ void Timeline::updateTrackAutomationsPopup() {
 				SameLine();
 				ColorEdit4("##AutoColor", (float*)&automation.color);
 				SameLine();
-				ToggleButton(SHADOW_ICON_STRAIGHT_PATH, &automation.smoothCurve);
+				ToggleButton(automation.smoothCurve ? SHADOW_ICON_CURVED_PATH : SHADOW_ICON_STRAIGHT_PATH, &automation.smoothCurve);
 				SameLine();
 				if (Button(SHADOW_ICON_CLOSE))
 					currentlySelectedTrack->automations.erase(currentlySelectedTrack->automations.begin() + autoIt - 1);
