@@ -344,7 +344,7 @@ void Timeline::onUpdate() {
 				"##TrackColor",
 				track.color,
 				ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_NoTooltip,
-				ImVec2(350, 20)))
+				ImVec2(233 * sf, 20)))
 			{
 				OpenPopup("TrackColorPop");
 			}

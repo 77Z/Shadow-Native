@@ -217,6 +217,8 @@ struct Song {
 struct EditorState {
 	float sf;
 
+	uint32_t sampleRate = 0;
+
 	bool snappingEnabled = true;
 	
 	// 100.0f is default zoom level. Usually implementors using zoom prefer to
@@ -228,6 +230,7 @@ struct EditorState {
 	bool timelinePositionDebugMode = false;
 
 	ImFont* headerFont;
+	ImFont* segmentDisplayFont;
 
 	Track* soloedTrack;
 

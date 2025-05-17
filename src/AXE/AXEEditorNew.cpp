@@ -9,6 +9,7 @@
 #include "imgui_impl_opengl3.h"
 #include <GL/gl.h>
 #include <cmath>
+#include <cstdint>
 #include <string>
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
@@ -44,6 +45,7 @@ void updateCurveTest();
 void initCurveTest();
 void cacheWaveforms();
 void updateIconDebugWindow(bool* p_open);
+void drawScrubberClockWidget(Song& song, EditorState& edState, uint64_t playbackFrames);
 }
 namespace Shadow::AXE::Account {
 void onUpdateStatusBar(bool isInEditor, ShadowWindow* window);
@@ -98,6 +100,8 @@ int startAXEEditor(std::string projectFile) {
 		ERROUT("Failed to initialize ShadowAudio engine!!");
 		return 1;
 	}
+
+	editorState.sampleRate = (uint32_t)ma_engine_get_sample_rate(&engine);
 
 	deserializeSong(&songInfo, projectFile);
 	bootstrapSong(&songInfo, &engine);
@@ -233,6 +237,7 @@ int startAXEEditor(std::string projectFile) {
 		io.Fonts->AddFontFromFileTTF("./Resources/shadow.ttf", 20.0f * sf, &iconFontCfg, iconRanges);
 
 		editorState.headerFont = io.Fonts->AddFontFromFileTTF("./Resources/Inter-Black.ttf", 40.0f * sf);
+		editorState.segmentDisplayFont = io.Fonts->AddFontFromFileTTF("./Resources/DSEG14Classic-Regular.ttf", fontSize);
 
 		ImGui::GetStyle().ScaleAllSizes(sf);
 	}
@@ -473,7 +478,9 @@ int startAXEEditor(std::string projectFile) {
 			JobSystem::onUpdateStatusBar();
 
 			SameLine();
+			drawScrubberClockWidget(songInfo, editorState, timeline.getPlaybackFrames());
 
+			SameLine();
 			SetCursorPos(ImVec2(GetWindowSize().x - 50, 25));
 			Account::onUpdateStatusBar(true, &window);
 
@@ -518,6 +525,7 @@ int startAXEEditor(std::string projectFile) {
 			Text("UI FPS: %.0f (average frametime: %.3f ms/frame)", io.Framerate, 1000.0f / io.Framerate);
 			Text("%d verts  :  %d indices  :  %d tris", io.MetricsRenderVertices, io.MetricsRenderIndices, io.MetricsRenderIndices / 3);
 			Text("UI scaling %.3f", window.getContentScale());
+			Text("Sample Rate: %u PCM/S", editorState.sampleRate);
 
 			Separator();
 

@@ -25,6 +25,8 @@ public:
 	void stopPlayback();
 	void togglePlayback();
 	bool isPlaying() { return playing; }
+	/// Returns PCM frame count for the main playback engine.
+	uint64_t getPlaybackFrames() { return playbackFrames; }
 
 	void newBookmark();
 	void updateBookmarkDebugMenu(bool& p_open);
