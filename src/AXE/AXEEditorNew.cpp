@@ -32,6 +32,7 @@
 #include "AXEJobSystem.hpp"
 #include "AXEGlobalSettingsWindow.hpp"
 #include "AXEPianoRoll.hpp"
+#include "AXEDrumEngine.hpp"
 
 // Forward declarations
 namespace Shadow::Util {
@@ -44,7 +45,7 @@ void unloadSong(Song* song, ma_engine* audioEngine);
 void updateCurveTest();
 void initCurveTest();
 void cacheWaveforms();
-void updateIconDebugWindow(bool* p_open);
+void updateIconDebugWindow(bool& p_open);
 void drawScrubberClockWidget(Song& song, EditorState& edState, uint64_t playbackFrames);
 }
 namespace Shadow::AXE::Account {
@@ -54,9 +55,12 @@ namespace bx {
 void debugBreak();
 }
 
-// [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to maximize ease of testing and compatibility with old VS compilers.
-// To link with VS2010-era libraries, VS2015+ requires linking with legacy_stdio_definitions.lib, which we do using this pragma.
-// Your own project should not be affected, as you are likely to link with a newer binary of GLFW that is adequate for your version of Visual Studio.
+// [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to
+// maximize ease of testing and compatibility with old VS compilers. To link
+// with VS2010-era libraries, VS2015+ requires linking with
+// legacy_stdio_definitions.lib, which we do using this pragma. Your own project
+// should not be affected, as you are likely to link with a newer binary of GLFW
+// that is adequate for your version of Visual Studio.
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
@@ -145,8 +149,8 @@ int startAXEEditor(std::string projectFile) {
 	const char* glsl_version = "#version 130";
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
 	ShadowWindow window(1280, 720, "Shadow Engine - AXE Editor", true, true);
@@ -157,8 +161,9 @@ int startAXEEditor(std::string projectFile) {
 	Keyboard keyboard(&window);
 
 	// These things should be init'd after the song loads. Bad things happen otherwise :(
+	AXEDrumEngine drumEngine;
 	AXENodeEditor nodeEditor(&songInfo, &editorState);
-	Timeline timeline(&songInfo, &editorState, &engine, &window, &nodeEditor);
+	Timeline timeline(&songInfo, &editorState, &engine, &window, &nodeEditor, &drumEngine);
 	ClipBrowser clipBrowser;
 	AXEEqualizer equalizer;
 	PianoRoll pianoRoll;
@@ -624,7 +629,8 @@ int startAXEEditor(std::string projectFile) {
 		clipBrowser.onUpdate(editorState.showClipBrowser);
 		equalizer.onUpdate(editorState.showEqualizer);
 		pianoRoll.onUpdate(editorState.showPianoRoll);
-		updateIconDebugWindow(&editorState.showIconDebugger);
+		updateIconDebugWindow(editorState.showIconDebugger);
+		drumEngine.onUpdate();
 		timeline.updateBookmarkDebugMenu(editorState.showBookmarksDebugger);
 		onUpdateGlobalSettingsWindow(editorState.showGlobalSettings);
 		ImGui::RenderNotifications();
@@ -664,7 +670,7 @@ int startAXEEditor(std::string projectFile) {
 	ma_engine_uninit(&engine);
 	unloadSong(&songInfo, &engine);
 
-	// window.shutdown();
+	window.shutdown();
 
 	return 0;
 }

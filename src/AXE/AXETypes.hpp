@@ -162,10 +162,14 @@ struct DrumMachineData {
 	std::vector<DrumTrack> drumTracks;
 };
 
+enum TimelineClipType_ {
+	TimelineClipType_Audio,
+	TimelineClipType_Drums,
+};
+
 struct Clip {
 	std::string name = "";
 	std::string baseAudioSource = "";
-	// std::vector<Automation> automations;
 
 	uint64_t position = 0;
 	// uint64_t length = 0;
@@ -175,6 +179,10 @@ struct Clip {
 	float volume = 100.0f;	// 0 - 100
 
 	bool muted = false;
+
+	TimelineClipType_ clipType = TimelineClipType_Audio;
+	// WILL BE nullptr if NOT TYPE DRUMS
+	std::shared_ptr<DrumMachineData> drumData = nullptr;
 
 	// Volatile data
 	ma_sound engineSound;

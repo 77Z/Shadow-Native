@@ -46,9 +46,7 @@ void Timeline::updateBookmarkDebugMenu(bool& p_open) {
 	TextUnformatted("Bookmarks in this song file:");
 
 	for (auto& g : songInfo->bookmarks) {
-		PushStyleColor(ImGuiCol_Button, (ImU32)g.color);
-		SmallButton(" ");
-		PopStyleColor();
+		ColorButton("BOOKMARK", g.color);
 		SameLine();
 		TextUnformatted((g.name + " @ " + std::to_string(g.position)).c_str());
 	}

@@ -48,6 +48,8 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 
 			clipObj["muted"] = clip->muted;
 
+			clipObj["clipType"] = clip->clipType;
+
 			trackObj["clips"].push_back(clipObj);
 		}
 
@@ -215,6 +217,8 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 				tempClip->volume = clip["volume"];
 
 				tempClip->muted = clip["muted"];
+
+				tempClip->clipType = clip["clipType"];
 				EC_PRINT(EC_THIS, "Decoded clip: %s at position %.3f", tempClip->name.c_str(), (float)tempClip->position);
 				tempTrack.clips.push_back(tempClip);
 			}

@@ -7,12 +7,12 @@ void iconDebugDrawingDrawAllIcons();
 
 namespace Shadow::AXE {
 
-void updateIconDebugWindow(bool* p_open) {
+void updateIconDebugWindow(bool& p_open) {
 	using namespace ImGui;
 
 	if (!p_open) return;
 
-	if (!Begin("Icon Debug Window", p_open)) {
+	if (!Begin("Icon Debug Window", &p_open)) {
 		End();
 		return;
 	}

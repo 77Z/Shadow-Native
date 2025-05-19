@@ -2,6 +2,7 @@
 #define SHADOW_NATIVE_AXE_AXE_TIMELINE
 
 #include "AXEClipBrowser.hpp"
+#include "AXEDrumEngine.hpp"
 #include "AXENodeEditor.hpp"
 #include "AXETypes.hpp"
 #include "ShadowWindow.hpp"
@@ -16,7 +17,14 @@ namespace Shadow::AXE {
 
 class Timeline {
 public:
-	Timeline(Song* songInfo, EditorState* editorState, ma_engine* audioEngine, ShadowWindow* window, AXENodeEditor* nodeEditor);
+	Timeline(
+		Song* songInfo,
+		EditorState* editorState,
+		ma_engine* audioEngine,
+		ShadowWindow* window,
+		AXENodeEditor* nodeEditor,
+		AXEDrumEngine* drumEngine
+	);
 	~Timeline();
 
 	void onUpdate();
@@ -37,6 +45,7 @@ private:
 	ma_engine* audioEngine;
 	ShadowWindow* window;
 	AXENodeEditor* nodeEditor;
+	AXEDrumEngine* drumEngine;
 
 	uint64_t playbackFrames = 0;
 	bool playing = false;

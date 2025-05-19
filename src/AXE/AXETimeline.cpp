@@ -1,4 +1,6 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
+
+#include "AXEDrumEngine.hpp"
 #include "AXEJobSystem.hpp"
 #include "AXENodeEditor.hpp"
 #include "ShadowWindow.hpp"
@@ -29,12 +31,13 @@ namespace Shadow::AXE {
 
 // static float oset = 0.0f;
 
-Timeline::Timeline(Song* songInfo, EditorState* editorState, ma_engine* audioEngine, ShadowWindow* window, AXENodeEditor* nodeEditor)
+Timeline::Timeline(Song* songInfo, EditorState* editorState, ma_engine* audioEngine, ShadowWindow* window, AXENodeEditor* nodeEditor, AXEDrumEngine* drumEngine)
 	: songInfo(songInfo)
 	, editorState(editorState)
 	, audioEngine(audioEngine)
 	, window(window)
 	, nodeEditor(nodeEditor)
+	, drumEngine(drumEngine)
 		{
 			EC_NEWCAT(EC_THIS);
 			EC_PRINT(EC_THIS, "Scale factor from editorstate %.2f", editorState->sf);
@@ -215,6 +218,18 @@ void Timeline::onUpdate() {
 }
 #endif
 
+static void newDrumCollection(Track* track, uint64_t position) {
+
+	auto clip = std::make_shared<Clip>();
+
+	clip->name = "Untitled Drum Collection";
+	clip->position = position;
+	clip->length = 400;
+	clip->clipType = TimelineClipType_Drums;
+
+	track->clips.emplace_back(clip);
+}
+
 static void loadClipDataFromAXEwf(std::shared_ptr<Clip> clip) {
 	// TODO: This is repeat code from WaveformGen.cpp
 	std::string globalLibraryPath = EngineConfiguration::getConfigDir() + "/AXEProjects/GlobalLibrary";
@@ -379,6 +394,12 @@ void Timeline::onUpdate() {
 				JobSystem::degradeEditorWithMessage("Test throw", "What in the heck is going on");
 			}
 
+			SameLine();
+			if (Button(SHADOW_ICON_DRUMS)) {
+				newDrumCollection(&track, playbackFrames);
+			}
+			SetItemTooltip("[Drum Engine] new drum collection at play head");
+
 			const ImVec2 cursorAtBottomOfTrackInfo = GetCursorScreenPos();
 
 			const float trackHeight = cursorAtBottomOfTrackInfo.y - cursorAtTopLeftOfTrackInfo.y;
@@ -456,6 +477,13 @@ void Timeline::onUpdate() {
 				for (auto& selectedClip : selectedClips) {
 					if (selectedClip == clip.get()) {
 						tableDrawList->AddRect(bounds.Min, bounds.Max, IM_COL32(255, 255, 255, 255), 3.0f, 0, 5.0f);
+					}
+				}
+
+				// Double click a clip to invoke action upon it
+				if (clipHovered && IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+					if (clip->clipType == TimelineClipType_Drums) {
+						drumEngine->openDrumEditor(clip.get());
 					}
 				}
 
