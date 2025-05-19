@@ -153,6 +153,15 @@ struct Automation {
 	bool smoothCurve = true;
 };
 
+struct DrumTrack {
+	std::vector<std::string> samplePath; // Relative to AXE Global library
+	std::vector<bool> beats;
+};
+
+struct DrumMachineData {
+	std::vector<DrumTrack> drumTracks;
+};
+
 struct Clip {
 	std::string name = "";
 	std::string baseAudioSource = "";

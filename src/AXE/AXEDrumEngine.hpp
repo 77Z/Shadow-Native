@@ -1,0 +1,10 @@
+#ifndef SHADOW_NATIVE_AXE_AXE_DRUM_ENGINE
+#define SHADOW_NATIVE_AXE_AXE_DRUM_ENGINE
+
+namespace Shadow::AXE {
+
+
+
+}
+
+#endif /* SHADOW_NATIVE_AXE_AXE_DRUM_ENGINE */
