@@ -47,7 +47,7 @@
 		// Location of the config directory where everything Shadow related is
 		// stored
 		["EDITOR_CONFIG_DIR_UNIX", "~/.config/Shadow"],
-		["EDITOR_CONFIG_DIR_WINDOWS", "%AppData%/ShadowEngine"],
+		["EDITOR_CONFIG_DIR_WINDOWS", "%AppData%\\ShadowEngine"],
 
 		// Return a missing texture on texture loading failure instead of
 		// erroring and probably crashing

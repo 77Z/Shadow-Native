@@ -77,21 +77,21 @@ void ClipBrowser::onUpdate(bool& p_open) {
 			TextUnformatted("Drag me onto the Timeline!");
 			Separator();
 			if (GetIO().KeyCtrl) {
-				Text("%s", clip.clipPath.c_str());
+				Text("%s", clip.clipPath.string().c_str());
 			} else {
 				TextUnformatted("Hold CTRL for full path");
 			}
 			EndTooltip();
 		}
 		if (BeginDragDropSource()) {
-			SetDragDropPayload("AXE_CLIP_PATH_PAYLOAD", clip.clipPath.c_str(), clip.clipPath.string().size());
-			Text("\xee\xb0\x9b %s", clip.clipPath.filename().c_str());
+			SetDragDropPayload("AXE_CLIP_PATH_PAYLOAD", clip.clipPath.string().c_str(), clip.clipPath.string().size());
+			Text("\xee\xb0\x9b %s", clip.clipPath.filename().string().c_str());
 			EndDragDropSource();
 		}
 		SameLine();
 		SetCursorPosX(GetWindowWidth() - 60);
 		if (SmallButton(SHADOW_ICON_PLAY)) {
-			aeResult = ma_engine_play_sound(&clipBrowserAudioEngine, clip.clipPath.c_str(), nullptr);
+			aeResult = ma_engine_play_sound(&clipBrowserAudioEngine, clip.clipPath.string().c_str(), nullptr);
 			if (aeResult != MA_SUCCESS) prettyPrintAudioEngineErr(aeResult);
 		}
 		

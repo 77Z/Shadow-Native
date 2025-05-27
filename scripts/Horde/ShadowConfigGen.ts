@@ -51,7 +51,7 @@ export async function generateShadowEngineConfig(conf: BuildFile) {
 				output += val ? "1" : "0";
 				break;
 			case "string":
-				output += `"${val}"`;
+				output += `"${val.replaceAll("\\", "\\\\")}"`;
 				break;
 			case "number":
 			case "bigint":
