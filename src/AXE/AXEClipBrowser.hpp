@@ -4,17 +4,18 @@
 #include <filesystem>
 #include <string>
 #include <vector>
+#include "AXETypes.hpp"
 #include "miniaudio.h"
 
 namespace Shadow::AXE {
 
+namespace fs = std::filesystem;
+
 struct ClipBrowserItemInfo {
-	std::string fullpath;
-	std::string relativePath;
-	std::string prettyName;
-
-	std::string prettyType;
-
+	// Path to clip when it is stored in the AXE global library
+	fs::path clipPath;
+	AudioFileTypes_ audioFileType;
+	
 	bool isDirectory;
 };
 
@@ -29,16 +30,17 @@ public:
 
 	/// Copies the file at specified `filepath` to the user's GlobalLibrary
 	/// directory and automatically reloads the `clips` vector
-	void addFileToLibrary(const std::string& filepath);
+	void addFileToLibrary(const std::filesystem::path filepath);
 
 	/// Same as `addFileToLibrary` but accepts vectors  of filepaths
 	// void addFilesToLibrary(const std::vector<std::string> filepaths);
 
 private:
-	std::string globalLibraryPath;
+	std::filesystem::path globalLibraryPath;
 	std::vector<ClipBrowserItemInfo> clips;
-	ma_engine* audioEngine;
-	// std::filesystem::path globalLibraryPath;
+	ma_result aeResult;
+	ma_engine_config clipBrowserAudioEngineConfig;
+	ma_engine clipBrowserAudioEngine;
 
 	void refreshFiles();
 };

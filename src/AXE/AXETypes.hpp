@@ -112,6 +112,19 @@ struct NodeGraph {
 	ma_node_graph compiledGraph;
 };
 
+enum AudioFileTypes_ {
+	AudioFileTypes_Unknown,
+	AudioFileTypes_wav,
+	AudioFileTypes_flac,
+	AudioFileTypes_mp3,
+	AudioFileTypes_ogg,
+
+	AudioFileTypes_Count
+};
+
+extern const char* audioFileTypes_FileExtensions[AudioFileTypes_Count];
+extern const char* audioFileTypes_PrettyNames[AudioFileTypes_Count];
+
 enum Keys_ {
 	Keys_C,
 	Keys_CSharpDFlat,
@@ -128,6 +141,8 @@ enum Keys_ {
 
 	Keys_Count
 };
+
+extern const char* keysPretty[Keys_Count];
 
 enum TimelineUnit_ {
 	TimelineUnit_BPM,

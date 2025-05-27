@@ -67,21 +67,6 @@ void debugBreak();
 
 namespace Shadow::AXE {
 
-const char* keysPretty[Keys_Count] = {
-	"C",
-	"C# / D♭",
-	"D",
-	"D# / E♭",
-	"E",
-	"F",
-	"F# / G♭",
-	"G",
-	"G# / A♭",
-	"A",
-	"A# / B♭",
-	"B"
-};
-
 static Song songInfo;
 
 // Not persistent

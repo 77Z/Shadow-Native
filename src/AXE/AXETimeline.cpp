@@ -754,7 +754,7 @@ void Timeline::onUpdate() {
 
 				PushClipRect(bounds.Min, bounds.Max, false);
 
-				{ // Start Rail
+				/* { // Start Rail
 					float startRailPos = (bounds.Min.x + (float)automation.startRail) * editorState->zoom / 100;
 					drawList->AddTriangleFilled(
 						ImVec2(startRailPos - 15, bounds.Min.y),
@@ -805,7 +805,7 @@ void Timeline::onUpdate() {
 						automation.endRail = std::max(0.0f, GetMousePos().x - GetWindowPos().x - 376.0f);
 						if (automation.endRail < automation.startRail + 20) automation.endRail = automation.startRail + 20;
 					}
-				}
+				} */
 
 				size_t pointit = 1;
 				for (auto& point : automation.points) {

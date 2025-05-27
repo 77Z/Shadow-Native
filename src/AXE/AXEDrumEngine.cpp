@@ -1,7 +1,9 @@
 #include "AXEDrumEngine.hpp"
 #include "AXETypes.hpp"
+#include "Debug/EditorConsole.hpp"
 #include "ShadowIcons.hpp"
 #include "imgui.h"
+#include "imgui_internal.h"
 #include <memory>
 #include <string>
 
@@ -47,9 +49,36 @@ void AXEDrumEngine::onUpdate() {
 			continue;
 		}
 
+		PushID(it);
+
+		auto winPos = GetWindowPos();
+		auto winSize = GetWindowSize();
+		auto fg = GetForegroundDrawList();
+		auto mouse = GetMousePos();
+
+		if (BeginDragDropTargetCustom(ImRect(winPos, winPos + winSize), GetID("DrumMachineDropTarget"))) {
+			fg->AddCircleFilled(GetMousePos(), 5.0f, IM_COL32(0, 255, 0, 255));
+			std::string text = "Add clip to drum machine " + clip->name;
+			fg->AddText(ImVec2(mouse.x, mouse.y - 40.0f), IM_COL32(0, 255, 0, 255), text.c_str());
+
+			if (const ImGuiPayload* payload = AcceptDragDropPayload("AXE_CLIP_PATH_PAYLOAD")) {
+				// ma_result res;
+				// ma_uint32 soundFlags = MA_SOUND_FLAG_NO_SPATIALIZATION;
+				// if (songInfo->decodeOnLoad) soundFlags |= MA_SOUND_FLAG_DECODE;
+
+				const char* clipPath = static_cast<const char*>(payload->Data);
+				// std::string clipPathString(clipPath, clipPath + payload->DataSize);
+				EC_PRINT("All", "dropped %s", clipPath);
+			}
+
+			EndDragDropTarget();
+		}
+
 		TextUnformatted("DRUM MACHINE!!");
 
 		if (Button("Done")) removeMeFromOpened();
+
+		PopID();
 
 		End();
 
