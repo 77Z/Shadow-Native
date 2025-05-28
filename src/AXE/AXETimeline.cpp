@@ -1060,7 +1060,10 @@ void Timeline::onUpdate() {
 
 				std::shared_ptr<Clip> clip = std::make_shared<Clip>();
 				clip->baseAudioSource = clipPathString;
-				clip->name = "Untitled Clip";
+
+				// TODO: rewrite the path stuff in this function
+				auto path = fs::path(clipPathString);
+				clip->name = path.stem().string();
 
 				// ma_uint64 len = 0;
 				// res = ma_sound_init_from_file(audioEngine, clipPath, soundFlags, nullptr, nullptr, &clip->engineSound);

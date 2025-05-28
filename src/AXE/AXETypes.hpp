@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <ctime>
+#include <filesystem>
 #include <string>
 #include <utility>
 #include <vector>
@@ -15,6 +16,7 @@
 namespace Shadow::AXE {
 
 namespace ed = ax::NodeEditor;
+namespace fs = std::filesystem;
 
 struct Node;
 
@@ -169,12 +171,13 @@ struct Automation {
 };
 
 struct DrumTrack {
-	std::vector<std::string> samplePath; // Relative to AXE Global library
+	fs::path samplePath;
 	std::vector<bool> beats;
 };
 
 struct DrumMachineData {
 	std::vector<DrumTrack> drumTracks;
+	uint32_t measures = 1;
 };
 
 enum TimelineClipType_ {
