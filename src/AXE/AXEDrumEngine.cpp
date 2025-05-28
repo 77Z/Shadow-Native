@@ -4,10 +4,16 @@
 #include "ShadowIcons.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
+
+// Forward Decls.
+namespace Shadow::AXE {
+bool DrumBeat(const char* label, bool* v);
+}
 
 namespace Shadow::AXE {
 
@@ -70,9 +76,16 @@ void AXEDrumEngine::onUpdate() {
 
 		if (BeginMenuBar()) {
 
-			InputScalarN("Measures", ImGuiDataType_U32, &clip->drumData->measures, 1);
+			SetNextItemWidth(30.0f);
+			uint32_t minMeasures = 1;
+			uint32_t maxMeasures = 127;
+			DragScalar("Measures", ImGuiDataType_U32, &clip->drumData->measures, 0.5f, &minMeasures, &maxMeasures);
 
-			Text("%zu", clip->drumData->drumTracks.at(0).beats.size());
+			if (!clip->drumData->drumTracks.empty()) {
+				Text("%zu", clip->drumData->drumTracks.at(0).beats.size());
+			} else {
+				TextUnformatted("No drum tracks");
+			}
 
 			if (MenuItem("Close")) removeMeFromOpened();
 
@@ -116,25 +129,43 @@ void AXEDrumEngine::onUpdate() {
 			// Drawing tracks
 			ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY | ImGuiTableFlags_BordersInner;
 			// if (BeginTable("drumModificationTable", clip->drumData->drumTracks.at(0).beats.size() + 1, tableFlags)) {
-			if (BeginTable("drumModificationTable", 90, tableFlags)) {
+
+			int numBeats = static_cast<int>(clip->drumData->measures * 4);
+			int cols = numBeats + 1;
+
+			if (BeginTable("drumModificationTable", cols, tableFlags)) {
 				TableSetupColumn("Sample");
 				TableSetupScrollFreeze(1, 0);
 
+				int trackIt = 0;
 				for (auto& track : drumTracks) {
+					PushID(trackIt);
 					TableNextRow();
 					TableSetColumnIndex(0);
 					TextUnformatted(track.samplePath.stem().string().c_str());
 
-					for (int i = 1; i < 90; i++) {
-						TableSetColumnIndex(i);
-						Text("%i", i);
+					// Ensure the beats vector is large enough before accessing
+					if (track.beats.size() < static_cast<size_t>(numBeats)) {
+						track.beats.resize(numBeats, false);
 					}
+					for (int i = 0; i < numBeats; i++) {
+						PushID(i);
+						TableSetColumnIndex(i + 1);
+						bool beatValue = track.beats[i];
+						if (DrumBeat("", &beatValue)) {
+							track.beats[i] = beatValue;
+						}
+						PopID();
+					}
+					PopID();
+					trackIt++;
 				}
 
 				EndTable();
 			}
 		}
 
+		#if 0
 		{ // Stupid amount of code for the "done" button
 			const char* doneButtonText = "Done";
 			auto tsize = CalcTextSize(doneButtonText);
@@ -144,6 +175,7 @@ void AXEDrumEngine::onUpdate() {
 			));
 			if (Button("Done")) removeMeFromOpened();
 		}
+		#endif
 
 		PopID();
 
