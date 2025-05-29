@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <exception>
 #include <fstream>
+#include <memory>
 #include <utility>
 #include "GoDownInFlames.hpp"
 
@@ -49,6 +50,23 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 			clipObj["muted"] = clip->muted;
 
 			clipObj["clipType"] = clip->clipType;
+
+			// TODO: this feels like the point where breaking out into
+			// subroutines might be beneficial to the readability of the code
+			if (clip->drumData != nullptr) {
+				for (auto& drumTrack : clip->drumData->drumTracks) {
+					json drumTrackObj;
+
+					drumTrackObj["samplePath"] = drumTrack.samplePath;
+					drumTrackObj["beats"] = json::array();
+					for (size_t i = 0; i < drumTrack.beats.size(); i++) {
+						drumTrackObj["beats"].push_back(static_cast<bool>(drumTrack.beats[i]));
+					}
+
+					clipObj["drumData"]["drumTracks"].push_back(drumTrackObj);
+				}
+				clipObj["drumData"]["measures"] = clip->drumData->measures;
+			}
 
 			trackObj["clips"].push_back(clipObj);
 		}
@@ -219,6 +237,27 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 				tempClip->muted = clip["muted"];
 
 				tempClip->clipType = clip["clipType"];
+				// TODO: this feels like the point where breaking out into
+				// subroutines might be beneficial to the readability of the code
+				if (clip["drumData"] != nullptr) {
+					tempClip->drumData = std::make_shared<DrumMachineData>();
+
+					for (auto& drumTrack : clip["drumData"]["drumTracks"]) {
+						DrumTrack tempDrumTrack;
+
+						tempDrumTrack.samplePath = (std::string)drumTrack["samplePath"];
+
+						for (auto& beat : drumTrack["beats"]) {
+							tempDrumTrack.beats.emplace_back((bool)beat);
+						}
+
+						tempClip->drumData->drumTracks.emplace_back(tempDrumTrack);
+					}
+
+					tempClip->drumData->measures = clip["drumData"]["measures"];
+				}
+
+
 				EC_PRINT(EC_THIS, "Decoded clip: %s at position %.3f", tempClip->name.c_str(), (float)tempClip->position);
 				tempTrack.clips.push_back(tempClip);
 			}

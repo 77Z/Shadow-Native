@@ -226,6 +226,7 @@ static void newDrumCollection(Track* track, uint64_t position) {
 	clip->position = position;
 	clip->length = 400;
 	clip->clipType = TimelineClipType_Drums;
+	clip->drumData = std::make_shared<DrumMachineData>();
 
 	track->clips.emplace_back(clip);
 }

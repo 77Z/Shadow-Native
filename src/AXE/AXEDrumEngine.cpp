@@ -70,8 +70,7 @@ void AXEDrumEngine::scheduleDrumPlayback(Clip* clip, uint64_t playbackTime) {
 		for (size_t i = 0; i < drumTrack.beats.size(); i++) {
 			if (drumTrack.beats[i] == false) continue;
 
-			EC_PRINT(EC_THIS, "Beat scheduled!");
-
+			// TODO: This totally leaks memory! Can this be a smart pointer?
 			ma_sound* beat = (ma_sound*)malloc(sizeof(ma_sound));
 
 			ma_result res;
@@ -89,7 +88,7 @@ void AXEDrumEngine::scheduleDrumPlayback(Clip* clip, uint64_t playbackTime) {
 			ma_sound_seek_to_pcm_frame(beat, 0);
 			ma_sound_set_start_time_in_pcm_frames(beat, (samplesPerBeat * i) + playbackTime);
 			res = ma_sound_start(beat);
-			// checkRes(res);
+			checkRes(res);
 		}
 	}
 }
