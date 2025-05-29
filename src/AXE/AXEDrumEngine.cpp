@@ -1,14 +1,18 @@
 #include "AXEDrumEngine.hpp"
 #include "AXETypes.hpp"
 #include "Debug/EditorConsole.hpp"
+#include "Debug/Logger.hpp"
 #include "ShadowIcons.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "ppk_assert_impl.hpp"
 #include <cstdint>
 #include <filesystem>
 #include <memory>
 #include <string>
 #include <vector>
+
+#define EC_THIS "Drum Engine"
 
 // Forward Decls.
 namespace Shadow::AXE {
@@ -17,14 +21,77 @@ bool DrumBeat(const char* label, bool* v);
 
 namespace Shadow::AXE {
 
-AXEDrumEngine::AXEDrumEngine() { }
+AXEDrumEngine::AXEDrumEngine(
+	Song* songInfo,
+	EditorState* editorState,
+	ma_engine* audioEngine
+)
+	: songInfo(songInfo)
+	, editorState(editorState)
+	, audioEngine(audioEngine)
+{
+	EC_NEWCAT(EC_THIS);
+}
 
 AXEDrumEngine::~AXEDrumEngine() { }
+
+static void checkRes(ma_result r) {
+	if (r == MA_SUCCESS) return;
+
+	EC_ERROUT(EC_THIS, "%s", ma_result_description(r));
+	ERROUT("audio engine err: %s", ma_result_description(r));
+}
 
 void AXEDrumEngine::openDrumEditor(Clip* clip) {
 	if (clip == nullptr) return;
 
 	openedDrumCollections.emplace_back(clip);
+}
+
+void AXEDrumEngine::scheduleDrumPlayback(Clip* clip, uint64_t playbackTime) {
+	if (clip == nullptr) {
+		EC_WARN(EC_THIS, "Tried to play clip that doesn't exist, skipping!");
+		return;
+	}
+
+	PPK_ASSERT(clip->clipType == TimelineClipType_Drums, "method user passed a non drum clip type?");
+
+	// Calculate distance inbetween each beat. We can do this once up here
+	// because it totally applies to every beat! Keep the logic in the nested 
+	// for loops minimal!
+	float secondsPerBeat = 60 /* sec */ / songInfo->bpm;
+	float samplesPerBeat = secondsPerBeat * editorState->sampleRate;
+	
+	for (auto& drumTrack : clip->drumData->drumTracks) {
+		fs::path samplePath = drumTrack.samplePath;
+
+		EC_PRINT(EC_THIS, "Scheduliung drum track: %s with sample %s", samplePath.stem().string().c_str(), samplePath.string().c_str());
+		
+		for (size_t i = 0; i < drumTrack.beats.size(); i++) {
+			if (drumTrack.beats[i] == false) continue;
+
+			EC_PRINT(EC_THIS, "Beat scheduled!");
+
+			ma_sound* beat = (ma_sound*)malloc(sizeof(ma_sound));
+
+			ma_result res;
+			
+			res = ma_sound_init_from_file(
+				audioEngine,
+				samplePath.string().c_str(),
+				MA_SOUND_FLAG_NO_SPATIALIZATION,
+				nullptr,
+				nullptr,
+				beat
+			);
+			checkRes(res);
+
+			ma_sound_seek_to_pcm_frame(beat, 0);
+			ma_sound_set_start_time_in_pcm_frames(beat, (samplesPerBeat * i) + playbackTime);
+			res = ma_sound_start(beat);
+			// checkRes(res);
+		}
+	}
 }
 
 void AXEDrumEngine::onUpdate() {

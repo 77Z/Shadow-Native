@@ -1195,11 +1195,18 @@ void Timeline::startPlayback() {
 			if (clip->position > playbackFrames) {
 				EC_PRINT(EC_THIS, "CLIP %s is in the future\nWill play at %lu", clip->name.c_str(), clip->position);
 
-				PPK_ASSERT(clip->loaded, "Sound data not loaded for this clip!");
-
-				ma_sound_seek_to_pcm_frame(&clip->engineSound, 0);
-				ma_sound_set_start_time_in_pcm_frames(&clip->engineSound, clip->position * 100);
-				ma_sound_start(&clip->engineSound);
+				if (clip->clipType == TimelineClipType_Audio) {
+					PPK_ASSERT(clip->loaded, "Sound data not loaded for this clip!");
+	
+					ma_sound_seek_to_pcm_frame(&clip->engineSound, 0);
+					ma_sound_set_start_time_in_pcm_frames(&clip->engineSound, clip->position * 100);
+					ma_sound_start(&clip->engineSound);
+				} else if (clip->clipType == TimelineClipType_Drums) {
+					// Clip doesn't have to be loaded as it doesn't necessarily
+					// have a sound associated with it. It's more like a collection!
+					EC_PRINT(EC_THIS, "Playing drum collection in the future!");
+					drumEngine->scheduleDrumPlayback(clip.get(), clip->position * 100);
+				}
 			} else {
 				EC_PRINT(EC_THIS, "CLIP %s is on the line", clip->name.c_str());
 			}
