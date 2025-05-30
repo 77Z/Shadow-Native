@@ -1,81 +1,91 @@
 #include "AXEPianoRoll.hpp"
+#include "Debug/EditorConsole.hpp"
 #include "imgui.h"
 #include "ShadowIcons.hpp"
+#include <string>
+
+#define EC_THIS "Piano Roll"
 
 namespace Shadow::AXE {
 
-PianoRoll::PianoRoll() { }
+PianoRoll::PianoRoll(
+	Song* songInfo,
+	EditorState* editorState,
+	ma_engine* audioEngine
+)
+	: songInfo(songInfo)
+	, editorState(editorState)
+	, audioEngine(audioEngine)
+{
+	EC_NEWCAT(EC_THIS);
+}
 
 PianoRoll::~PianoRoll() { }
 
-static bool hasBlack(int key) {
-	// I know so little about music holy cannoli
-	return (!((key - 1) % 7 == 0 || (key - 1) % 7 == 3) && key != 51);
+void PianoRoll::openPianoRoll(Clip* clip) {
+	if (clip == nullptr) return;
+
+	openedPianoRolls.emplace_back(clip);
 }
 
-static int key_states[256] = {0};
-
-void PianoRoll::onUpdate(bool& p_open) {
+void PianoRoll::onUpdate() {
 	using namespace ImGui;
 
-	if (!p_open) return;
+	// Don't waste time doing anything else if there are no piano rolls to edit
+	if (openedPianoRolls.empty()) return;
 
-	if (!Begin("Piano Roll", &p_open)) {
+
+	int it = 0;
+	for (auto clip : openedPianoRolls) {
+
+		auto removeMeFromOpened = [this, it]() {
+			openedPianoRolls.erase(openedPianoRolls.begin() + it);
+		};
+
+		if (clip == nullptr) removeMeFromOpened();
+		if (clip->clipType != TimelineClipType_PianoRoll) removeMeFromOpened();
+
+		// initialize piano roll data if it doesn't exist already
+		if (clip->pianoRollData == nullptr) clip->pianoRollData = std::make_shared<PianoRollData>();
+
+
+		std::string windowTitle = SHADOW_ICON_PIANO " Piano Roll " SHADOW_ICON_ARROW_RIGHT + clip->name + "##" + std::to_string(it);
+
+		PushStyleColor(ImGuiCol_Border, IM_COL32(255, 0, 0, 255));
+		PushStyleVar(ImGuiStyleVar_WindowBorderSize, 3.0f);
+		if (!Begin(windowTitle.c_str(), nullptr, ImGuiWindowFlags_MenuBar)) {
+			PopStyleVar();
+			PopStyleColor();
+			End();
+			it++;
+			continue;
+		}
+		PopStyleVar();
+		PopStyleColor();
+
+		PushID(it);
+
+		if (BeginMenuBar()) {
+			if (MenuItem("Close")) removeMeFromOpened();
+			EndMenuBar();
+		}
+
+		// Center text in the window
+		auto winPos = GetWindowPos();
+		auto winSize = GetWindowSize();
+		auto dl = GetWindowDrawList();
+		dl->AddText(
+			ImVec2(winPos.x + winSize.x * 0.5f, winPos.y + winSize.y * 0.5f),
+			IM_COL32(255, 255, 255, 255),
+			"Drop an audio file here to use as sample for the piano roll"
+		);
+
+		PopID();
+	
 		End();
-		return;
+
+		it++;
 	}
-
-	TextUnformatted(SHADOW_ICON_FILE " Working on: ");
-
-	ImU32 Black = IM_COL32(0, 0, 0, 255);
-	ImU32 White = IM_COL32(255, 255, 255, 255);
-	ImU32 Red = IM_COL32(255,0,0,255);
-
-	ImDrawList *draw_list = GetWindowDrawList();
-	ImVec2 p = GetCursorScreenPos();
-	int width = 20;
-	int cur_key = 21;
-	for (int key = 0; key < 52; key++) {
-		ImU32 col = White;
-		if (key_states[cur_key]) {
-			col = Red;
-		}
-		draw_list->AddRectFilled(
-				ImVec2(p.x + key * width, p.y),
-				ImVec2(p.x + key * width + width, p.y + 120),
-				col, 0, ImDrawFlags_RoundCornersAll);
-		draw_list->AddRect(
-				ImVec2(p.x + key * width, p.y),
-				ImVec2(p.x + key * width + width, p.y + 120),
-				Black, 0, ImDrawFlags_RoundCornersAll);
-		cur_key++;
-		if (hasBlack(key)) {
-			cur_key++;
-		}
-	}
-	cur_key = 22;
-	for (int key = 0; key < 52; key++) {
-		if (hasBlack(key)) {
-			ImU32 col = Black;
-			if (key_states[cur_key]) {
-				col = Red;
-			}
-			draw_list->AddRectFilled(
-					ImVec2(p.x + key * width + width * 3 / 4, p.y),
-					ImVec2(p.x + key * width + width * 5 / 4 + 1, p.y + 80),
-					col, 0, ImDrawFlags_RoundCornersAll);
-			draw_list->AddRect(
-					ImVec2(p.x + key * width + width * 3 / 4, p.y),
-					ImVec2(p.x + key * width + width * 5 / 4 + 1, p.y + 80),
-					Black, 0, ImDrawFlags_RoundCornersAll);
-
-			cur_key += 2;
-		} else {
-			cur_key++;
-		}
-	}
-
-	End();
 
 }
 

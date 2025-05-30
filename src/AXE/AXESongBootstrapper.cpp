@@ -30,6 +30,13 @@ void bootstrapSong(Song* song, ma_engine* audioEngine) {
 
 	for (auto& track : song->tracks) {
 		for (auto& clip : track.clips) {
+
+			if (clip->clipType == TimelineClipType_PianoRoll || clip->clipType == TimelineClipType_Drums) {
+				// No sound to load, just continue
+				clip->loaded = true;
+				continue;
+			}
+
 			result = ma_sound_init_from_file(audioEngine, clip->baseAudioSource.c_str(), soundFlags, nullptr, nullptr, &clip->engineSound);
 			clip->loaded = true;
 			if (result != MA_SUCCESS) {

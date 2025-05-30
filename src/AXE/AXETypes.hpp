@@ -180,9 +180,14 @@ struct DrumMachineData {
 	uint32_t measures = 1;
 };
 
+struct PianoRollData {};
+
 enum TimelineClipType_ {
 	TimelineClipType_Audio,
 	TimelineClipType_Drums,
+	TimelineClipType_PianoRoll,
+
+	TimelineClipType_COUNT
 };
 
 struct Clip {
@@ -201,6 +206,8 @@ struct Clip {
 	TimelineClipType_ clipType = TimelineClipType_Audio;
 	// WILL BE nullptr if NOT TYPE DRUMS
 	std::shared_ptr<DrumMachineData> drumData = nullptr;
+	// WILL BE nullptr if NOT TYPE PIANO ROLL
+	std::shared_ptr<PianoRollData> pianoRollData = nullptr;
 
 	// Volatile data
 	ma_sound engineSound;

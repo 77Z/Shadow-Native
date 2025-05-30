@@ -4,6 +4,7 @@
 #include "AXEClipBrowser.hpp"
 #include "AXEDrumEngine.hpp"
 #include "AXENodeEditor.hpp"
+#include "AXEPianoRoll.hpp"
 #include "AXETypes.hpp"
 #include "ShadowWindow.hpp"
 #include "imgui.h"
@@ -23,7 +24,8 @@ public:
 		ma_engine* audioEngine,
 		ShadowWindow* window,
 		AXENodeEditor* nodeEditor,
-		AXEDrumEngine* drumEngine
+		AXEDrumEngine* drumEngine,
+		PianoRoll* pianoRoll
 	);
 	~Timeline();
 
@@ -46,6 +48,7 @@ private:
 	ShadowWindow* window;
 	AXENodeEditor* nodeEditor;
 	AXEDrumEngine* drumEngine;
+	PianoRoll* pianoRoll;
 
 	uint64_t playbackFrames = 0;
 	bool playing = false;

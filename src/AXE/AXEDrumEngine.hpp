@@ -3,6 +3,7 @@
 
 #include "AXETypes.hpp"
 #include <vector>
+
 namespace Shadow::AXE {
 
 class AXEDrumEngine {
@@ -28,7 +29,6 @@ private:
 	// Each opened drum collection in this vector will have its own window for
 	// the user to edit the beat.
 	std::vector<Clip*> openedDrumCollections;
-
 };
 
 }

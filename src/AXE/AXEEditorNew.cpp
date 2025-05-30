@@ -147,11 +147,11 @@ int startAXEEditor(std::string projectFile) {
 
 	// These things should be init'd after the song loads. Bad things happen otherwise :(
 	AXEDrumEngine drumEngine(&songInfo, &editorState, &engine);
+	PianoRoll pianoRoll(&songInfo, &editorState, &engine);
 	AXENodeEditor nodeEditor(&songInfo, &editorState);
-	Timeline timeline(&songInfo, &editorState, &engine, &window, &nodeEditor, &drumEngine);
+	Timeline timeline(&songInfo, &editorState, &engine, &window, &nodeEditor, &drumEngine, &pianoRoll);
 	ClipBrowser clipBrowser;
 	AXEEqualizer equalizer;
-	PianoRoll pianoRoll;
 
 	// Keyboard Shortcuts
 	keyboard.registerKeyCallback([&](KeyButton_ key, bool down, KeyModifiers_ mods) {
@@ -613,7 +613,7 @@ int startAXEEditor(std::string projectFile) {
 		nodeEditor.updateDebugMenu(editorState.showNodeEditorDebugger);
 		clipBrowser.onUpdate(editorState.showClipBrowser);
 		equalizer.onUpdate(editorState.showEqualizer);
-		pianoRoll.onUpdate(editorState.showPianoRoll);
+		pianoRoll.onUpdate();
 		updateIconDebugWindow(editorState.showIconDebugger);
 		drumEngine.onUpdate();
 		timeline.updateBookmarkDebugMenu(editorState.showBookmarksDebugger);
