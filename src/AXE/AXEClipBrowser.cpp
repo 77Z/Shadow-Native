@@ -84,7 +84,7 @@ void ClipBrowser::onUpdate(bool& p_open) {
 			EndTooltip();
 		}
 		if (BeginDragDropSource()) {
-			SetDragDropPayload("AXE_CLIP_PATH_PAYLOAD", clip.clipPath.string().c_str(), clip.clipPath.string().size());
+			SetDragDropPayload("AXE_CLIP_PATH_PAYLOAD", clip.clipPath.string().c_str(), clip.clipPath.string().size() + 1); // +1 for NULL!!!
 			Text( SHADOW_ICON_MUSIC " %s", clip.clipPath.filename().string().c_str());
 			EndDragDropSource();
 		}

@@ -59,8 +59,11 @@ void AXEDrumEngine::scheduleDrumPlayback(Clip* clip, uint64_t playbackTime) {
 	// Calculate distance inbetween each beat. We can do this once up here
 	// because it totally applies to every beat! Keep the logic in the nested 
 	// for loops minimal!
-	float secondsPerBeat = 60 /* sec */ / songInfo->bpm;
-	float samplesPerBeat = secondsPerBeat * editorState->sampleRate;
+	float secondsPerQuarterNote = 60.0f / songInfo->bpm;
+	// Assuming the drum grid uses 16th note steps, so 4 steps per quarter note.
+	float numStepsPerQuarterNote = 4.0f; 
+	float secondsPerStep = secondsPerQuarterNote / numStepsPerQuarterNote;
+	float samplesPerStep = secondsPerStep * editorState->sampleRate;
 	
 	for (auto& drumTrack : clip->drumData->drumTracks) {
 		fs::path samplePath = drumTrack.samplePath;
@@ -86,7 +89,9 @@ void AXEDrumEngine::scheduleDrumPlayback(Clip* clip, uint64_t playbackTime) {
 			checkRes(res);
 
 			ma_sound_seek_to_pcm_frame(beat, 0);
-			ma_sound_set_start_time_in_pcm_frames(beat, (samplesPerBeat * i) + playbackTime);
+			// Ensure the frame time calculation results in uint64_t
+			uint64_t scheduledFrame = (uint64_t)(samplesPerStep * i) + playbackTime;
+			ma_sound_set_start_time_in_pcm_frames(beat, scheduledFrame);
 			res = ma_sound_start(beat);
 			checkRes(res);
 		}
@@ -145,7 +150,22 @@ void AXEDrumEngine::onUpdate() {
 			SetNextItemWidth(30.0f);
 			uint32_t minMeasures = 1;
 			uint32_t maxMeasures = 127;
-			DragScalar("Measures", ImGuiDataType_U32, &clip->drumData->measures, 0.5f, &minMeasures, &maxMeasures);
+			if (DragScalar("Measures", ImGuiDataType_U32, &clip->drumData->measures, 0.5f, &minMeasures, &maxMeasures)) {
+				// Recalculate clip length if measures changed
+				if (songInfo->bpm > 0.0f && editorState->sampleRate > 0) {
+					float secondsPerQuarterNote = 60.0f / songInfo->bpm;
+					float totalSeconds = (float)clip->drumData->measures * secondsPerQuarterNote;
+					clip->length = ( (uint64_t)(totalSeconds * editorState->sampleRate) ) / 100;
+				} else {
+					clip->length = 0; // Or handle as an error, BPM or sample rate is invalid
+					if (songInfo->bpm <= 0.0f) {
+						EC_WARN(EC_THIS, "BPM is zero or negative. Clip length calculation might be incorrect.");
+					}
+					if (editorState->sampleRate <= 0) {
+						EC_WARN(EC_THIS, "Sample rate is zero or negative. Clip length calculation might be incorrect.");
+					}
+				}
+			}
 
 			if (!clip->drumData->drumTracks.empty()) {
 				Text("%zu", clip->drumData->drumTracks.at(0).beats.size());

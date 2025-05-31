@@ -569,7 +569,7 @@ void Timeline::onUpdate() {
 
 				if (editorState->timelinePositionDebugMode) {
 					tableDrawList->AddRectFilled(bounds.Min, ImVec2(bounds.Max.x - 100, bounds.Max.y), IM_COL32(0, 0, 0, 140));
-					tableDrawList->AddText(bounds.Min, IM_COL32(255, 255, 255, 255), std::string("I am \"" + clip->name + "\"\nat data pos: " + std::to_string(clip->position) + "\nmy").c_str());
+					tableDrawList->AddText(bounds.Min, IM_COL32(255, 255, 255, 255), std::string("I am \"" + clip->name + "\"\nat data pos: " + std::to_string(clip->position) + "\ndata len: " + std::to_string(clip->length)).c_str());
 				}
 
 				// -----------------------------------------------------------//
