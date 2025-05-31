@@ -70,15 +70,27 @@ void PianoRoll::onUpdate() {
 			EndMenuBar();
 		}
 
-		// Center text in the window
-		auto winPos = GetWindowPos();
-		auto winSize = GetWindowSize();
-		auto dl = GetWindowDrawList();
-		dl->AddText(
-			ImVec2(winPos.x + winSize.x * 0.5f, winPos.y + winSize.y * 0.5f),
-			IM_COL32(255, 255, 255, 255),
-			"Drop an audio file here to use as sample for the piano roll"
-		);
+		if (clip->baseAudioSource.empty()) {
+			// Center text in the window
+			auto winSize = GetWindowSize();
+			const char txt[] = "Drop an audio file here to use as sample for the piano roll";
+			auto txtSize = CalcTextSize(txt);
+			SetCursorPos(ImVec2((winSize.x - txtSize.x) / 2.0f, (winSize.y - txtSize.y) / 2.0f));
+			TextUnformatted(txt);
+		} else {
+			// Sample loaded, show piano roll UI
+
+			auto drawOctave = []() {
+
+			};
+
+			ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Borders;
+
+			if (BeginTable("PianoRollTable", 2, tableFlags)) {
+
+				EndTable();
+			}
+		}
 
 		PopID();
 	

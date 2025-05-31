@@ -85,7 +85,7 @@ void ClipBrowser::onUpdate(bool& p_open) {
 		}
 		if (BeginDragDropSource()) {
 			SetDragDropPayload("AXE_CLIP_PATH_PAYLOAD", clip.clipPath.string().c_str(), clip.clipPath.string().size());
-			Text("\xee\xb0\x9b %s", clip.clipPath.filename().string().c_str());
+			Text( SHADOW_ICON_MUSIC " %s", clip.clipPath.filename().string().c_str());
 			EndDragDropSource();
 		}
 		SameLine();

@@ -180,7 +180,10 @@ struct DrumMachineData {
 	uint32_t measures = 1;
 };
 
-struct PianoRollData {};
+struct PianoRollData {
+	// The piano roll uses baseAudioSource for its sample. So no sources is
+	// stored in this struct unlike the DrumMachineData.
+};
 
 enum TimelineClipType_ {
 	TimelineClipType_Audio,
