@@ -41,6 +41,9 @@ public:
 	void newBookmark();
 	void updateBookmarkDebugMenu(bool& p_open);
 
+	bool singleSlicingClip = false;
+	bool multiSlicingClip = false;
+
 private:
 	Song* songInfo;
 	EditorState* editorState;

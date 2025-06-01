@@ -5,7 +5,6 @@
 #include "AXENodeEditor.hpp"
 #include "ShadowWindow.hpp"
 #include "Configuration/EngineConfiguration.hpp"
-#include "Debug/Logger.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -24,6 +23,7 @@
 #include "ImGuiNotify.hpp"
 #include "json_impl.hpp"
 #include "imgui/imgui_api_patches.hpp"
+#include "AXEAudioHelpers.hpp"
 
 #define EC_THIS "Timeline"
 
@@ -287,6 +287,10 @@ static void drawBlinkingSquareAtCursor() {
 void Timeline::onUpdate() {
 	using namespace ImGui;
 
+	if (singleSlicingClip) {
+		window->setSECursor(ShadowEngineCursors_ClipSlicing);
+	}
+
 	float sf = editorState->sf;
 
 	playbackFrames = ma_engine_get_time_in_pcm_frames(audioEngine) / 100;
@@ -528,6 +532,17 @@ void Timeline::onUpdate() {
 
 					// GetForegroundDrawList()->AddRectFilled(leftCropGrabber.Min, leftCropGrabber.Max, IM_COL32(0, 0, 255, 255));
 					// GetForegroundDrawList()->AddRectFilled(rightCropGrabber.Min, rightCropGrabber.Max, IM_COL32(0, 0, 255, 255));
+				}
+
+				{ // Clip slicing
+					if (clipHovered && singleSlicingClip) {
+						auto fg = GetForegroundDrawList();
+						auto mousePos = GetMousePos();
+
+						fg->AddText(ImVec2(mousePos.x + 20, bounds.Min.y + 40), IM_COL32(255, 255, 255, 255), "Click to slice...");
+						fg->AddLine(ImVec2(mousePos.x, bounds.Min.y), ImVec2(mousePos.x, bounds.Max.y), IM_COL32(255, 255, 255, 255), 3.0f);
+
+					}
 				}
 
 
@@ -1103,10 +1118,13 @@ void Timeline::onUpdate() {
 
 				ma_decoder decoder;
 				res = ma_sound_init_from_file(audioEngine, clipPath, soundFlags, nullptr, nullptr, &clip->engineSound);
+				checkResult(res);
 				res = ma_decoder_init_file(clipPath, nullptr, &decoder);
+				checkResult(res);
 
 				ma_uint64 len;
 				res = ma_decoder_get_length_in_pcm_frames(&decoder, &len);
+				checkResult(res);
 				len = len / 100;
 
 				clip->loaded = true;

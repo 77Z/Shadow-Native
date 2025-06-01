@@ -165,6 +165,11 @@ void ShadowWindow::loadCursors() {
 
 	cursorMap[ShadowEngineCursors_CropClipLeft] = loadInvdividualCursor("./Resources/icons/Cursors/CropClipLeft.png", 16, 11);
 	cursorMap[ShadowEngineCursors_CropClipRight] = loadInvdividualCursor("./Resources/icons/Cursors/CropClipRight.png", 0, 0);
+	cursorMap[ShadowEngineCursors_ClipSlicing] = loadInvdividualCursor("./Resources/icons/Cursors/ClipSlicing.png", 12, 12);
+
+	if (cursorMap.size() != ShadowEngineCursors_COUNT) {
+		ERROUT("Failed to load all cursors, some will not be rendered properly!");
+	}
 
 }
 

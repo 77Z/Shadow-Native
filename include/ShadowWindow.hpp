@@ -12,6 +12,7 @@ namespace Shadow {
 enum ShadowEngineCursors_ {
 	ShadowEngineCursors_CropClipLeft,
 	ShadowEngineCursors_CropClipRight,
+	ShadowEngineCursors_ClipSlicing,
 
 	ShadowEngineCursors_COUNT
 };
