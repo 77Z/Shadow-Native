@@ -28,6 +28,7 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 	output["timeSignature"] = song->timeSignature;
 	output["masterVolume"] = song->masterVolume;
 	output["lastKnownGraphId"] = song->lastKnownGraphId;
+	output["songLength"] = song->songLength;
 
 	output["tracks"] = json::array();
 	for (auto& track : song->tracks) {
@@ -218,6 +219,7 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 		song->timeSignature[1] = decodedSong["timeSignature"][1];
 		song->masterVolume = decodedSong["masterVolume"];
 		song->lastKnownGraphId = decodedSong["lastKnownGraphId"];
+		song->songLength = decodedSong["songLength"];
 
 		for (auto& track : decodedSong["tracks"]) {
 			Track tempTrack;

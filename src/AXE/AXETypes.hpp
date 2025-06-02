@@ -254,6 +254,8 @@ struct Song {
 
 	uint64_t lastKnownGraphId = 10000;
 
+	uint64_t songLength = 10000; // in PCM frames
+
 	std::vector<Track> tracks;
 	std::vector<NodeGraph> nodeGraphs;
 	std::vector<Bookmark> bookmarks;

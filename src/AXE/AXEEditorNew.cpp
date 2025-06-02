@@ -404,6 +404,7 @@ int startAXEEditor(std::string projectFile) {
 			// InputInt2("Time Signature", songInfo.timeSignature);
 			// SameLine();
 
+			#if 0
 			const char* keyName = (songInfo.key >= 0 && songInfo.key < Keys_Count) ? keysPretty[songInfo.key] : "? Unknown ?";
 			// SliderInt("Key", &songInfo.key, 0, Keys_Count - 1, keyName);
 			if (BeginCombo("Key", keyName)) {
@@ -416,6 +417,9 @@ int startAXEEditor(std::string projectFile) {
 				}
 				EndCombo();
 			}
+			#endif
+
+			DragScalar("Song Len", ImGuiDataType_U64, &songInfo.songLength);
 
 			SameLine();
 			if (SliderFloat("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f)) {

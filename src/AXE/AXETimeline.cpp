@@ -454,10 +454,11 @@ void Timeline::onUpdate() {
 			);
 			PopClipRect();
 
-			// if (editorState->timelinePositionDebugMode) {
-			// 	SetTooltip("timline screen x: %.3f", GetMousePos().x - screenPosOrigin.x);
-			// 	SetTooltip("pcm frame pos: %.3f", float(GetMousePos().x - screenPosOrigin.x / (editorState->zoom * 100)));
-			// }
+			// TODO: This placement is all messed up :(
+			{ // Line indicating the length of the song.
+				float endLinePos = float(songInfo->songLength) * (editorState->zoom / 100.0f);
+				tableDrawList->AddLine(ImVec2(endLinePos, canvasPos.y), ImVec2(endLinePos, canvasPos.y + canvasSize.y), IM_COL32(0, 255, 255, 255));
+			}
 
 			int clipIt = 0;
 			// float left = GetCursorPosX();
@@ -521,14 +522,25 @@ void Timeline::onUpdate() {
 				}
 
 				{ // Clip cropping
+					auto fg = GetForegroundDrawList();
+
 					ImRect leftCropGrabber = ImRect(bounds.Min, ImVec2(bounds.Min.x + 10, bounds.Max.y));
 					ImRect rightCropGrabber = ImRect(ImVec2(bounds.Max.x - 10, bounds.Min.y), bounds.Max);
 
 					bool leftCropHovered = ItemHoverable(leftCropGrabber, GetID(/* clipIt + 1 */34543), 0);
 					bool rightCropHovered = ItemHoverable(rightCropGrabber, GetID(clipIt + 2), 0);
 
-					if (leftCropHovered) window->setSECursor(ShadowEngineCursors_CropClipLeft);
-					if (rightCropHovered) window->setSECursor(ShadowEngineCursors_CropClipRight);
+					// if (leftCropHovered) window->setSECursor(ShadowEngineCursors_CropClipLeft);
+					// if (rightCropHovered) window->setSECursor(ShadowEngineCursors_CropClipRight);
+
+					if (leftCropHovered) {
+						window->setSECursor(ShadowEngineCursors_CropClipLeft);
+						fg->AddRectFilled(leftCropGrabber.Min, leftCropGrabber.Max, IM_COL32(255, 0, 0, 255));
+					}
+
+					if (rightCropHovered) {
+						fg->AddRectFilled(rightCropGrabber.Min, rightCropGrabber.Max, IM_COL32(255, 0, 0, 255));
+					}
 
 					// GetForegroundDrawList()->AddRectFilled(leftCropGrabber.Min, leftCropGrabber.Max, IM_COL32(0, 0, 255, 255));
 					// GetForegroundDrawList()->AddRectFilled(rightCropGrabber.Min, rightCropGrabber.Max, IM_COL32(0, 0, 255, 255));
@@ -771,7 +783,7 @@ void Timeline::onUpdate() {
 				clipIt++;
 			}
 			#endif
-			SetCursorPosX(10000.0f);
+			SetCursorPosX((float)songInfo->songLength);
 			InvisibleButton("##SameLineStopper", ImVec2(1,1));
 
 			PopStyleColor();
