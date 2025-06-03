@@ -61,10 +61,10 @@ void AXEDrumEngine::scheduleDrumPlayback(Clip* clip, uint64_t playbackTime) {
 	// for loops minimal!
 	float secondsPerQuarterNote = 60.0f / songInfo->bpm;
 	// Assuming the drum grid uses 16th note steps, so 4 steps per quarter note.
-	float numStepsPerQuarterNote = 4.0f; 
+	float numStepsPerQuarterNote = 4.0f;
 	float secondsPerStep = secondsPerQuarterNote / numStepsPerQuarterNote;
 	float samplesPerStep = secondsPerStep * editorState->sampleRate;
-	
+
 	for (auto& drumTrack : clip->drumData->drumTracks) {
 		fs::path samplePath = drumTrack.samplePath;
 
@@ -82,7 +82,7 @@ void AXEDrumEngine::scheduleDrumPlayback(Clip* clip, uint64_t playbackTime) {
 				audioEngine,
 				samplePath.string().c_str(),
 				MA_SOUND_FLAG_NO_SPATIALIZATION,
-				nullptr,
+				&clip->drumData->drumSoundGroup,
 				nullptr,
 				beat
 			);

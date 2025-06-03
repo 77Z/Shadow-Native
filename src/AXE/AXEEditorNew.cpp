@@ -435,11 +435,7 @@ int startAXEEditor(std::string projectFile) {
 			SetItemTooltip(SHADOW_ICON_ZOOM_IN " Reset zoom");
 
 			SameLine();
-			if (Button(SHADOW_ICON_DIFF_ADDED)) {
-				Track newTrack;
-				newTrack.name = "Untitled Track";
-				songInfo.tracks.push_back(newTrack);
-			}
+			if (Button(SHADOW_ICON_DIFF_ADDED)) timeline.addTrack();
 			SetItemTooltip("New Track");
 
 			SameLine();

@@ -93,19 +93,24 @@ bool ImGui::ToggleButton(const char* label, bool* v) {
 
 	ImGuiStyle style = GetStyle();
 
+	bool ret = false;
+
 	if (*v) {
-		// PushStyleColor(ImGuiCol_Button, style.Colors[ImGuiCol_ButtonActive]);
-		// PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonActive]);
 
-		if (Button(label)) *v = !*v;
+		if (Button(label)) {
+			*v = !*v;
+			ret = true;
+		}
 
-		// PopStyleColor(2);
 	} else {
 		PushStyleColor(ImGuiCol_ButtonHovered, style.Colors[ImGuiCol_ButtonActive]);
 		PushStyleColor(ImGuiCol_Button, style.Colors[ImGuiCol_ButtonActive]);
-		if (Button(label)) *v = !*v;
+		if (Button(label)) {
+			*v = !*v;
+			ret = true;
+		}
 		PopStyleColor(2);
 	}
 
-	return true;
+	return ret;
 }

@@ -178,11 +178,17 @@ struct DrumTrack {
 struct DrumMachineData {
 	std::vector<DrumTrack> drumTracks;
 	uint32_t measures = 1;
+
+	// Volatile data
+	ma_sound_group drumSoundGroup;
 };
 
 struct PianoRollData {
 	// The piano roll uses baseAudioSource for its sample. So no sources is
 	// stored in this struct unlike the DrumMachineData.
+
+	// Volatile data
+	ma_sound_group pianoSoundGroup;
 };
 
 enum TimelineClipType_ {
@@ -230,10 +236,15 @@ struct Track {
 
 	bool muted = false;
 
+	// When false, the balance slider is just regular balance. When true, it's a
+	// true panning effect: The sound from one side will "move" to the other
+	// side and blend with it.
+	bool realPanning = false;
+
 	ImColor color;
 
 	// Volatile data
-	ma_sound_group* soundGroup;
+	ma_sound_group soundGroup;
 };
 
 struct Song {

@@ -69,6 +69,12 @@ bool serializeSong(const Song* song, const std::string& filepath) {
 				clipObj["drumData"]["measures"] = clip->drumData->measures;
 			}
 
+			if (clip->pianoRollData != nullptr) {
+				// placeholder to let the deserializer know that there is piano
+				// data
+				clipObj["pianoData"] = 1;
+			}
+
 			trackObj["clips"].push_back(clipObj);
 		}
 
@@ -257,6 +263,12 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 					}
 
 					tempClip->drumData->measures = clip["drumData"]["measures"];
+				}
+
+				if (clip["pianoData"] != nullptr) {
+					tempClip->pianoRollData = std::make_shared<PianoRollData>();
+
+
 				}
 
 

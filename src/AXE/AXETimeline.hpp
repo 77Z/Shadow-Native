@@ -41,6 +41,8 @@ public:
 	void newBookmark();
 	void updateBookmarkDebugMenu(bool& p_open);
 
+	void addTrack(const std::string& name = "Untitled Track");
+
 	bool singleSlicingClip = false;
 	bool multiSlicingClip = false;
 
@@ -95,6 +97,9 @@ private:
 	// void stopClipDragging();
 
 	void onUpdateBookmarks(ImDrawList* drawDest);
+
+	void newDrumCollection(Track* track, uint64_t position);
+	void newPianoRoll(Track* track, uint64_t position);
 };
 
 }

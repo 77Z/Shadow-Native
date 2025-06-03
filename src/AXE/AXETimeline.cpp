@@ -225,32 +225,6 @@ void Timeline::onUpdate() {
 }
 #endif
 
-static void newDrumCollection(Track* track, uint64_t position) {
-
-	auto clip = std::make_shared<Clip>();
-
-	clip->name = "Untitled Drum Collection";
-	clip->position = position;
-	clip->length = 400;
-	clip->clipType = TimelineClipType_Drums;
-	clip->drumData = std::make_shared<DrumMachineData>();
-
-	track->clips.emplace_back(clip);
-}
-
-static void newPianoRoll(Track* track, uint64_t position) {
-
-	auto clip = std::make_shared<Clip>();
-
-	clip->name = "Untitled Piano Roll";
-	clip->position = position;
-	clip->length = 400;
-	clip->clipType = TimelineClipType_PianoRoll;
-	clip->pianoRollData = std::make_shared<PianoRollData>();
-
-	track->clips.emplace_back(clip);
-}
-
 static void loadClipDataFromAXEwf(std::shared_ptr<Clip> clip) {
 	// TODO: This is repeat code from WaveformGen.cpp
 	std::string globalLibraryPath = EngineConfiguration::getConfigDir() + "/AXEProjects/GlobalLibrary";
@@ -400,9 +374,15 @@ void Timeline::onUpdate() {
 			InputText("##TrackName", &track.name);
 			SameLine();
 			if (SmallButton(SHADOW_ICON_CLOSE)) songInfo->tracks.erase(songInfo->tracks.begin() + trackIt);
-			SliderFloat("VOL", &track.volume, 0.0f, 100.0f, "%.0f");
-			SliderFloat("BAL", &track.balance, -1.0f, 1.0f, "%.2f");
-			ToggleButton("M", &track.muted);
+			if (SliderFloat("VOL", &track.volume, 0.0f, 100.0f, "%.0f")) {
+				ma_sound_group_set_volume(&track.soundGroup, (track.volume / 100.0f));
+			}
+			if (SliderFloat("BAL", &track.balance, -1.0f, 1.0f, "%.2f")) {
+				ma_sound_group_set_pan(&track.soundGroup, track.balance);
+			}
+			if (ToggleButton("M", &track.muted)) {
+				if (track.muted) ma_sound_group_set_volume(&track.soundGroup, 0.0f);
+			}
 			SetItemTooltip("Mute Track");
 			// ToggleButton("S", )
 
@@ -414,9 +394,17 @@ void Timeline::onUpdate() {
 			SetItemTooltip("Track Automations");
 			updateTrackAutomationsPopup();
 
+			// SameLine();
+			// if (Button("Use Nodes")) {
+			// 	JobSystem::degradeEditorWithMessage("Test throw", "What in the heck is going on");
+			// }
+
+			// the poor mans toggle button
 			SameLine();
-			if (Button("Use Nodes")) {
-				JobSystem::degradeEditorWithMessage("Test throw", "What in the heck is going on");
+			if (track.realPanning && Button("PAN##panButton")) {
+				track.realPanning = false;
+			} else if (!track.realPanning && Button("BAL##balanceButton")) {
+				track.realPanning = true;
 			}
 
 			SameLine();
@@ -1129,7 +1117,7 @@ void Timeline::onUpdate() {
 				// if (res != MA_SUCCESS) EC_ERROUT(EC_THIS, "Engine failure calc clip length! Err enum %i", res);
 
 				ma_decoder decoder;
-				res = ma_sound_init_from_file(audioEngine, clipPath, soundFlags, nullptr, nullptr, &clip->engineSound);
+				res = ma_sound_init_from_file(audioEngine, clipPath, soundFlags, &songInfo->tracks.at(tableHoveredRow - 1).soundGroup, nullptr, &clip->engineSound);
 				checkResult(res);
 				res = ma_decoder_init_file(clipPath, nullptr, &decoder);
 				checkResult(res);
@@ -1144,9 +1132,13 @@ void Timeline::onUpdate() {
 				ma_decoder_uninit(&decoder);
 
 
+				// see the scrubber position set code if you want to comprehend this math
+				float relativePixelOffset = GetMousePos().x - GetCursorScreenPos().x;
+				float pcmFramesToBeSet = (relativePixelOffset * 100) / (editorState->zoom / 100.0f);
+
 				// clip->length = (uint64_t)len;
 				clip->length = len;
-				clip->position = static_cast<uint64_t>(GetMousePos().x - GetWindowPos().x);
+				clip->position = static_cast<uint64_t>(std::max(0.0f, pcmFramesToBeSet / 100.0f));
 
 				EC_PRINT(EC_THIS, "user dropped %s", clipPath);
 
@@ -1296,6 +1288,55 @@ void Timeline::startClipDragging() {
 	// for (auto& selectedClip : selectedClips) {
 	// 	selectedClip.
 	// }
+}
+
+void Timeline::addTrack(const std::string& name) {
+	Track newTrack;
+	newTrack.name = name;
+	songInfo->tracks.emplace_back(newTrack);
+
+	// Hacky
+
+	auto& initedTrack = songInfo->tracks.back();
+
+	ma_result res;
+	res = ma_sound_group_init(audioEngine, MA_SOUND_FLAG_NO_SPATIALIZATION, nullptr, &initedTrack.soundGroup);
+	checkResult(res);
+
+	// This stuff is all default, idrk if I have to do this, but it doesn't hurt.
+	ma_sound_group_set_volume(&initedTrack.soundGroup, (initedTrack.volume / 100.0f));
+	ma_sound_group_set_pan_mode(&initedTrack.soundGroup, initedTrack.realPanning ? ma_pan_mode_pan : ma_pan_mode_balance);
+	ma_sound_group_set_pan(&initedTrack.soundGroup, initedTrack.balance);
+}
+
+void Timeline::newDrumCollection(Track* track, uint64_t position) {
+
+	auto clip = std::make_shared<Clip>();
+
+	clip->name = "Untitled Drum Collection";
+	clip->position = position;
+	clip->length = 400;
+	clip->clipType = TimelineClipType_Drums;
+	clip->drumData = std::make_shared<DrumMachineData>();
+
+	ma_result res;
+	res = ma_sound_group_init(audioEngine, MA_SOUND_FLAG_NO_SPATIALIZATION, &track->soundGroup, &clip->drumData->drumSoundGroup);
+	checkResult(res);
+
+	track->clips.emplace_back(clip);
+}
+
+void Timeline::newPianoRoll(Track* track, uint64_t position) {
+
+	auto clip = std::make_shared<Clip>();
+
+	clip->name = "Untitled Piano Roll";
+	clip->position = position;
+	clip->length = 400;
+	clip->clipType = TimelineClipType_PianoRoll;
+	clip->pianoRollData = std::make_shared<PianoRollData>();
+
+	track->clips.emplace_back(clip);
 }
 
 }

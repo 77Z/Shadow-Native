@@ -2,6 +2,7 @@
 #include "Debug/EditorConsole.hpp"
 #include "imgui.h"
 #include "ShadowIcons.hpp"
+#include "imgui_internal.h"
 #include <string>
 
 #define EC_THIS "Piano Roll"
@@ -70,9 +71,28 @@ void PianoRoll::onUpdate() {
 			EndMenuBar();
 		}
 
+		auto winPos = GetWindowPos();
+		auto winSize = GetWindowSize();
+		auto fg = GetForegroundDrawList();
+		auto mouse = GetMousePos();
+
+		if (BeginDragDropTargetCustom(ImRect(winPos, winPos + winSize), GetID("DrumMachineDropTarget"))) {
+			fg->AddCircleFilled(GetMousePos(), 5.0f, IM_COL32(0, 255, 0, 255));
+			std::string text = "Add clip to drum machine " + clip->name;
+			fg->AddText(ImVec2(mouse.x, mouse.y - 40.0f), IM_COL32(0, 255, 0, 255), text.c_str());
+
+			if (const ImGuiPayload* payload = AcceptDragDropPayload("AXE_CLIP_PATH_PAYLOAD")) {
+				const char* clipPath = static_cast<const char*>(payload->Data);
+				EC_PRINT("All", "dropped %s", clipPath);
+
+				clip->baseAudioSource = clipPath;
+			}
+
+			EndDragDropTarget();
+		}
+
 		if (clip->baseAudioSource.empty()) {
 			// Center text in the window
-			auto winSize = GetWindowSize();
 			const char txt[] = "Drop an audio file here to use as sample for the piano roll";
 			auto txtSize = CalcTextSize(txt);
 			SetCursorPos(ImVec2((winSize.x - txtSize.x) / 2.0f, (winSize.y - txtSize.y) / 2.0f));
