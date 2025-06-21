@@ -1,7 +1,7 @@
 {
 
 	ProductName: "Shadow Engine",
-	Version: "0.8.0", // Three parts, dots are delimeters
+	Version: "0.8.0", // Three parts, dots are delimiters
 
 	// Extra string appended to version number to help identify and
 	// differentiate builds from each other. If not empty, a "-" will be
@@ -1220,6 +1220,39 @@
 
 			InlineBuildLibs: [ "bx", "chunker", "snappy" ],
 			
+			Libs: [],
+		},
+		{ Name: "chunker-inspect",
+			PrettyName: "Chunker CLI Inspection Tool",
+			Type: "Executable",
+			BaseDir: "chunker/inspectionTool",
+			Artifact: "chunker-inspect",
+
+			std: "c++17",
+			Defines: [],
+			CXXFLAGS: [
+				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
+				"-m64", "-Wshadow", "-mfpmath=sse", "-msse4.2",
+				"-Wunused-value", "-Wundef", "-fPIC" ],
+
+			IfDebug: {
+				Defines: [
+					"SHADOW_DEBUG_BUILD", "BX_CONFIG_DEBUG=1", "_DEBUG" ],
+				CXXFLAGS: [ '-g' ]
+			},
+			IfRelease: {
+				Defines: [ "BX_CONFIG_DEBUG=0", "NDEBUG" ],
+				CXXFLAGS: [ '-O3' ]
+			},
+
+			IncludeDirs: [ "../../lib/bx/include", "../../lib/termcolor" ],
+
+			Sources: [ "*.cpp" ],
+			SrcExcludes: [],
+			LinkerFlags: [ "-lstdc++", "-lpthread", "-lrt", "-ldl" ],
+
+			InlineBuildLibs: [ "bx", "chunker", "snappy" ],
+
 			Libs: [],
 		},
 		{ Name: "glfw",

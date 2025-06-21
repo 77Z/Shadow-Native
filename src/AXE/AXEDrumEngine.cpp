@@ -76,6 +76,10 @@ void AXEDrumEngine::scheduleDrumPlayback(Clip* clip, uint64_t playbackTime) {
 			// TODO: This totally leaks memory! Can this be a smart pointer?
 			ma_sound* beat = (ma_sound*)malloc(sizeof(ma_sound));
 
+			// Push the pointer to an array and deallocate the memory when the
+			// playhead stops. You can do ma_sound_stop on them before deleting
+			// to prevent problems with playback
+
 			ma_result res;
 			
 			res = ma_sound_init_from_file(

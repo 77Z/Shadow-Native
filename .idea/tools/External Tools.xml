@@ -1,0 +1,51 @@
+<toolSet name="External Tools">
+  <tool name="Horde" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="/code/axe/Shadow-Native/Horde" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="/code/axe/Shadow-Native" />
+    </exec>
+  </tool>
+  <tool name="Horde Clean" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="/code/axe/Shadow-Native/Horde" />
+      <option name="PARAMETERS" value="--clean" />
+      <option name="WORKING_DIRECTORY" value="/code/axe/Shadow-Native" />
+    </exec>
+  </tool>
+  <tool name="Make" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="/usr/bin/make" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="/code/axe/Shadow-Native/bin/sdw" />
+    </exec>
+  </tool>
+  <tool name="Compile Shadow" description="Compiles the Shadow Engine Binary" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="ninja" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$ProjectFileDir$/bin/sdw/shadow-engine" />
+    </exec>
+  </tool>
+  <tool name="Clean Shadow Binary" description="Compiles the Shadow Engine Binary - cleaning tool" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="true" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="ninja" />
+      <option name="PARAMETERS" value="-t clean" />
+      <option name="WORKING_DIRECTORY" value="$ProjectFileDir$/bin/sdw/shadow-engine" />
+    </exec>
+  </tool>
+  <tool name="Compile Chunker CLI" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="false" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="ninja" />
+      <option name="PARAMETERS" />
+      <option name="WORKING_DIRECTORY" value="$ProjectFileDir$/bin/sdw/chunker-cli" />
+    </exec>
+  </tool>
+  <tool name="Clean Chunker CLI" showInMainMenu="false" showInEditor="false" showInProject="false" showInSearchPopup="false" disabled="false" useConsole="false" showConsoleOnStdOut="false" showConsoleOnStdErr="false" synchronizeAfterRun="true">
+    <exec>
+      <option name="COMMAND" value="ninja" />
+      <option name="PARAMETERS" value="-t clean" />
+      <option name="WORKING_DIRECTORY" value="$ProjectFileDir$/bin/sdw/chunker-cli" />
+    </exec>
+  </tool>
+</toolSet>

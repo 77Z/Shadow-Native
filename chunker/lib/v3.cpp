@@ -13,7 +13,101 @@
 
 #define CHUNKER_FORMAT_VERSION 0x03
 
+namespace fs = std::filesystem;
+
 namespace Shadow::Chunker {
+
+/// Returns 0 on failure, 1 on success
+int chunkFiles(const std::vector<fs::path>& inputFiles, const fs::path outputFilePath, CompressionType_ compression) {
+
+	std::fstream outputFile(outputFilePath, std::ios::out | std::ios::binary);
+	if (!outputFile.is_open()) return 0;
+
+	// * Magic header identifier
+	const char* magic = "SHADOW CHUNK"; // 12 bytes
+	outputFile.write(magic, strlen(magic));
+
+	// * Chunker version number
+	constexpr uint8_t versionNumber = CHUNKER_FORMAT_VERSION;
+	outputFile.write((char*)&versionNumber, sizeof(versionNumber));
+
+	// * Compression Type
+	outputFile.write((char*)&compression, sizeof(compression));
+
+	// * Header size
+	constexpr uint64_t headerTemplate = 0; // 64 bit : 8 bytes
+	outputFile.write((char*)&headerTemplate, sizeof(headerTemplate));
+
+	// * Table of Contents
+	uint64_t offset = 0;
+	for (const auto& inputFile : inputFiles) {
+		// Loading file data just to get its size
+		std::ifstream iteratedFile(inputFile);
+		std::stringstream ss;
+		ss << iteratedFile.rdbuf();
+		std::string fileData = ss.str();
+		std::string applicableFileData;
+
+		if (compression == CompressionType_Snappy) {
+			snappy::Compress(fileData.data(), fileData.size(), &applicableFileData);
+		} else {
+			applicableFileData = fileData;
+		}
+
+		// Write the filename, stating the size of the filename string beforehand
+		// as an uint32_t
+		std::string filename = inputFile.filename().string();
+		uint32_t filenameSize = filename.size();
+		outputFile.write((char*)&filenameSize, sizeof(filenameSize));
+		outputFile.write(filename.c_str(), filenameSize);
+
+		// Write file offset as an u64
+		outputFile.write((char*)&offset, sizeof(offset));
+
+		// Write file size as an u64
+		uint64_t encodedFilesize = (uint64_t) applicableFileData.size();
+		outputFile.write((char*)&encodedFilesize, sizeof(encodedFilesize));
+
+		// Add current file size to offset to shift offset
+		offset = offset + encodedFilesize;
+
+		iteratedFile.close();
+	}
+
+	// Overwrite the 8 bytes at 0x14, the headerSize, that stores the size of
+	// the Chunk metadata and the Table of Contents.
+	// Seek to end
+	outputFile.seekg(0, std::ios::end);
+	uint64_t headerSizeToWrite = outputFile.tellg();
+	outputFile.seekg(14);
+	outputFile.write((char*)&headerSizeToWrite, sizeof(headerSizeToWrite));
+
+	// Second iteration over all the files to add their data to the chunk file
+	for (const auto& inputFile : inputFiles) {
+		std::ifstream iteratedFile(inputFile);
+
+		// Retrieve file contents
+		std::stringstream ss;
+		ss << iteratedFile.rdbuf();
+		std::string fileData = ss.str();
+		std::string applicableFileData;
+
+		if (compression == CompressionType_Snappy) {
+			snappy::Compress(fileData.data(), fileData.size(), &applicableFileData);
+		} else {
+			applicableFileData = fileData;
+		}
+
+		outputFile.seekg(0, std::ios::end);
+		outputFile << applicableFileData;
+
+		iteratedFile.close();
+	}
+
+	outputFile.close();
+
+	return 1;
+}
 
 /// Returns 0 on failure, 1 on success
 int chunkDirectory(
@@ -97,7 +191,7 @@ int chunkDirectory(
 		std::filesystem::recursive_directory_iterator(dirPath)) {
 		std::string filename = file.path().string();
 
-		// Retreive file contents
+		// Retrieve file contents
 		std::ifstream iteratedFile(filename);
 		std::stringstream ss;
 		ss << iteratedFile.rdbuf();
@@ -111,7 +205,7 @@ int chunkDirectory(
 		}
 
 		outputChunkFile.seekg(0, std::ios::end);
-		// Using << because data can contain nullchars
+		// Using << because data can contain null chars
 		outputChunkFile << applicableFileData;
 
 		iteratedFile.close();

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="VcsDirectoryMappings">
+    <mapping directory="" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/ImGuizmo" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/bgfx" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/bimg" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/bx" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/glfw" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/leveldb-lib" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/leveldb-lib/third_party/benchmark" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/leveldb-lib/third_party/googletest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/miniaudio" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/openvr" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/snappy-lib" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/snappy-lib/third_party/benchmark" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/snappy-lib/third_party/googletest" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/lib/xxHash" vcs="Git" />
+  </component>
+</project>

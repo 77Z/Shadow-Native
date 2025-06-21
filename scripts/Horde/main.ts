@@ -16,10 +16,11 @@ import { BuildFile } from "./Interfaces.ts";
 import { HORDE_VERSION } from "./Product.ts";
 import { generateShadowEngineConfig } from "./ShadowConfigGen.ts";
 import { generateShaderBuildFiles } from "./Shaders.ts";
+import { generateModelCompilationNinjaFiles } from "./Extensions/ModelCompiler.ts";
 
 export const cliFlags = parse(Deno.args, {
 	boolean: ["help", "verbose", "version", "v", "clean", "confgen", "noshaders", "dumpToJson", "dumpBuildDir"],
-	string: ["config", "target"],
+	string: ["config", "target", "invokeExtension"],
 });
 
 if (cliFlags.help) showHelp();
@@ -52,6 +53,16 @@ if (cliFlags.dumpBuildDir) {
 }
 
 PRINT(`${conf.ProductName} ver. ${ProductVersion}`);
+
+if (cliFlags.invokeExtension) {
+	if (cliFlags.invokeExtension == "models") {
+		await generateModelCompilationNinjaFiles();
+		Deno.exit(0);
+	}
+
+	PRINT("Unknown Horde extension");
+	Deno.exit(1);
+}
 
 if (cliFlags.clean) {
 	Deno.removeSync(buildDir, { recursive: true });

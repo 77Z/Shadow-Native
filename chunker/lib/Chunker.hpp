@@ -2,8 +2,10 @@
 #define SHADOW_NATIVE_CHUNKER_HPP
 
 #include <cstdint>
+#include <filesystem>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace Shadow::Chunker {
 
@@ -35,6 +37,8 @@ struct Chunk {
 };
 
 // -- CHUNK CREATION -- //
+
+int chunkFiles(const std::vector<std::filesystem::path>& inputFiles, const std::filesystem::path outputFilePath, CompressionType_ compression);
 
 int chunkDirectory(const std::string& dirPath, CompressionType_ compression, const std::string& outputPath);
 

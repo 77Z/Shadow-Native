@@ -101,15 +101,21 @@ void PianoRoll::onUpdate() {
 			// Sample loaded, show piano roll UI
 
 			auto drawOctave = []() {
-
+				
 			};
 
 			ImGuiTableFlags tableFlags = ImGuiTableFlags_SizingFixedFit | ImGuiTableFlags_ScrollX | ImGuiTableFlags_ScrollY | ImGuiTableFlags_Borders;
 
-			if (BeginTable("PianoRollTable", 2, tableFlags)) {
+			// if (BeginTable("PianoRollTable", 2, tableFlags)) {
 
-				EndTable();
-			}
+			// 	TableSetupColumn("Keys");
+
+			// 	TableSetColumnIndex(0);
+
+			// 	// for ()
+
+			// 	EndTable();
+			// }
 		}
 
 		PopID();

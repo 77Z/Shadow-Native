@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CLionExternalBuildManager">
+    <target id="8ef629f7-b249-4bb6-aac4-06973ce90419" name="Build Shadow" defaultType="TOOL">
+      <configuration id="fc146967-82cb-4832-8bda-3dba24a59893" name="Build Shadow">
+        <build type="TOOL">
+          <tool actionId="Tool_External Tools_Compile Shadow" />
+        </build>
+        <clean type="TOOL">
+          <tool actionId="Tool_External Tools_Clean Shadow Binary" />
+        </clean>
+      </configuration>
+    </target>
+    <target id="4fdb1c63-9eb1-46bb-aeaf-8e2931f38ee4" name="Build Chunker CLI" defaultType="TOOL">
+      <configuration id="da48413f-05a9-4367-958f-a80730bb600b" name="Build Chunker CLI">
+        <build type="TOOL">
+          <tool actionId="Tool_External Tools_Compile Chunker CLI" />
+        </build>
+        <clean type="TOOL">
+          <tool actionId="Tool_External Tools_Clean Chunker CLI" />
+        </clean>
+      </configuration>
+    </target>
+  </component>
+</project>

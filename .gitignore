@@ -33,7 +33,6 @@ local.properties
 .externalNativeBuild
 .cxx
 local.properties
-.idea/
 
 # Visual Studio
 .vs/
