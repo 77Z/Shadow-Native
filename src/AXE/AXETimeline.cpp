@@ -518,16 +518,38 @@ void Timeline::onUpdate() {
 					bool leftCropHovered = ItemHoverable(leftCropGrabber, GetID(/* clipIt + 1 */34543), 0);
 					bool rightCropHovered = ItemHoverable(rightCropGrabber, GetID(clipIt + 2), 0);
 
+					static bool leftCurrentlyCropping = false; // static, shared across all clips
+					static bool rightCurrentlyCropping = false;
+
 					// if (leftCropHovered) window->setSECursor(ShadowEngineCursors_CropClipLeft);
 					// if (rightCropHovered) window->setSECursor(ShadowEngineCursors_CropClipRight);
 
 					if (leftCropHovered) {
 						window->setSECursor(ShadowEngineCursors_CropClipLeft);
 						fg->AddRectFilled(leftCropGrabber.Min, leftCropGrabber.Max, IM_COL32(255, 0, 0, 255));
+
+						if (IsMouseDown(ImGuiMouseButton_Left)) {
+							selectedClips.clear();
+							selectedClips.emplace_back(clip.get());
+
+							leftCurrentlyCropping = true;
+						} else {
+							leftCurrentlyCropping = false;
+						}
 					}
 
 					if (rightCropHovered) {
 						fg->AddRectFilled(rightCropGrabber.Min, rightCropGrabber.Max, IM_COL32(255, 0, 0, 255));
+
+
+						if (IsMouseDown(ImGuiMouseButton_Left)) {
+							selectedClips.clear();
+							selectedClips.emplace_back(clip.get());
+
+							rightCurrentlyCropping = true;
+						} else {
+							rightCurrentlyCropping = false;
+						}
 					}
 
 					// GetForegroundDrawList()->AddRectFilled(leftCropGrabber.Min, leftCropGrabber.Max, IM_COL32(0, 0, 255, 255));
@@ -542,6 +564,9 @@ void Timeline::onUpdate() {
 						fg->AddText(ImVec2(mousePos.x + 20, bounds.Min.y + 40), IM_COL32(255, 255, 255, 255), "Click to slice...");
 						fg->AddLine(ImVec2(mousePos.x, bounds.Min.y), ImVec2(mousePos.x, bounds.Max.y), IM_COL32(255, 255, 255, 255), 3.0f);
 
+						if (IsMouseClicked(ImGuiMouseButton_Left)) {
+							// perform slice
+						}
 					}
 				}
 

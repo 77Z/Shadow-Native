@@ -1,6 +1,8 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 
+#include <cstddef>
+
 namespace Shadow::AXE {
 
 // Basically a checkbox that looks a bit different
