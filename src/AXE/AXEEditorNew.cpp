@@ -33,6 +33,7 @@
 #include "AXEGlobalSettingsWindow.hpp"
 #include "AXEPianoRoll.hpp"
 #include "AXEDrumEngine.hpp"
+#include "AxevstPlugins.hpp"
 
 // Forward declarations
 namespace Shadow::Util {
@@ -152,6 +153,7 @@ int startAXEEditor(std::string projectFile) {
 	Timeline timeline(&songInfo, &editorState, &engine, &window, &nodeEditor, &drumEngine, &pianoRoll);
 	ClipBrowser clipBrowser;
 	AXEEqualizer equalizer;
+	AXEVSTPlugins vstPlugins;
 
 	// Keyboard Shortcuts
 	keyboard.registerKeyCallback([&](KeyButton_ key, bool down, KeyModifiers_ mods) {
@@ -339,6 +341,7 @@ int startAXEEditor(std::string projectFile) {
 					MenuItem("Project Metadata", nullptr, &editorState.showProjectMetadata);
 					MenuItem("Node Editor", nullptr, &editorState.showNodeEditor);
 					MenuItem("Visual Equalizer", nullptr, &editorState.showEqualizer);
+					MenuItem("VST Plugins", nullptr, &editorState.showVSTWindow);
 					Separator();
 					MenuItem("AXE Global Settings", "CTRL + ,", &editorState.showGlobalSettings);
 					ImGui::EndMenu();
@@ -614,6 +617,7 @@ int startAXEEditor(std::string projectFile) {
 		drumEngine.onUpdate();
 		timeline.updateBookmarkDebugMenu(editorState.showBookmarksDebugger);
 		onUpdateGlobalSettingsWindow(editorState.showGlobalSettings);
+		vstPlugins.onUpdate(editorState.showVSTWindow);
 		ImGui::RenderNotifications();
 
 		// Rendering

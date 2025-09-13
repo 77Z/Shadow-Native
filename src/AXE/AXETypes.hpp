@@ -308,6 +308,7 @@ struct EditorState {
 	bool showPianoRoll = true;
 	bool showBookmarksDebugger = true;
 	bool showIconDebugger = false;
+	bool showVSTWindow = false;
 };
 
 }
