@@ -60,6 +60,9 @@ std::filesystem::path AXEVSTPlugins::getVSTStorageLocation() {
 }
 
 void AXEVSTPlugins::reloadVSTPlugins() {
+	// clear existing index cache before re-filling
+	indexedVsts.clear();
+
 	EC_PRINT(EC_THIS, "Discovering plugins:");
 	for (auto& vstDir : std::filesystem::directory_iterator(getVSTStorageLocation())) {
 		BasicVstEntry entry;
@@ -84,7 +87,7 @@ void AXEVSTPlugins::reloadVSTPlugins() {
 				entry.vendor = moduleInfoData["Factory Info"]["Vendor"];
 				entry.url = moduleInfoData["Factory Info"]["URL"];
 				entry.email = moduleInfoData["Factory Info"]["E-Mail"];
-			} catch (const std::exception& e) {
+			} catch ([[maybe_unused]] const std::exception& e) {
 				entry.prettyName = entry.name;
 			}
 		} else {

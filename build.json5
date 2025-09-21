@@ -86,7 +86,7 @@
 			BaseDir: "lib/bx",
 			Artifact: "libbx.a",
 
-			std: "c++20",
+			std: "c++26",
 			Defines: [],
 			CXXFLAGS: [
 				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
@@ -114,7 +114,7 @@
 			BaseDir: "lib/bimg",
 			Artifact: "libbimg.a",
 
-			std: "c++20",
+			std: "c++26",
 			Defines: [],
 			// astc-encoder doesn't work with fast-math
 			CXXFLAGS: [
@@ -154,7 +154,7 @@
 			BaseDir: "lib/bimg",
 			Artifact: "libbimg_encode.a",
 
-			std: "c++20",
+			std: "c++26",
 			Defines: [],
 			CXXFLAGS: [
 				"-Wall", "-Wextra", "-fomit-frame-pointer", "-m64",
@@ -200,7 +200,7 @@
 			BaseDir: "lib/bimg",
 			Artifact: "libbimg_decode.a",
 
-			std: "c++20",
+			std: "c++26",
 			Defines: [],
 			CXXFLAGS: [
 				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
@@ -230,7 +230,7 @@
 			BaseDir: "lib/bgfx",
 			Artifact: "libbgfx.a",
 
-			std: "c++20",
+			std: "c++26",
 			Defines: [],
 			CXXFLAGS: [
 				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
@@ -265,7 +265,7 @@
 			BaseDir: "lib/bgfx",
 			Artifact: "libexample-common.a",
 
-			std: "c++20",
+			std: "c++26",
 			Defines: [],
 			CXXFLAGS: [
 				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
@@ -298,7 +298,7 @@
 			BaseDir: "lib/bgfx/examples/common",
 			Artifact: "libexample-glue.a",
 
-			std: "c++20",
+			std: "c++26",
 			Defines: [
 				"__STDC_LIMIT_MACROS", "__STDC_FORMAT_MACROS",
 				"__STDC_CONSTANT_MACROS" ],
@@ -730,7 +730,7 @@
 			BaseDir: "chunker/lib",
 			Artifact: "libchunker.a",
 
-			std: "c++20",
+			std: "c++26",
 			Defines: [],
 			CXXFLAGS: [
 				"-Wall", "-Wextra", "-ffast-math", "-fomit-frame-pointer",
@@ -1286,7 +1286,7 @@
 			BaseDir: "./foundry",
 			Artifact: "Foundry",
 
-			std: "c++20",
+			std: "c++26",
 			Defines: [],
 			CXXFLAGS: [
 				"-Wall", "-Wextra", "-ffast-math", "-m64", "-fvisibility=hidden",
@@ -1341,7 +1341,7 @@
 			BaseDir: ".",
 			Artifact: "Shadow",
 
-			std: "c++20",
+			std: "c++26",
 			// Defines: [ "SHADOW_PRODUCTION_BUILD" ],
 			Defines: [],
 			CXXFLAGS: [
