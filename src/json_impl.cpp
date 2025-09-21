@@ -31,4 +31,12 @@ json readBsonFile(std::string filepath) {
 	return decoded;
 }
 
+json readJsonFile(std::string filepath) {
+	std::ifstream file(filepath);
+	json decoded = json::parse(file);
+	file.close();
+
+	return decoded;
+}
+
 }

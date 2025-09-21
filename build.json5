@@ -1280,7 +1280,7 @@
 			SrcExcludes: []
 		},
 
-		{ Name: "foundry",
+		/*{ Name: "foundry",
 			PrettyName: "Foundry Scene Editor",
 			Type: "Executable",
 			BaseDir: "./foundry",
@@ -1332,7 +1332,7 @@
 				"bgfx", "bimg", "bimg_encode", "bimg_decode", "bx", "glfw"],
 
 			Libs: [],
-		},
+		},*/
 
 		{ Name: "shadow-engine",
 			PrettyName: "Shadow Engine",
@@ -1384,6 +1384,7 @@
 				"lib/sdf",
 				//"/usr/include/mono-2.0"
 				// "../vcpkg/packages/ms-gsl_x64-linux/include"
+				"/code/jucing/JUCE/modules/"
 				],
 
 			Sources: [
@@ -1418,7 +1419,8 @@
 			SrcExcludes: [],
 			LinkerFlags: [
 				"-lstdc++", "-lm", "-lGL", "-lX11", "-ldl", "-lpthread", "-lrt",
-				"-lvulkan", "-fvisibility=hidden", "-lcurl",
+				"-lvulkan", "-fvisibility=hidden", "-lcurl", "-lfreetype", "-lfontconfig",
+				"/code/jucing/build/libaxe_juce_modules.a"
 			],
 			
 			// InlineBuildLibs is a list of libraries that will be included in

@@ -12,6 +12,7 @@
 #include "imgui.h"
 #include "miniaudio.h"
 #include <memory>
+#include "JUCE.hpp"
 
 namespace Shadow::AXE {
 
@@ -224,6 +225,7 @@ struct Clip {
 	bool shouldDrawWaveform = true;
 	std::vector<int16_t> waveformData;
 	int waveformChannels = 0;
+	juce::AudioThumbnail thumbnail;
 };
 
 struct Track {

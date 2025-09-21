@@ -1,7 +1,7 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-cd `dirname $BASH_SOURCE`
+cd `dirname $BASH_SOURCE` || exit
 
-./scripts/deno run --allow-read --allow-write --allow-run ./scripts/Horde/main.ts $@
+./scripts/deno run --allow-read --allow-write --allow-run --allow-import ./scripts/Horde/main.ts $@
 
 # ./scripts/deno run --inspect-brk --allow-read --allow-write --allow-run ./scripts/Horde/main.ts $@

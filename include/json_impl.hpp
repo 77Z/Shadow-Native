@@ -16,6 +16,8 @@ void dumpJsonToFile(json& obj, const std::string& filepath, bool formatted = fal
 
 json readBsonFile(std::string filepath);
 
+json readJsonFile(std::string filepath);
+
 }
 
 #endif /* SHADOW_NATIVE_JSON_IMPL_HPP */
