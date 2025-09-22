@@ -93,6 +93,9 @@ export function gatherFlags(target: Target, isRegularC: boolean): string {
 	// 	flags.push("-std=" + target.std);
 	if (!isRegularC) flags.push("-std=" + target.std);
 
+	// Force color
+	flags.push("-fcolor-diagnostics");
+
 	// Compiler flags
 	flags.push(target.CXXFLAGS.join(" "));
 
