@@ -77,6 +77,7 @@ void AXEVSTPlugins::reloadVSTPlugins() {
 
 
 		// Is there a moduleinfo.json we can read?
+#if 0
 		std::filesystem::path moduleInfoPath = vstDir.path() / "Contents" / "Resources" / "moduleinfo.json";
 		if (std::filesystem::exists(moduleInfoPath)) {
 			try {
@@ -93,7 +94,7 @@ void AXEVSTPlugins::reloadVSTPlugins() {
 		} else {
 			entry.prettyName = entry.name;
 		}
-
+#endif
 		indexedVsts.emplace_back(entry);
 	}
 	EC_PRINT(EC_THIS, "-----------------------------------");

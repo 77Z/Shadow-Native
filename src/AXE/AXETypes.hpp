@@ -225,7 +225,9 @@ struct Clip {
 	bool shouldDrawWaveform = true;
 	std::vector<int16_t> waveformData;
 	int waveformChannels = 0;
-	juce::AudioThumbnail thumbnail;
+	juce::AudioFormatManager audioFormatManager;
+	juce::AudioThumbnailCache thumbnailCache{ 5 };
+	juce::AudioThumbnail thumbnail{100, audioFormatManager, thumbnailCache};
 };
 
 struct Track {

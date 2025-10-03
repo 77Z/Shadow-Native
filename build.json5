@@ -1345,8 +1345,9 @@
 			// Defines: [ "SHADOW_PRODUCTION_BUILD" ],
 			Defines: [],
 			CXXFLAGS: [
-				"-Wall", "-Wextra", "-ffast-math", "-m64", "-fvisibility=hidden",
+				"-Wall", "-Wextra", "-m64", "-fvisibility=hidden",
 				"-Wshadow",
+//				"-ffast-math",
 				// ShadowAudio optimizations, update to -msse4.2???
 				"-msse2", "-mavx2" ],
 
@@ -1419,7 +1420,7 @@
 			SrcExcludes: [],
 			LinkerFlags: [
 				"-lstdc++", "-lm", "-lGL", "-lX11", "-ldl", "-lpthread", "-lrt",
-				"-lvulkan", "-fvisibility=hidden", "-lcurl", "-lfreetype", "-lfontconfig",
+				"-lvulkan", "-fvisibility=hidden", "-lcurl", "-lfreetype", "-lfontconfig", "-lasound",
 				"/code/jucing/build/libaxe_juce_modules.a"
 			],
 			

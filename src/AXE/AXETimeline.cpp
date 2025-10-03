@@ -1168,6 +1168,11 @@ void Timeline::onUpdate() {
 				EC_PRINT(EC_THIS, "user dropped %s", clipPath);
 
 				songInfo->tracks.at(tableHoveredRow - 1).clips.push_back(clip);
+
+				// Load into JUCE File
+				juce::File audioData(path.string());
+				juce::FileInputSource inputSource(audioData);
+				clip->thumbnail.setSource(&inputSource);
 			}
 		} else {
 			fg->AddCircleFilled(GetMousePos(), 5.0f, IM_COL32(255, 0, 0, 255));

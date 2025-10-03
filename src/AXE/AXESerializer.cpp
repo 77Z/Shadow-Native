@@ -214,9 +214,9 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 		infile.close();
 
 		song->songFileVersion = decodedSong["songFileVersion"];
-		song->name = decodedSong["name"];
-		song->artist = decodedSong["artist"];
-		song->album = decodedSong["album"];
+		song->name = static_cast<std::string>(decodedSong["name"]);
+		song->artist = static_cast<std::string>(decodedSong["artist"]);
+		song->album = static_cast<std::string>(decodedSong["album"]);
 		song->decodeOnLoad = decodedSong["decodeOnLoad"];
 		song->bpm = decodedSong["bpm"];
 		song->key = decodedSong["key"];
@@ -229,12 +229,12 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 
 		for (auto& track : decodedSong["tracks"]) {
 			Track tempTrack;
-			tempTrack.name = track["name"];
+			tempTrack.name = static_cast<std::string>(track["name"]);
 
 			for (auto& clip : track["clips"]) {
 				std::shared_ptr<Clip> tempClip = std::make_shared<Clip>();
-				tempClip->name = clip["name"];
-				tempClip->baseAudioSource = clip["baseAudioSource"];
+				tempClip->name = static_cast<std::string>(clip["name"]);
+				tempClip->baseAudioSource = static_cast<std::string>(clip["baseAudioSource"]);
 
 				tempClip->position = clip["position"];
 				tempClip->length = clip["length"];
@@ -321,7 +321,7 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 		for (auto& ng: decodedSong["nodeGraphs"]) {
 			NodeGraph tempNg;
 
-			tempNg.name = ng["name"];
+			tempNg.name = static_cast<std::string>(ng["name"]);
 			tempNg.config.SettingsFile = nullptr;
 			tempNg.config.NavigateButtonIndex = 2;
 			tempNg.editorContext = ed::CreateEditor(&tempNg.config);
@@ -345,9 +345,9 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 
 			for (auto& node : ng["nodes"]) {
 				Node tempNode;
-				tempNode.name = node["name"];
+				tempNode.name = static_cast<std::string>(node["name"]);
 				tempNode.size = ImVec2(node["size"][0], node["size"][1]);
-				tempNode.id = (int)node["id"];
+				tempNode.id = static_cast<int>(node["id"]);
 
 				tempNode.color = ImColor(
 					(float)node["color"][0],
@@ -357,18 +357,18 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 
 				for (auto& input : node["inputs"]) {
 					Pin tempInput;
-					tempInput.name = input["name"];
+					tempInput.name = static_cast<std::string>(input["name"]);
 					tempInput.kind = input["kind"];
-					tempInput.id = (int)input["id"];
+					tempInput.id = static_cast<int>(input["id"]);
 
 					tempNode.inputs.push_back(tempInput);
 				}
 
 				for (auto& output : node["outputs"]) {
 					Pin tempOutput;
-					tempOutput.name = output["name"];
+					tempOutput.name = static_cast<std::string>(output["name"]);
 					tempOutput.kind = output["kind"];
-					tempOutput.id = (int)output["id"];
+					tempOutput.id = static_cast<int>(output["id"]);
 
 					tempNode.outputs.push_back(tempOutput);
 				}
@@ -378,9 +378,9 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 
 			for (auto& link : ng["links"]) {
 				Link tempLink;
-				tempLink.id = (int)link["id"];
-				tempLink.inputId = (int)link["inputId"];
-				tempLink.outputId = (int)link["outputId"];
+				tempLink.id = static_cast<int>(link["id"]);
+				tempLink.inputId = static_cast<int>(link["inputId"]);
+				tempLink.outputId = static_cast<int>(link["outputId"]);
 
 				tempNg.links.push_back(tempLink);
 			}
@@ -391,7 +391,7 @@ bool deserializeSong(Song* song, const std::string& filepath) {
 		for (auto& bm: decodedSong["bookmarks"]) {
 			Bookmark tempBm;
 
-			tempBm.name = bm["name"];
+			tempBm.name = static_cast<std::string>(bm["name"]);
 			tempBm.color = ImColor(
 				(float)bm["color"][0],
 				(float)bm["color"][1],

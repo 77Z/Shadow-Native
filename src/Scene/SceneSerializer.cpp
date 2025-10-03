@@ -110,7 +110,7 @@ bool SceneSerializer::deserialize(const std::string filepath) {
 
 	infile.close();
 
-	scene->sceneName = deserializedScene["SceneName"];
+	scene->sceneName = static_cast<std::string>(deserializedScene["SceneName"]);
 
 	EC_PRINT("Scene Serializer", "Deserializing Scene: %s", scene->sceneName.c_str());
 
