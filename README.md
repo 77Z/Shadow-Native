@@ -1,15 +1,4 @@
-# Reading notes for Benjamin Denise Sutton
-
-- This is not the complete source for Shadow Engine as a whole, this is one
-  section
-- The code for AXE is in `src/AXE` in its entirety. The entry point for the
-  editor is in `src/AXE/AXEEditorNew.cpp`
-- The codebase for Horde is in `scripts/Horde`, and the entry point is in `main.ts`
-
-- Talk to me if you're interested in compiling it, as you have to pull
-dependencies, install tools, and setup the environment properly
-
-# Shadow-Native
+# Shadow Engine
 
 Shadow Engine
 
