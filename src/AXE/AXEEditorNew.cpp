@@ -7,13 +7,14 @@
 #include "imgui/imgui_utils.hpp"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
-#include <GL/gl.h>
+// #include <GL/gl.h>
 #include <cmath>
 #include <cstdint>
 #include <string>
 #define GL_SILENCE_DEPRECATION
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 #include <GLES2/gl2.h>
+
 #endif
 #include <GLFW/glfw3.h> // Will drag system OpenGL headers
 #include "AXE/AXEEditor.hpp"
@@ -34,6 +35,9 @@
 #include "AXEPianoRoll.hpp"
 #include "AXEDrumEngine.hpp"
 #include "AxevstPlugins.hpp"
+#include "RmlUi/Core.h"
+#define GLAD_GL_IMPLEMENTATION
+#include "glad/glad.h"
 
 // Forward declarations
 namespace Shadow::Util {
@@ -67,6 +71,60 @@ void debugBreak();
 #endif
 
 namespace Shadow::AXE {
+
+class AXERmlUIRenderInterface : public Rml::RenderInterface { };
+class AXERmlUISystemInterface : public Rml::SystemInterface { };
+
+struct RmlUiFramebuffer {
+	GLuint fbo = 0;
+	GLuint texture = 0;
+	int width = 0;
+	int height = 0;
+
+	void Init(int w, int h) {
+		width = w;
+		height = h;
+
+		// 1. Create Framebuffer
+		glGenFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+		// 2. Create Texture to hold color data
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+		// Attach texture to FBO
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+		// Optional: Create Renderbuffer for Depth/Stencil if RmlUI needs it (usually not for simple 2D)
+		// Check status
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			printf("Error: Framebuffer is not complete!\n");
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+
+	void Resize(int w, int h) {
+		if (w == width && h == height) return;
+		width = w;
+		height = h;
+
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	}
+
+	void Bind() {
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glViewport(0, 0, width, height);
+	}
+
+	void Unbind() {
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	}
+};
 
 static Song songInfo;
 
@@ -116,6 +174,36 @@ int startAXEEditor(std::string projectFile) {
 
 	uint32_t sampleRate = ma_engine_get_sample_rate(&engine);
 
+	/*
+	 * RMLUI Init
+	 */
+
+	AXERmlUIRenderInterface* renderInterface;
+	AXERmlUISystemInterface* systemInterface;
+
+	Rml::SetRenderInterface(renderInterface);
+	Rml::SetSystemInterface(systemInterface);
+
+	Rml::Initialise();
+
+	Rml::Context* rmlContext = Rml::CreateContext("main", Rml::Vector2(500, 500));
+	if (!rmlContext) {
+		ERROUT("Failed to create Rml context");
+		return 1;
+	}
+
+	Rml::LoadFontFace("./Resources/Inter-Medium.ttf");
+
+	Rml::ElementDocument* document = rmlContext->LoadDocument("./Resources/test.rml");
+	if (!document) {
+		Rml::Shutdown();
+		ERROUT("Failed to load RML document");
+		return 1;
+	}
+
+	document->Show();
+
+
 
 #if defined(IMGUI_IMPL_OPENGL_ES2)
 	// GL ES 2.0 + GLSL 100
@@ -143,6 +231,11 @@ int startAXEEditor(std::string projectFile) {
 	if (window.window == nullptr) return 1;
 	glfwMakeContextCurrent(window.window);
 	glfwSwapInterval(1); // Enable vsync
+
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		ERROUT("Failed to initialize OpenGL context");
+		return -1;
+	}
 
 	Keyboard keyboard(&window);
 
@@ -620,6 +713,9 @@ int startAXEEditor(std::string projectFile) {
 		vstPlugins.onUpdate(editorState.showVSTWindow);
 		ImGui::RenderNotifications();
 
+		rmlContext->Update();
+		rmlContext->Render();
+
 		// Rendering
 		ImGui::Render();
 		int display_w, display_h;
@@ -645,6 +741,8 @@ int startAXEEditor(std::string projectFile) {
 
 	nodeEditor.shutdown();
 	clipBrowser.shutdown();
+
+	Rml::Shutdown();
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
