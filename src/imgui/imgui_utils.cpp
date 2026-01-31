@@ -69,7 +69,7 @@ bool ImGui::myBeginMenuBar() {
 			bar_rect.Max.x - ImMax(window->WindowRounding, window->WindowBorderSize))),
 		IM_ROUND(bar_rect.Max.y + window->Pos.y)); */
 
-	ImRect clip_rect(bar_rect.Min.x, bar_rect.Min.y, 600, bar_rect.Max.y);
+	ImRect clip_rect(bar_rect.Min.x, bar_rect.Min.y, 500, bar_rect.Max.y);
 	clip_rect.ClipWith(window->OuterRectClipped);
 	PushClipRect(clip_rect.Min, clip_rect.Max, false);
 	// GetForegroundDrawList()->AddRect(clip_rect.Min, clip_rect.Max, IM_COL32(255, 0, 0, 255));
@@ -111,6 +111,20 @@ bool ImGui::ToggleButton(const char* label, bool* v) {
 		}
 		PopStyleColor(2);
 	}
+
+	return ret;
+}
+
+bool ImGui::WindowChromeButton(const char* label) {
+	ImGuiStyle& style = ImGui::GetStyle();
+
+	PushStyleVar(ImGuiStyleVar_FrameRounding, 0.0f);
+	PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
+	PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 100));
+	PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 200));
+	bool ret = Button(label, ImVec2(55.0f, 40.0f));
+	PopStyleColor(3);
+	PopStyleVar();
 
 	return ret;
 }

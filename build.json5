@@ -1386,7 +1386,7 @@
 				//"/usr/include/mono-2.0"
 				// "../vcpkg/packages/ms-gsl_x64-linux/include"
 				"/code/jucing/JUCE/modules/",
-				"/code/RmlUi/Include"
+//				"/code/RmlUi/Include"
 				],
 
 			Sources: [
@@ -1423,7 +1423,7 @@
 				"-lstdc++", "-lm", "-lGL", "-lX11", "-ldl", "-lpthread", "-lrt",
 				"-lvulkan", "-fvisibility=hidden", "-lcurl", "-lfreetype", "-lfontconfig", "-lasound",
 				"/code/jucing/build/libaxe_juce_modules.a",
-				"-L/code/RmlUi/Build", "-lrmlui", "-Wl,-rpath,/code/RmlUi/Build"
+//				"-L/code/RmlUi/Build", "-lrmlui", "-Wl,-rpath,/code/RmlUi/Build"
 			],
 			
 			// InlineBuildLibs is a list of libraries that will be included in

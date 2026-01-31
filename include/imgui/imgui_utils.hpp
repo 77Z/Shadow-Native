@@ -87,6 +87,9 @@ bool Spinner(const char* label, float radius, int thickness, const ImU32& color)
 
 bool ToggleButton(const char* label, bool* v);
 
+// Buttons to be used for window chrome (close, maximize, minimize)
+bool WindowChromeButton(const char* label);
+
 }
 
 #endif /* SHADOW_NATIVE_IMGUI_UTILS_HPP */

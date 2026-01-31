@@ -500,7 +500,7 @@ void Timeline::onUpdate() {
 					}
 				}
 
-				// Double click a clip to invoke action upon it
+				// Double-click a clip to invoke action upon it
 				if (clipHovered && IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
 					if (clip->clipType == TimelineClipType_Drums) {
 						drumEngine->openDrumEditor(clip.get());
@@ -539,6 +539,7 @@ void Timeline::onUpdate() {
 					}
 
 					if (rightCropHovered) {
+						window->setSECursor(ShadowEngineCursors_CropClipRight);
 						fg->AddRectFilled(rightCropGrabber.Min, rightCropGrabber.Max, IM_COL32(255, 0, 0, 255));
 
 
@@ -622,7 +623,7 @@ void Timeline::onUpdate() {
 					if (draggingClip.first == clip.get()) {
 						currentClipBeingDragged = true;
 
-						EC_PRINT(EC_THIS, "Initial position! %lu", draggingClip.second);
+						// EC_PRINT(EC_THIS, "Initial position! %lu", draggingClip.second);
 						clip->position = std::max(0.0f, draggingClip.second + GetMousePos().x - GetWindowPos().x - clipStoredMouseOffsetX);
 					}
 				

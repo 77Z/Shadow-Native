@@ -301,6 +301,7 @@ struct EditorState {
 	bool showImGuiConsole = false;
 	bool showImGuiMetrics = false;
 	bool showImGuiStackTool = false;
+	bool showImGuiStyleEditor = false;
 	bool showClipboardBuffer = false;
 	bool showProjectMetadata = false;
 	bool showHelpDocs = false;

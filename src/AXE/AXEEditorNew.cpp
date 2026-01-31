@@ -35,9 +35,9 @@
 #include "AXEPianoRoll.hpp"
 #include "AXEDrumEngine.hpp"
 #include "AxevstPlugins.hpp"
-#include "RmlUi/Core.h"
-#define GLAD_GL_IMPLEMENTATION
-#include "glad/glad.h"
+// #include "RmlUi/Core.h"
+// #define GLAD_GL_IMPLEMENTATION
+// #include "glad/glad.h"
 
 // Forward declarations
 namespace Shadow::Util {
@@ -71,7 +71,7 @@ void debugBreak();
 #endif
 
 namespace Shadow::AXE {
-
+#if 0
 class AXERmlUIRenderInterface : public Rml::RenderInterface { };
 class AXERmlUISystemInterface : public Rml::SystemInterface { };
 
@@ -125,6 +125,7 @@ struct RmlUiFramebuffer {
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 };
+#endif
 
 static Song songInfo;
 
@@ -174,6 +175,7 @@ int startAXEEditor(std::string projectFile) {
 
 	uint32_t sampleRate = ma_engine_get_sample_rate(&engine);
 
+#if 0
 	/*
 	 * RMLUI Init
 	 */
@@ -202,6 +204,7 @@ int startAXEEditor(std::string projectFile) {
 	}
 
 	document->Show();
+#endif
 
 
 
@@ -227,15 +230,17 @@ int startAXEEditor(std::string projectFile) {
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
-	ShadowWindow window(1280, 720, "Shadow Engine - AXE Editor", true, true);
+	ShadowWindow window(1280, 720, "Shadow Engine - AXE Editor", false, true);
 	if (window.window == nullptr) return 1;
 	glfwMakeContextCurrent(window.window);
 	glfwSwapInterval(1); // Enable vsync
 
+#if 0
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		ERROUT("Failed to initialize OpenGL context");
 		return -1;
 	}
+#endif
 
 	Keyboard keyboard(&window);
 
@@ -280,7 +285,9 @@ int startAXEEditor(std::string projectFile) {
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+#if BX_PLATFORM_WINDOWS
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+#endif
 
 	ImGui::SetupTheme();
 
@@ -406,7 +413,7 @@ int startAXEEditor(std::string projectFile) {
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
 				| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
 				| ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus
-				| ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+				| /*ImGuiWindowFlags_MenuBar |*/ ImGuiWindowFlags_NoDocking;
 			PushStyleColor(ImGuiCol_MenuBarBg, IM_COL32(0, 0, 0, 255));
 
 			Begin("RootWindow", nullptr, window_flags);
@@ -414,7 +421,18 @@ int startAXEEditor(std::string projectFile) {
 			PopStyleColor();
 			PopStyleVar(3);
 
-			if (BeginMenuBar()) {
+
+			auto imguiRootWindow = GetCurrentWindow();
+			imguiRootWindow->DC.LayoutType = ImGuiLayoutType_Horizontal;
+			imguiRootWindow->DC.CursorPos = imguiRootWindow->DC.CursorMaxPos = ImVec2(
+				imguiRootWindow->DC.MenuBarOffset.x, imguiRootWindow->DC.MenuBarOffset.y);
+			imguiRootWindow->DC.IsSameLine = false;
+			imguiRootWindow->DC.NavLayerCurrent = ImGuiNavLayer_Menu;
+			imguiRootWindow->DC.MenuBarAppending = true;
+			BeginGroup();
+			// if (myBeginMenuBar()) {
+			// if (BeginMenuBar()) {
+				SetCursorPos(ImVec2(100.0f, 6.0f));
 				if (BeginMenu("File")) {
 					if (MenuItem("Save Project", "CTRL + S")) {
 						serializeSong(&songInfo, projectFile);
@@ -455,6 +473,7 @@ int startAXEEditor(std::string projectFile) {
 					MenuItem("UI Console", nullptr, &editorState.showImGuiConsole);
 					MenuItem("UI Metrics", nullptr, &editorState.showImGuiMetrics);
 					MenuItem("UI Stack Tool", nullptr, &editorState.showImGuiStackTool);
+					MenuItem("UI Style Editor", nullptr, &editorState.showImGuiStyleEditor);
 					MenuItem("Clipboard Buffer", nullptr, &editorState.showClipboardBuffer);
 					if (MenuItem("Reload Song", "CTRL + L")) {
 						songInfo.tracks.clear();
@@ -490,8 +509,16 @@ int startAXEEditor(std::string projectFile) {
 					if (MenuItem("Shadow Engine Website")) Util::openURL("https://shadow.77z.dev");
 					ImGui::EndMenu();
 				}
-				EndMenuBar();
-			}
+				// EndMenuBar();
+			// }
+			EndGroup();
+			imguiRootWindow->DC.LayoutType = ImGuiLayoutType_Vertical;
+			imguiRootWindow->DC.IsSameLine = false;
+			imguiRootWindow->DC.NavLayerCurrent = ImGuiNavLayer_Main;
+			imguiRootWindow->DC.MenuBarAppending = false;
+
+
+			SetCursorPos(ImVec2(100.0f, 35.0f));
 
 			PushItemWidth(100.0f * editorState.sf);
 			InputFloat("BPM", &songInfo.bpm, 1.0f, 5.0f);
@@ -562,11 +589,61 @@ int startAXEEditor(std::string projectFile) {
 			SameLine();
 			drawScrubberClockWidget(songInfo, editorState, timeline.getPlaybackFrames());
 
+
+#if BX_PLATFORM_LINUX
+			constexpr auto minimizeIcon = SHADOW_ICON_CHROME_MINIMIZE_LINUX;
+			constexpr auto maximizeIcon = SHADOW_ICON_CHROME_MAXIMIZE_LINUX;
+			constexpr auto restoreIcon  = SHADOW_ICON_CHROME_RESTORE_LINUX;
+#else
+			constexpr auto minimizeIcon = SHADOW_ICON_CHROME_MINIMIZE;
+			constexpr auto maximizeIcon = SHADOW_ICON_CHROME_MAXIMIZE;
+			constexpr auto restoreIcon  = SHADOW_ICON_CHROME_RESTORE;
+#endif
+
+			SetCursorPos(ImVec2(GetWindowSize().x - (55.0f * 1), 0));
+			if (WindowChromeButton(SHADOW_ICON_CHROME_CLOSE)) break;
+
+			SetCursorPos(ImVec2(GetWindowSize().x - (55.0f * 2), 0));
+			if (glfwGetWindowAttrib(window.window, GLFW_MAXIMIZED)) {
+				if (WindowChromeButton(restoreIcon)) glfwRestoreWindow(window.window);
+			} else {
+				if (WindowChromeButton(maximizeIcon)) glfwMaximizeWindow(window.window);
+			}
+
+			SetCursorPos(ImVec2(GetWindowSize().x - (55.0f * 3), 0));
+			if (WindowChromeButton(minimizeIcon)) glfwIconifyWindow(window.window);
+
+			// 77Z Account button in top right
 			SameLine();
-			SetCursorPos(ImVec2(GetWindowSize().x - 50, 25));
+			SetCursorPos(ImVec2(GetWindowSize().x - 200.0f, 10.0f));
 			Account::onUpdateStatusBar(true, &window);
 
-			SetCursorPosY(55.0f * editorState.sf);
+			// Drag region?
+			ImRect windowDragRegion = ImRect(
+				imguiRootWindow->ViewportPos + ImVec2(370.0f, 0.0f),
+				imguiRootWindow->ViewportPos + ImVec2(GetWindowSize().x - 205.0f, 30.0f));
+			// GetForegroundDrawList()->AddRect(windowDragRegion.Min, windowDragRegion.Max, IM_COL32(255, 255, 0, 255));
+
+			if (windowDragRegion.Contains(GetMousePos()) && IsMouseClicked(ImGuiMouseButton_Left))
+				glfwDragWindow(window.window);
+
+			{ // Window title
+				const char* title = "AXE Audio Workstation";
+				ImVec2 currentCursorPos = GetCursorPos();
+				ImVec2 textSize = CalcTextSize(title);
+				imguiRootWindow->DrawList->AddText(
+					ImVec2(GetWindowPos().x + GetWindowWidth() * 0.5f - textSize.x * 0.5f, GetWindowPos().y + 8.0f),
+					IM_COL32(255, 255, 255, 255), title);
+				SetCursorPos(currentCursorPos);
+			}
+
+			// Line around the window to improve contrast against other black windows.
+			GetForegroundDrawList()->AddRect(
+				imguiRootWindow->ViewportPos,
+				imguiRootWindow->ViewportPos + imguiRootWindow->Size,
+				IM_COL32(255, 255, 255, 255));
+
+			SetCursorPosY(70.0f /* <- height of the window header */ * editorState.sf);
 			DockSpace(GetID("AXEDockspace"));
 			End();
 		}
@@ -638,7 +715,7 @@ int startAXEEditor(std::string projectFile) {
 
 			ImGuiKnobs::Knob("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f);
 
-			DebugTextEncoding((const char*)u8"C# / D♭");
+			// DebugTextEncoding((const char*)u8"C# / D♭");
 
 			if (Button("Big number modal"))
 				OpenPopup("BigNumberInFile");
@@ -695,6 +772,7 @@ int startAXEEditor(std::string projectFile) {
 		if (editorState.showImGuiConsole) ImGui::ShowDebugLogWindow(&editorState.showImGuiConsole);
 		if (editorState.showImGuiMetrics) ImGui::ShowMetricsWindow(&editorState.showImGuiMetrics);
 		if (editorState.showImGuiStackTool) ImGui::ShowStackToolWindow(&editorState.showImGuiStackTool);
+		if (editorState.showImGuiStyleEditor) ImGui::ShowStyleEditor();
 
 		updateCurveTest();
 		ImGui::ShowDemoWindow();
@@ -713,8 +791,8 @@ int startAXEEditor(std::string projectFile) {
 		vstPlugins.onUpdate(editorState.showVSTWindow);
 		ImGui::RenderNotifications();
 
-		rmlContext->Update();
-		rmlContext->Render();
+		// rmlContext->Update();
+		// rmlContext->Render();
 
 		// Rendering
 		ImGui::Render();
@@ -742,7 +820,7 @@ int startAXEEditor(std::string projectFile) {
 	nodeEditor.shutdown();
 	clipBrowser.shutdown();
 
-	Rml::Shutdown();
+	// Rml::Shutdown();
 
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
