@@ -62,8 +62,14 @@ public:
 	void* getNativeDisplayHandle();
 	float getContentScale();
 
-	void lockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
-	void unlockCursor() { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
+	/*! @brief Informs the operating system that the user clicked a drag region and should move the
+	 *		   window accordingly. Call this once upon the click, not every frame the user is
+	 *		   dragging.
+	 */
+	void dragWindow() const;
+
+	void lockCursor() const { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED); }
+	void unlockCursor() const { glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL); }
 
 	void setSECursor(ShadowEngineCursors_ cursor);
 

@@ -35,6 +35,7 @@
 #include "AXEPianoRoll.hpp"
 #include "AXEDrumEngine.hpp"
 #include "AxevstPlugins.hpp"
+#include "stb_image.h"
 // #include "RmlUi/Core.h"
 // #define GLAD_GL_IMPLEMENTATION
 // #include "glad/glad.h"
@@ -71,6 +72,38 @@ void debugBreak();
 #endif
 
 namespace Shadow::AXE {
+
+GLuint OpenGLLoadTextureFromFile(const char* filename, int* out_width, int* out_height)
+{
+	// Load from file
+	int image_width = 0;
+	int image_height = 0;
+	unsigned char* image_data = stbi_load(filename, &image_width, &image_height, nullptr, 4);
+	if (image_data == nullptr)
+		return 0;
+
+	// Create OpenGL texture
+	GLuint image_texture;
+	glGenTextures(1, &image_texture);
+	glBindTexture(GL_TEXTURE_2D, image_texture);
+
+	// Setup filtering parameters for display
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on some OpenGL drivers
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // This is required on some OpenGL drivers
+
+	// Upload pixels into texture
+	// Use GL_RGBA for 4 channels
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+	stbi_image_free(image_data);
+
+	*out_width = image_width;
+	*out_height = image_height;
+
+	return image_texture;
+}
+
 #if 0
 class AXERmlUIRenderInterface : public Rml::RenderInterface { };
 class AXERmlUISystemInterface : public Rml::SystemInterface { };
@@ -331,7 +364,9 @@ int startAXEEditor(std::string projectFile) {
 		editorState.headerFont = io.Fonts->AddFontFromFileTTF("./Resources/Inter-Black.ttf", 40.0f * sf);
 		editorState.segmentDisplayFont = io.Fonts->AddFontFromFileTTF("./Resources/DSEG14Classic-Regular.ttf", fontSize);
 
+#ifndef SHADOW_ENGINE_WAYLAND
 		ImGui::GetStyle().ScaleAllSizes(sf);
+#endif
 	}
 
 	gblClipBrowser = &clipBrowser;
@@ -350,6 +385,11 @@ int startAXEEditor(std::string projectFile) {
 	});
 
 	// cacheWaveforms();
+
+	int imgWidth = 0, imgHeight = 0;
+
+	auto windowDecorationImage = OpenGLLoadTextureFromFile(
+		"./Resources/AXEheader.png", &imgWidth, &imgHeight);
 
 	window.maximize();
 
@@ -421,15 +461,34 @@ int startAXEEditor(std::string projectFile) {
 			PopStyleColor();
 			PopStyleVar(3);
 
+			{ // Backdrop shadow. Cool effect like in JetBrains editors
+
+				// GetBackgroundDrawList()->AddImage(reinterpret_cast<void*>(static_cast<intptr_t>(windowDecorationImage)),
+				// 	imguiRootWindow->ViewportPos,
+				// 	imguiRootWindow->ViewportPos + ImVec2(imgWidth * editorState.sf, imgHeight * editorState.sf),
+				// 	ImVec2(0.0f, 0.0f),
+				// 	ImVec2(1.0f, 1.0f),
+				// 	IM_COL32(255, 255, 255, 255));
+
+				SetCursorPos(ImVec2(0, 0));
+				Image(reinterpret_cast<void*>(static_cast<intptr_t>(windowDecorationImage)),
+					ImVec2((float)imgWidth/* * editorState.sf*/, (float)imgHeight/* * editorState.sf*/));
+
+				// const auto diameter = 800.0f * editorState.sf;
+				// const auto pos = GetWindowPos() - ImVec2(0, diameter / 2);
+				// ImGui::GetWindowDrawList()->AddShadowCircle(pos, diameter / 2, ImGui::GetColorU32(ImGuiCol_ButtonActive, 0.8F), diameter / 4, ImVec2());
+			}
+
 
 			auto imguiRootWindow = GetCurrentWindow();
+			BeginGroup();
 			imguiRootWindow->DC.LayoutType = ImGuiLayoutType_Horizontal;
 			imguiRootWindow->DC.CursorPos = imguiRootWindow->DC.CursorMaxPos = ImVec2(
-				imguiRootWindow->DC.MenuBarOffset.x, imguiRootWindow->DC.MenuBarOffset.y);
+				imguiRootWindow->DC.MenuBarOffset.x, imguiRootWindow->DC.MenuBarOffset.y + 30.0f);
 			imguiRootWindow->DC.IsSameLine = false;
 			imguiRootWindow->DC.NavLayerCurrent = ImGuiNavLayer_Menu;
 			imguiRootWindow->DC.MenuBarAppending = true;
-			BeginGroup();
+			AlignTextToFramePadding();
 			// if (myBeginMenuBar()) {
 			// if (BeginMenuBar()) {
 				SetCursorPos(ImVec2(100.0f, 6.0f));
@@ -625,7 +684,7 @@ int startAXEEditor(std::string projectFile) {
 			// GetForegroundDrawList()->AddRect(windowDragRegion.Min, windowDragRegion.Max, IM_COL32(255, 255, 0, 255));
 
 			if (windowDragRegion.Contains(GetMousePos()) && IsMouseClicked(ImGuiMouseButton_Left))
-				glfwDragWindow(window.window);
+				window.dragWindow();
 
 			{ // Window title
 				const char* title = "AXE Audio Workstation";

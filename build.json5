@@ -1343,7 +1343,7 @@
 
 			std: "c++26",
 			// Defines: [ "SHADOW_PRODUCTION_BUILD" ],
-			Defines: [],
+			Defines: [ /*"SHADOW_ENGINE_WAYLAND"*/ ],
 			CXXFLAGS: [
 				"-Wall", "-Wextra", "-m64", "-fvisibility=hidden",
 				"-Wshadow",

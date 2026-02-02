@@ -51,7 +51,9 @@ void ShadowWindow::shutdown() {
 }
 
 void* ShadowWindow::getNativeWindowHandle() {
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+#if SHADOW_ENGINE_WAYLAND
+	return nullptr;
+#elif BX_PLATFORM_LINUX || BX_PLATFORM_BSD
 	return (void*)(uintptr_t)glfwGetX11Window(window);
 #elif BX_PLATFORM_WINDOWS
 	return glfwGetWin32Window(window);
@@ -61,7 +63,9 @@ void* ShadowWindow::getNativeWindowHandle() {
 }
 
 void* ShadowWindow::getNativeDisplayHandle() {
-#if BX_PLATFORM_LINUX || BX_PLATFORM_BSD
+#if SHADOW_ENGINE_WAYLAND
+	return nullptr;
+#elif BX_PLATFORM_LINUX || BX_PLATFORM_BSD
 	return glfwGetX11Display();
 #else
 	return NULL;
@@ -69,9 +73,43 @@ void* ShadowWindow::getNativeDisplayHandle() {
 }
 
 float ShadowWindow::getContentScale() {
+#ifdef SHADOW_ENGINE_WAYLAND
+
+	return 1.0f;
+
+#endif
 	float s;
 	glfwGetWindowContentScale(window, &s, nullptr);
 	return s;
+}
+
+void ShadowWindow::dragWindow() const {
+#if BX_PLATFORM_LINUX && !SHADOW_ENGINE_WAYLAND
+
+	const auto display = glfwGetX11Display();
+
+	double x, y;
+	int winX, winY;
+	glfwGetCursorPos(window, &x, &y);
+	glfwGetWindowPos(window, &winX, &winY);
+
+	XClientMessageEvent xclient;
+	memset(&xclient, 0, sizeof(XClientMessageEvent));
+	XUngrabPointer(display, 0);
+	XFlush(display);
+	xclient.type = ClientMessage;
+	xclient.window = glfwGetX11Window(window);
+	xclient.message_type = XInternAtom(display, "_NET_WM_MOVERESIZE", False);
+	xclient.format = 32;
+	xclient.data.l[0] = winX + x;
+	xclient.data.l[1] = winY + y;
+	xclient.data.l[2] = 8 /* _NET_WM_MOVERESIZE_MOVE */;
+	xclient.data.l[3] = 0;
+	xclient.data.l[4] = 0;
+	XSendEvent(display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xclient);
+#elif BX_PLATFORM_WINDOWS
+#	error Not yet implemented on windows
+#endif
 }
 
 void ShadowWindow::initWindow() {
@@ -84,6 +122,7 @@ void ShadowWindow::initWindow() {
 	}
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	glfwWindowHint(GLFW_DECORATED, (int)decorations);
+	glfwWindowHintString(GLFW_WAYLAND_APP_ID, "dev._77z.shadow");
 
 	GLFWmonitor* primary = glfwGetPrimaryMonitor();
 
@@ -96,6 +135,7 @@ void ShadowWindow::initWindow() {
 	
 	loadCursors();
 
+#ifndef SHADOW_ENGINE_WAYLAND
 	{ // Set Window Icon
 		int width, height, channels;
 		unsigned char* pixels = stbi_load("./Resources/logoScaled.png", &width, &height, &channels, 4);
@@ -109,6 +149,7 @@ void ShadowWindow::initWindow() {
 			glfwSetWindowIcon(window, 1, &glfwWindowIcon);
 		}
 	}
+#endif
 
 	float windowx, windowy, screenx, screeny = 0;
 	glfwGetWindowContentScale(window, &windowx, &windowy);
