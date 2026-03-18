@@ -501,7 +501,7 @@ int startAXEEditor(std::string projectFile) {
 					CheckboxFlags("Drag windows out", &GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable);
 					Separator();
 					if (MenuItem("Exit")) window.close();
-					//TODO: Fix me!!
+					//TODO: I have to have the explicit ImGui namespace decl because WinAPI has a conflicting EndMenu method :(
 					ImGui::EndMenu();
 				}
 				if (BeginMenu("Edit")) {
@@ -522,9 +522,11 @@ int startAXEEditor(std::string projectFile) {
 					RadioButton("Seconds", (int*)&songInfo.timelineUnits, TimelineUnit_TimeScale);
 					RadioButton("PCM Frames", (int*)&songInfo.timelineUnits, TimelineUnit_PCMFrames);
 					SetItemTooltip("Useful for Vince debugging");
-					SeparatorText("Editor Theme");
-					if (MenuItem("Default Theme")) SetupTheme();
-					if (MenuItem("Sad Theme")) SetupSadTheme();
+					// SeparatorText("Editor Theme");
+					// if (MenuItem("Default Theme")) SetupTheme();
+					// if (MenuItem("Sad Theme")) SetupSadTheme();
+					SeparatorText("Timeline");
+					MenuItem("Bookmarks Menu", nullptr, &editorState.showBookmarksWindow);
 					ImGui::EndMenu();
 				}
 				if (BeginMenu("Debug Tools")) {
@@ -543,7 +545,6 @@ int startAXEEditor(std::string projectFile) {
 					MenuItem("Node Editor Debugger", nullptr, &editorState.showNodeEditorDebugger);
 					MenuItem("Automation Debug Mode", nullptr, &editorState.automationDebugMode);
 					MenuItem("Timeline Cursor Position Debug Mode", nullptr, &editorState.timelinePositionDebugMode);
-					MenuItem("Bookmark Debugger", nullptr, &editorState.showBookmarksDebugger);
 					MenuItem("Icon Table", nullptr, &editorState.showIconDebugger);
 					if (MenuItem("Re-cache waveforms")) cacheWaveforms();
 					Separator();
@@ -845,7 +846,7 @@ int startAXEEditor(std::string projectFile) {
 		pianoRoll.onUpdate();
 		updateIconDebugWindow(editorState.showIconDebugger);
 		drumEngine.onUpdate();
-		timeline.updateBookmarkDebugMenu(editorState.showBookmarksDebugger);
+		timeline.updateBookmarkWindow(editorState.showBookmarksWindow);
 		onUpdateGlobalSettingsWindow(editorState.showGlobalSettings);
 		vstPlugins.onUpdate(editorState.showVSTWindow);
 		ImGui::RenderNotifications();

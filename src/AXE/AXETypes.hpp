@@ -311,7 +311,7 @@ struct EditorState {
 	bool showEqualizer = true;
 	bool showGlobalSettings = false;
 	bool showPianoRoll = true;
-	bool showBookmarksDebugger = true;
+	bool showBookmarksWindow = true;
 	bool showIconDebugger = false;
 	bool showVSTWindow = false;
 };

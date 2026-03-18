@@ -39,7 +39,7 @@ public:
 	uint64_t getPlaybackFrames() { return playbackFrames; }
 
 	void newBookmark();
-	void updateBookmarkDebugMenu(bool& p_open);
+	void updateBookmarkWindow(bool& p_open);
 
 	void addTrack(const std::string& name = "Untitled Track");
 
