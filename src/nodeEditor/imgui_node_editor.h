@@ -11,14 +11,15 @@
 //------------------------------------------------------------------------------
 # ifndef __IMGUI_NODE_EDITOR_H__
 # define __IMGUI_NODE_EDITOR_H__
-#include <string>
 # pragma once
 
 
 //------------------------------------------------------------------------------
 # include <imgui.h>
+# include <memory>
 # include <cstdint> // std::uintXX_t
 # include <utility> // std::move
+# include <string>
 
 
 //------------------------------------------------------------------------------
@@ -466,6 +467,13 @@ struct SafeType
 			typename std::enable_if<!std::is_same<T, T2>::value, T2>::type,
 			typename std::enable_if<!std::is_same<Tag, Tag2>::value, Tag2>::type
 		>&) = delete;
+
+	// template <typename T2, typename Tag2>
+	// SafeType(const SafeType<T2, Tag2>&) = delete
+	//  requires (!std::is_same_v<T, T2> || !std::is_same_v<Tag, Tag2>);
+	//
+	// template <typename T2, typename Tag2>
+	// SafeType(const SafeType<T2, Tag2>&) = delete;
 
 	SafeType& operator=(const SafeType&) = default;
 

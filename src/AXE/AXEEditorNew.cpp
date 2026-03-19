@@ -537,6 +537,7 @@ int startAXEEditor(std::string projectFile) {
 		updateIconDebugWindow(editorState.showIconDebugger);
 		drumEngine.onUpdate();
 		timeline.updateTimelineDebugMenu(editorState.showTimelineDebugger);
+		timeline.updateBookmarkWindow(editorState.showBookmarksWindow);
 		onUpdateGlobalSettingsWindow(editorState.showGlobalSettings);
 		vstPlugins.onUpdate(editorState.showVSTWindow);
 		ImGui::RenderNotifications();

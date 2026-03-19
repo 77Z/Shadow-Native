@@ -426,6 +426,8 @@ void Timeline::onUpdate() {
 
 		// GetForegroundDrawList()->AddText(canvasPos, IM_COL32(0, 255, 0, 255), std::string("stored mouse offset x: " + std::to_string(clipStoredMouseOffsetX)).c_str());
 
+		onUpdateBookmarks(GetCurrentTable()->InnerWindow->DrawList);
+
 		int trackIt = 0;
 		for (auto& track : songInfo->tracks) {
 			PushID(trackIt);
@@ -1261,8 +1263,6 @@ void Timeline::onUpdate() {
 		}
 		EndDragDropTarget();
 	}
-
-	onUpdateBookmarks(drawList);
 
 	End();
 }
