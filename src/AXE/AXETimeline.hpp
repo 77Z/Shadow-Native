@@ -39,7 +39,7 @@ public:
 	uint64_t getPlaybackFrames() { return playbackFrames; }
 
 	void newBookmark();
-	void updateBookmarkDebugMenu(bool& p_open);
+	void updateTimelineDebugMenu(bool& p_open);
 
 	void addTrack(const std::string& name = "Untitled Track");
 
@@ -54,6 +54,8 @@ private:
 	AXENodeEditor* nodeEditor;
 	AXEDrumEngine* drumEngine;
 	PianoRoll* pianoRoll;
+
+	unsigned int waveformProgram = 0;
 
 	uint64_t playbackFrames = 0;
 	bool playing = false;
@@ -100,6 +102,11 @@ private:
 
 	void newDrumCollection(Track* track, uint64_t position);
 	void newPianoRoll(Track* track, uint64_t position);
+
+	/*! @brief Loops through all the clips currently on the timeline and updates their corresponding
+	 *		   waveform textures.
+	 */
+	void redrawWaveformThumbnails();
 };
 
 }

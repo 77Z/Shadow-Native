@@ -35,7 +35,8 @@
 #include "AXEPianoRoll.hpp"
 #include "AXEDrumEngine.hpp"
 #include "AxevstPlugins.hpp"
-#include "stb_image.h"
+#include "Configuration/EngineConfiguration.hpp"
+#include "EditorHeader.hpp"
 // #include "RmlUi/Core.h"
 // #define GLAD_GL_IMPLEMENTATION
 // #include "glad/glad.h"
@@ -52,13 +53,6 @@ void updateCurveTest();
 void initCurveTest();
 void cacheWaveforms();
 void updateIconDebugWindow(bool& p_open);
-void drawScrubberClockWidget(Song& song, EditorState& edState, uint64_t playbackFrames);
-}
-namespace Shadow::AXE::Account {
-void onUpdateStatusBar(bool isInEditor, ShadowWindow* window);
-}
-namespace bx {
-void debugBreak();
 }
 
 // [Win32] Our example includes a copy of glfw3.lib pre-compiled with VS2010 to
@@ -72,37 +66,6 @@ void debugBreak();
 #endif
 
 namespace Shadow::AXE {
-
-GLuint OpenGLLoadTextureFromFile(const char* filename, int* out_width, int* out_height)
-{
-	// Load from file
-	int image_width = 0;
-	int image_height = 0;
-	unsigned char* image_data = stbi_load(filename, &image_width, &image_height, nullptr, 4);
-	if (image_data == nullptr)
-		return 0;
-
-	// Create OpenGL texture
-	GLuint image_texture;
-	glGenTextures(1, &image_texture);
-	glBindTexture(GL_TEXTURE_2D, image_texture);
-
-	// Setup filtering parameters for display
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on some OpenGL drivers
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // This is required on some OpenGL drivers
-
-	// Upload pixels into texture
-	// Use GL_RGBA for 4 channels
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
-	stbi_image_free(image_data);
-
-	*out_width = image_width;
-	*out_height = image_height;
-
-	return image_texture;
-}
 
 #if 0
 class AXERmlUIRenderInterface : public Rml::RenderInterface { };
@@ -332,6 +295,7 @@ int startAXEEditor(std::string projectFile) {
 		// IMGUI_ENABLE_FREETYPE in imconfig to use Freetype for higher quality font rendering
 		editorState.sf = window.getContentScale();
 		float sf = editorState.sf;
+		EngineConfiguration::setGlobalScaleFactor(sf);
 
 		float fontSize = 16.0f * sf;
 		float iconFontSize = (fontSize * 2.0f / 3.0f) * sf;
@@ -378,18 +342,9 @@ int startAXEEditor(std::string projectFile) {
 		}
 	});
 
-	ImGui::InsertNotification({
-		ImGuiToastType::Info,
-		5000,
-		"You might have to wait for active\njobs to finish before working"
-	});
-
 	// cacheWaveforms();
 
-	int imgWidth = 0, imgHeight = 0;
-
-	auto windowDecorationImage = OpenGLLoadTextureFromFile(
-		"./Resources/AXEheader.png", &imgWidth, &imgHeight);
+	headerBarLoad();
 
 	window.maximize();
 
@@ -439,274 +394,9 @@ int startAXEEditor(std::string projectFile) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		// Header and Menubar
-		{
-			using namespace ImGui;
+		drawHeaderBar(&songInfo, &editorState, &window, &timeline, engine, projectFile);
 
-			ImGuiViewport* viewport = GetMainViewport();
-			SetNextWindowPos(viewport->Pos);
-			SetNextWindowSize(viewport->Size);
-			SetNextWindowViewport(viewport->ID);
-			PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1.0f, 1.0f));
-			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse
-				| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove
-				| ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus
-				| /*ImGuiWindowFlags_MenuBar |*/ ImGuiWindowFlags_NoDocking;
-			PushStyleColor(ImGuiCol_MenuBarBg, IM_COL32(0, 0, 0, 255));
-
-			Begin("RootWindow", nullptr, window_flags);
-
-			PopStyleColor();
-			PopStyleVar(3);
-
-			{ // Backdrop shadow. Cool effect like in JetBrains editors
-
-				// GetBackgroundDrawList()->AddImage(reinterpret_cast<void*>(static_cast<intptr_t>(windowDecorationImage)),
-				// 	imguiRootWindow->ViewportPos,
-				// 	imguiRootWindow->ViewportPos + ImVec2(imgWidth * editorState.sf, imgHeight * editorState.sf),
-				// 	ImVec2(0.0f, 0.0f),
-				// 	ImVec2(1.0f, 1.0f),
-				// 	IM_COL32(255, 255, 255, 255));
-
-				SetCursorPos(ImVec2(0, 0));
-				Image(reinterpret_cast<void*>(static_cast<intptr_t>(windowDecorationImage)),
-					ImVec2((float)imgWidth/* * editorState.sf*/, (float)imgHeight/* * editorState.sf*/));
-
-				// const auto diameter = 800.0f * editorState.sf;
-				// const auto pos = GetWindowPos() - ImVec2(0, diameter / 2);
-				// ImGui::GetWindowDrawList()->AddShadowCircle(pos, diameter / 2, ImGui::GetColorU32(ImGuiCol_ButtonActive, 0.8F), diameter / 4, ImVec2());
-			}
-
-
-			auto imguiRootWindow = GetCurrentWindow();
-			BeginGroup();
-			imguiRootWindow->DC.LayoutType = ImGuiLayoutType_Horizontal;
-			imguiRootWindow->DC.CursorPos = imguiRootWindow->DC.CursorMaxPos = ImVec2(
-				imguiRootWindow->DC.MenuBarOffset.x, imguiRootWindow->DC.MenuBarOffset.y + 30.0f);
-			imguiRootWindow->DC.IsSameLine = false;
-			imguiRootWindow->DC.NavLayerCurrent = ImGuiNavLayer_Menu;
-			imguiRootWindow->DC.MenuBarAppending = true;
-			AlignTextToFramePadding();
-			// if (myBeginMenuBar()) {
-			// if (BeginMenuBar()) {
-				SetCursorPos(ImVec2(100.0f, 6.0f));
-				if (BeginMenu("File")) {
-					if (MenuItem("Save Project", "CTRL + S")) {
-						serializeSong(&songInfo, projectFile);
-						InsertNotification({ImGuiToastType::Info, 3000, "Project Saved"});
-					}
-					Separator();
-					CheckboxFlags("Drag windows out", &GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable);
-					Separator();
-					if (MenuItem("Exit")) window.close();
-					//TODO: Fix me!!
-					ImGui::EndMenu();
-				}
-				if (BeginMenu("Edit")) {
-					MenuItem("Copy", "CTRL + C");
-					MenuItem("Paste", "CTRL + V");
-					Separator();
-					MenuItem("Project Metadata", nullptr, &editorState.showProjectMetadata);
-					MenuItem("Node Editor", nullptr, &editorState.showNodeEditor);
-					MenuItem("Visual Equalizer", nullptr, &editorState.showEqualizer);
-					MenuItem("VST Plugins", nullptr, &editorState.showVSTWindow);
-					Separator();
-					MenuItem("AXE Global Settings", "CTRL + ,", &editorState.showGlobalSettings);
-					ImGui::EndMenu();
-				}
-				if (BeginMenu("View")) {
-					SeparatorText("Timeline Units");
-					RadioButton("Beats", (int*)&songInfo.timelineUnits, TimelineUnit_BPM);
-					RadioButton("Seconds", (int*)&songInfo.timelineUnits, TimelineUnit_TimeScale);
-					RadioButton("PCM Frames", (int*)&songInfo.timelineUnits, TimelineUnit_PCMFrames);
-					SetItemTooltip("Useful for Vince debugging");
-					SeparatorText("Editor Theme");
-					if (MenuItem("Default Theme")) SetupTheme();
-					if (MenuItem("Sad Theme")) SetupSadTheme();
-					ImGui::EndMenu();
-				}
-				if (BeginMenu("Debug Tools")) {
-					MenuItem("Shadow Engine Debug Console", nullptr, &editorState.showShadowEngineConsole);
-					MenuItem("UI Console", nullptr, &editorState.showImGuiConsole);
-					MenuItem("UI Metrics", nullptr, &editorState.showImGuiMetrics);
-					MenuItem("UI Stack Tool", nullptr, &editorState.showImGuiStackTool);
-					MenuItem("UI Style Editor", nullptr, &editorState.showImGuiStyleEditor);
-					MenuItem("Clipboard Buffer", nullptr, &editorState.showClipboardBuffer);
-					if (MenuItem("Reload Song", "CTRL + L")) {
-						songInfo.tracks.clear();
-						deserializeSong(&songInfo, projectFile);
-						bootstrapSong(&songInfo, &engine);
-						InsertNotification({ImGuiToastType::Info, 3000, "Loaded project from computer"});
-					}
-					MenuItem("Node Editor Debugger", nullptr, &editorState.showNodeEditorDebugger);
-					MenuItem("Automation Debug Mode", nullptr, &editorState.automationDebugMode);
-					MenuItem("Timeline Cursor Position Debug Mode", nullptr, &editorState.timelinePositionDebugMode);
-					MenuItem("Bookmark Debugger", nullptr, &editorState.showBookmarksDebugger);
-					MenuItem("Icon Table", nullptr, &editorState.showIconDebugger);
-					if (MenuItem("Re-cache waveforms")) cacheWaveforms();
-					Separator();
-					if (MenuItem("Break Here")) {
-						bx::debugBreak();
-					}
-					if (BeginItemTooltip()) {
-						PushStyleColor(ImGuiCol_Text, IM_COL32(255, 0, 0, 255));
-						if (fmodf((float)GetTime(), 0.4f) < 0.2f) {
-							TextUnformatted("WARNING: WITHOUT A DEBUGGER ATTACHED, THIS WILL CRASH AXE!!!");
-						}
-						PopStyleColor();
-						EndTooltip();
-					}
-					ImGui::EndMenu();
-				}
-				if (BeginMenu("Help!")) {
-					if (MenuItem("Diagnose issues!")) OpenPopup("Dump and Ship");
-					Separator();
-					MenuItem("ShadowAudio information and help", nullptr, &editorState.showHelpDocs);
-					Text("If you need help, just text me");
-					if (MenuItem("Shadow Engine Website")) Util::openURL("https://shadow.77z.dev");
-					ImGui::EndMenu();
-				}
-				// EndMenuBar();
-			// }
-			EndGroup();
-			imguiRootWindow->DC.LayoutType = ImGuiLayoutType_Vertical;
-			imguiRootWindow->DC.IsSameLine = false;
-			imguiRootWindow->DC.NavLayerCurrent = ImGuiNavLayer_Main;
-			imguiRootWindow->DC.MenuBarAppending = false;
-
-
-			SetCursorPos(ImVec2(100.0f, 35.0f));
-
-			PushItemWidth(100.0f * editorState.sf);
-			InputFloat("BPM", &songInfo.bpm, 1.0f, 5.0f);
-			PushItemWidth(120.0f * editorState.sf);
-			SameLine();
-			// InputInt2("Time Signature", songInfo.timeSignature);
-			// SameLine();
-
-			#if 0
-			const char* keyName = (songInfo.key >= 0 && songInfo.key < Keys_Count) ? keysPretty[songInfo.key] : "? Unknown ?";
-			// SliderInt("Key", &songInfo.key, 0, Keys_Count - 1, keyName);
-			if (BeginCombo("Key", keyName)) {
-				for (int n = 0; n < ((int)(sizeof(keysPretty) / sizeof(*(keysPretty)))); n++) {
-					const bool isSelected = (songInfo.key == n);
-					if (Selectable(keysPretty[n], isSelected))
-						songInfo.key = n;
-
-					if (isSelected) SetItemDefaultFocus();
-				}
-				EndCombo();
-			}
-			#endif
-
-			DragScalar("Song Len", ImGuiDataType_U64, &songInfo.songLength);
-
-			SameLine();
-			if (SliderFloat("Master Vol", &songInfo.masterVolume, 0.0f, 1.0f)) {
-				ma_engine_set_volume(&engine, songInfo.masterVolume);
-				EC_PRINT("All", "Changed master volume to %.3f", songInfo.masterVolume);
-			}
-
-			SameLine();
-			SliderFloat("Zoom", &editorState.zoom, 10.0f, 600.0f, "%.0f%%");
-
-			SameLine();
-			if (Button(SHADOW_ICON_ZOOM_IN)) editorState.zoom = 100.0f;
-			SetItemTooltip(SHADOW_ICON_ZOOM_IN " Reset zoom");
-
-			SameLine();
-			if (Button(SHADOW_ICON_DIFF_ADDED)) timeline.addTrack();
-			SetItemTooltip("New Track");
-
-			SameLine();
-			ToggleButton(SHADOW_ICON_CLIP_CUT, &timeline.singleSlicingClip);
-			SetItemTooltip("Slice clip...");
-
-			SameLine();
-			ToggleButton(SHADOW_ICON_MULTI_CLIP_CUT, &timeline.multiSlicingClip);
-			SetItemTooltip("Multi slice clip cut");
-
-			SameLine();
-			if (Button(SHADOW_ICON_BOOKMARK)) timeline.newBookmark();
-			SetItemTooltip(SHADOW_ICON_BOOKMARK " New bookmark (Ctrl + B)");
-
-			SameLine();
-			ToggleButton(SHADOW_ICON_MAGNET, &editorState.snappingEnabled);
-			SetItemTooltip(SHADOW_ICON_MAGNET " Toggle clip snapping");
-
-			SameLine();
-			if (Button(timeline.isPlaying() ? SHADOW_ICON_DEBUG_PAUSE : SHADOW_ICON_PLAY)) {
-				timeline.togglePlayback();
-			}
-			SetItemTooltip("Play/Pause song from current position (SPACE)");
-
-			SameLine();
-			JobSystem::onUpdateStatusBar();
-
-			SameLine();
-			drawScrubberClockWidget(songInfo, editorState, timeline.getPlaybackFrames());
-
-
-#if BX_PLATFORM_LINUX
-			constexpr auto minimizeIcon = SHADOW_ICON_CHROME_MINIMIZE_LINUX;
-			constexpr auto maximizeIcon = SHADOW_ICON_CHROME_MAXIMIZE_LINUX;
-			constexpr auto restoreIcon  = SHADOW_ICON_CHROME_RESTORE_LINUX;
-#else
-			constexpr auto minimizeIcon = SHADOW_ICON_CHROME_MINIMIZE;
-			constexpr auto maximizeIcon = SHADOW_ICON_CHROME_MAXIMIZE;
-			constexpr auto restoreIcon  = SHADOW_ICON_CHROME_RESTORE;
-#endif
-
-			SetCursorPos(ImVec2(GetWindowSize().x - (55.0f * 1), 0));
-			if (WindowChromeButton(SHADOW_ICON_CHROME_CLOSE)) break;
-
-			SetCursorPos(ImVec2(GetWindowSize().x - (55.0f * 2), 0));
-			if (glfwGetWindowAttrib(window.window, GLFW_MAXIMIZED)) {
-				if (WindowChromeButton(restoreIcon)) glfwRestoreWindow(window.window);
-			} else {
-				if (WindowChromeButton(maximizeIcon)) glfwMaximizeWindow(window.window);
-			}
-
-			SetCursorPos(ImVec2(GetWindowSize().x - (55.0f * 3), 0));
-			if (WindowChromeButton(minimizeIcon)) glfwIconifyWindow(window.window);
-
-			// 77Z Account button in top right
-			SameLine();
-			SetCursorPos(ImVec2(GetWindowSize().x - 200.0f, 10.0f));
-			Account::onUpdateStatusBar(true, &window);
-
-			// Drag region?
-			ImRect windowDragRegion = ImRect(
-				imguiRootWindow->ViewportPos + ImVec2(370.0f, 0.0f),
-				imguiRootWindow->ViewportPos + ImVec2(GetWindowSize().x - 205.0f, 30.0f));
-			// GetForegroundDrawList()->AddRect(windowDragRegion.Min, windowDragRegion.Max, IM_COL32(255, 255, 0, 255));
-
-			if (windowDragRegion.Contains(GetMousePos()) && IsMouseClicked(ImGuiMouseButton_Left))
-				window.dragWindow();
-
-			{ // Window title
-				const char* title = "AXE Audio Workstation";
-				ImVec2 currentCursorPos = GetCursorPos();
-				ImVec2 textSize = CalcTextSize(title);
-				imguiRootWindow->DrawList->AddText(
-					ImVec2(GetWindowPos().x + GetWindowWidth() * 0.5f - textSize.x * 0.5f, GetWindowPos().y + 8.0f),
-					IM_COL32(255, 255, 255, 255), title);
-				SetCursorPos(currentCursorPos);
-			}
-
-			// Line around the window to improve contrast against other black windows.
-			GetForegroundDrawList()->AddRect(
-				imguiRootWindow->ViewportPos,
-				imguiRootWindow->ViewportPos + imguiRootWindow->Size,
-				IM_COL32(255, 255, 255, 255));
-
-			SetCursorPosY(70.0f /* <- height of the window header */ * editorState.sf);
-			DockSpace(GetID("AXEDockspace"));
-			End();
-		}
-
+#if 0
 		if (ImGui::BeginPopupModal("Dump and Ship")) {
 
 			ImGui::TextWrapped(
@@ -725,6 +415,7 @@ int startAXEEditor(std::string projectFile) {
 
 			ImGui::EndPopup();
 		}
+#endif
 
 		//ShadowAudio window
 		{
@@ -845,7 +536,7 @@ int startAXEEditor(std::string projectFile) {
 		pianoRoll.onUpdate();
 		updateIconDebugWindow(editorState.showIconDebugger);
 		drumEngine.onUpdate();
-		timeline.updateBookmarkDebugMenu(editorState.showBookmarksDebugger);
+		timeline.updateTimelineDebugMenu(editorState.showTimelineDebugger);
 		onUpdateGlobalSettingsWindow(editorState.showGlobalSettings);
 		vstPlugins.onUpdate(editorState.showVSTWindow);
 		ImGui::RenderNotifications();
@@ -875,6 +566,9 @@ int startAXEEditor(std::string projectFile) {
 
 		glfwSwapBuffers(window.window);
 	}
+
+	// TODO: AXE crashes upon close. This shouldn't happen...
+	exit(0);
 
 	nodeEditor.shutdown();
 	clipBrowser.shutdown();

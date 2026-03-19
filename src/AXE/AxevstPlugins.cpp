@@ -38,8 +38,11 @@ void AXEVSTPlugins::onUpdate(bool& p_open) {
 	if (SmallButton("re-scan")) reloadVSTPlugins();
 
 	for (auto& vst : indexedVsts) {
-		Selectable(vst.prettyName.c_str());
-		SetItemTooltip("%s - %s", vst.version.c_str(), vst.vendor.c_str());
+
+		TextUnformatted(vst.prettyName.c_str());
+
+		// Selectable(vst.prettyName.c_str());
+		// SetItemTooltip("%s - %s", vst.version.c_str(), vst.vendor.c_str());
 	}
 
 	End();
@@ -77,24 +80,24 @@ void AXEVSTPlugins::reloadVSTPlugins() {
 
 
 		// Is there a moduleinfo.json we can read?
-#if 0
 		std::filesystem::path moduleInfoPath = vstDir.path() / "Contents" / "Resources" / "moduleinfo.json";
 		if (std::filesystem::exists(moduleInfoPath)) {
 			try {
 				auto moduleInfoData = JSON::readJsonFile(moduleInfoPath);
 
-				entry.prettyName = moduleInfoData["Name"];
-				entry.version = moduleInfoData["Version"];
-				entry.vendor = moduleInfoData["Factory Info"]["Vendor"];
-				entry.url = moduleInfoData["Factory Info"]["URL"];
-				entry.email = moduleInfoData["Factory Info"]["E-Mail"];
+				// CLion says these casts are redundant, but the compiler complains about ambiguity
+				// otherwise... is there a way around this?
+				entry.prettyName = (std::string)moduleInfoData["Name"];
+				entry.version = (std::string)moduleInfoData["Version"];
+				entry.vendor = (std::string)moduleInfoData["Factory Info"]["Vendor"];
+				entry.url = (std::string)moduleInfoData["Factory Info"]["URL"];
+				entry.email = (std::string)moduleInfoData["Factory Info"]["E-Mail"];
 			} catch ([[maybe_unused]] const std::exception& e) {
 				entry.prettyName = entry.name;
 			}
 		} else {
 			entry.prettyName = entry.name;
 		}
-#endif
 		indexedVsts.emplace_back(entry);
 	}
 	EC_PRINT(EC_THIS, "-----------------------------------");

@@ -1422,6 +1422,7 @@
 			LinkerFlags: [
 				"-lstdc++", "-lm", "-lGL", "-lX11", "-ldl", "-lpthread", "-lrt",
 				"-lvulkan", "-fvisibility=hidden", "-lcurl", "-lfreetype", "-lfontconfig", "-lasound",
+				"-lGLEW", "-lGLU", "-lOpenGL",
 				"/code/jucing/build/libaxe_juce_modules.a",
 //				"-L/code/RmlUi/Build", "-lrmlui", "-Wl,-rpath,/code/RmlUi/Build"
 			],

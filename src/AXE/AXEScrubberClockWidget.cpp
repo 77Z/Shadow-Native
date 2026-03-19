@@ -54,11 +54,14 @@ void drawScrubberClockWidget(Song& song, EditorState& edState, uint64_t playback
 
 	// dl->AddRectFilled(cursor, cursor + textSize, IM_COL32(34, 34, 34, 255));
 
+	auto startingPos = GetCursorPos();
+
 	if (InvisibleButton("##ClockWidget", textSize))
 		OpenPopup("ScrubberClockWidgetStylePopup");
 
 	SameLine();
 
+	SetCursorPos(startingPos);
 	TextUnformatted(displayText.c_str());
 
 	if (style == ScrubberClockWidgetStyle_BPM) {

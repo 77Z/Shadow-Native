@@ -1,6 +1,7 @@
 #include "imgui/imgui_utils.hpp"
 #include "imgui.h"
 #include "imgui_internal.h"
+#include "Configuration/EngineConfiguration.hpp"
 
 struct InputTextCallback_UserData {
 	std::string* Str;
@@ -122,7 +123,7 @@ bool ImGui::WindowChromeButton(const char* label) {
 	PushStyleColor(ImGuiCol_Button, IM_COL32(0, 0, 0, 0));
 	PushStyleColor(ImGuiCol_ButtonHovered, IM_COL32(255, 255, 255, 100));
 	PushStyleColor(ImGuiCol_ButtonActive, IM_COL32(255, 255, 255, 200));
-	bool ret = Button(label, ImVec2(55.0f, 40.0f));
+	bool ret = Button(label, ImVec2(55.0_scaled, 40.0_scaled));
 	PopStyleColor(3);
 	PopStyleVar();
 

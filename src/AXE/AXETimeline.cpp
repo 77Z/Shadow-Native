@@ -1,29 +1,33 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
+#include <GL/glew.h>
+#include <GL/glext.h>
+
+#include "AXETimeline.hpp"
+#include "AXEAudioHelpers.hpp"
 #include "AXEDrumEngine.hpp"
 #include "AXEJobSystem.hpp"
 #include "AXENodeEditor.hpp"
-#include "ShadowWindow.hpp"
+#include "AXEOpenGLUtils.hpp"
+#include "AXETypes.hpp"
 #include "Configuration/EngineConfiguration.hpp"
+#include "Debug/EditorConsole.hpp"
+#include "ImGuiNotify.hpp"
+#include "ShadowIcons.hpp"
+#include "ShadowWindow.hpp"
+#include "imgui.h"
+#include "imgui/imgui_api_patches.hpp"
+#include "imgui/imgui_utils.hpp"
+#include "imgui_internal.h"
+#include "json_impl.hpp"
+#include "ppk_assert_impl.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
-#include <utility>
-#include "AXETypes.hpp"
-#include "AXETimeline.hpp"
-#include "imgui.h"
-#include "imgui_internal.h"
-#include <string>
-#include "ShadowIcons.hpp"
-#include "imgui/imgui_utils.hpp"
-#include "Debug/EditorConsole.hpp"
-#include "ppk_assert_impl.hpp"
 #include <memory>
-#include "ImGuiNotify.hpp"
-#include "json_impl.hpp"
-#include "imgui/imgui_api_patches.hpp"
-#include "AXEAudioHelpers.hpp"
+#include <string>
+#include <utility>
 
 #define EC_THIS "Timeline"
 
@@ -47,7 +51,40 @@ Timeline::Timeline(
 	, pianoRoll(pianoRoll)
 {
 	EC_NEWCAT(EC_THIS);
-	EC_PRINT(EC_THIS, "Scale factor from editorstate %.2f", editorState->sf);
+	// EC_PRINT(EC_THIS, "Scale factor from editorstate %.2f", editorState->sf);
+
+#if 0
+	// load waveform shaders
+	unsigned int vertexShader = compileOpenGLShader(GL_VERTEX_SHADER, R"(#version 330 core
+
+layout (location = 0) in vec3 aPos;       // Position (x, y, z)
+layout (location = 1) in vec2 aTexCoords; // Texture Coords (u, v)
+
+out vec2 TexCoords;
+
+void main() {
+    // Pass the UVs directly through
+    TexCoords = aTexCoords;
+
+    // Set the final position on screen (Normalized Device Coordinates)
+    gl_Position = vec4(aPos, 1.0);
+}
+)");
+	unsigned int fragmentShader = compileOpenGLShader(GL_FRAGMENT_SHADER, R"(#version 330 core
+layout (location = 0) out vec4 FragColor;
+
+void main() {
+    FragColor = vec4(1.0, 0.5, 0.2, 1.0);
+}
+)");
+
+
+	waveformProgram = glCreateProgram();
+	glAttachShader(waveformProgram, vertexShader);
+	glAttachShader(waveformProgram, fragmentShader);
+	glLinkProgram(waveformProgram);
+
+#endif
 }
 Timeline::~Timeline() { }
 #if 0
@@ -225,6 +262,8 @@ void Timeline::onUpdate() {
 }
 #endif
 
+
+
 static void loadClipDataFromAXEwf(std::shared_ptr<Clip> clip) {
 	// TODO: This is repeat code from WaveformGen.cpp
 	std::string globalLibraryPath = EngineConfiguration::getConfigDir() + "/AXEProjects/GlobalLibrary";
@@ -256,6 +295,47 @@ static void drawBlinkingSquareAtCursor() {
 	using namespace ImGui;
 	auto currentCursor = GetCursorScreenPos();
 	if (fmodf((float)ImGui::GetTime(), 0.40f) < 0.20f) { GetForegroundDrawList()->AddRectFilled(currentCursor, currentCursor + ImVec2(20,20), IM_COL32(255, 255, 0, 255)); }
+}
+
+void Timeline::redrawWaveformThumbnails() {
+	for (auto& track: songInfo->tracks) {
+		for (auto& clip: track.clips) {
+
+			// Is the texture and FBO on this clip initialized? If not, we need to do that first.
+			if (clip->thumbnailFBO == 0 || clip->thumbnailTexture == 0) {
+				glGenFramebuffers(1, &clip->thumbnailFBO);
+				glBindFramebuffer(GL_FRAMEBUFFER, clip->thumbnailFBO);
+
+				// Create the texture
+				glGenTextures(1, &clip->thumbnailTexture);
+				glBindTexture(GL_TEXTURE_2D, clip->thumbnailTexture);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+				// Attach it to the FBO
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, clip->thumbnailTexture, 0);
+				glBindFramebuffer(GL_FRAMEBUFFER, 0); // Unbind
+			}
+
+			// switch drawing to FBO
+			glBindFramebuffer(GL_FRAMEBUFFER, clip->thumbnailFBO);
+
+			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT);
+
+			// glUseProgram(shaderProgram);
+
+			// glBindVertexArray(quadVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+			// revert drawing back to regular buffer
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
+			// Do the drawing
+			// ImGui::Image((void*)(intptr_t)textureColorBuffer, viewportPanelSize, ImVec2(0, 1), ImVec2(1, 0));
+
+		}
+	}
 }
 
 void Timeline::onUpdate() {
@@ -1171,9 +1251,9 @@ void Timeline::onUpdate() {
 				songInfo->tracks.at(tableHoveredRow - 1).clips.push_back(clip);
 
 				// Load into JUCE File
-				juce::File audioData(path.string());
+				/*juce::File audioData(path.string());
 				juce::FileInputSource inputSource(audioData);
-				clip->thumbnail.setSource(&inputSource);
+				clip->thumbnail.setSource(&inputSource);*/
 			}
 		} else {
 			fg->AddCircleFilled(GetMousePos(), 5.0f, IM_COL32(255, 0, 0, 255));

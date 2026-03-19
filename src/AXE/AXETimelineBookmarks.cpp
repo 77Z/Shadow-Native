@@ -36,14 +36,14 @@ void Timeline::onUpdateBookmarks(ImDrawList* drawDest) {
 	}
 }
 
-void Timeline::updateBookmarkDebugMenu(bool& p_open) {
+void Timeline::updateTimelineDebugMenu(bool& p_open) {
 	using namespace ImGui;
 
 	if (!p_open) return;
 
-	Begin("Timeline Bookmark Debugger", &p_open);
+	Begin("Timeline Debug Menu", &p_open);
 
-	TextUnformatted("Bookmarks in this song file:");
+	SeparatorText("Bookmarks");
 
 	for (auto& g : songInfo->bookmarks) {
 		ColorButton("BOOKMARK", g.color);

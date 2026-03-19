@@ -41,4 +41,12 @@ namespace Shadow::EngineConfiguration {
 		return gblUserName;
 	}
 
+
+	// A scale factor value that shadow should scale all dpi-aware pixel values by. Obviously
+	// different windows can have different scale factors (and in the case of GLFW, different scale
+	// factors per x and y), but it's just easier this way.
+	static float gblScaleFactor = 1.0f;
+	void setGlobalScaleFactor(const float sf) { gblScaleFactor = sf; }
+	float getGlobalScaleFactor() { return gblScaleFactor; }
+
 }

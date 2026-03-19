@@ -225,9 +225,13 @@ struct Clip {
 	bool shouldDrawWaveform = true;
 	std::vector<int16_t> waveformData;
 	int waveformChannels = 0;
-	juce::AudioFormatManager audioFormatManager;
-	juce::AudioThumbnailCache thumbnailCache{ 5 };
-	juce::AudioThumbnail thumbnail{100, audioFormatManager, thumbnailCache};
+
+	unsigned int thumbnailFBO = 0;
+	unsigned int thumbnailTexture = 0;
+
+	// juce::AudioFormatManager audioFormatManager;
+	// juce::AudioThumbnailCache thumbnailCache{ 5 };
+	// juce::AudioThumbnail thumbnail{100, audioFormatManager, thumbnailCache};
 };
 
 struct Track {
@@ -311,7 +315,7 @@ struct EditorState {
 	bool showEqualizer = true;
 	bool showGlobalSettings = false;
 	bool showPianoRoll = true;
-	bool showBookmarksDebugger = true;
+	bool showTimelineDebugger = true;
 	bool showIconDebugger = false;
 	bool showVSTWindow = false;
 };
